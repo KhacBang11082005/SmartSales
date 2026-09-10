@@ -1,0 +1,981 @@
+/* =========================================================
+   SMARTSALES - ADMIN LAYOUT
+
+   Thiết kế:
+   - Tối giản
+   - Dễ nhìn
+   - Phù hợp website bán đồ điện tử
+   - Sidebar navy + xanh dương
+   - Không icon trước các chức năng
+   - Không thông tin "Hệ thống an toàn"
+========================================================= */
+
+
+/* =========================================================
+   ROOT LAYOUT
+========================================================= */
+
+.admin-layout {
+
+    min-height: 100vh;
+
+    background: #f5f7fb;
+
+    color: #172033;
+
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.admin-sidebar {
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+    bottom: 0;
+
+    z-index: 1000;
+
+    width: 250px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    background: #0f172a;
+
+    color: #ffffff;
+
+    border-right:
+            1px solid rgba(255, 255, 255, 0.06);
+
+}
+
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.admin-logo {
+
+    height: 72px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 0 20px;
+
+    border-bottom:
+            1px solid rgba(255, 255, 255, 0.07);
+
+}
+
+
+.admin-logo-mark {
+
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: #2563eb;
+
+}
+
+
+.admin-logo-mark span {
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    letter-spacing: -0.3px;
+
+}
+
+
+.admin-logo-text {
+
+    min-width: 0;
+
+}
+
+
+.admin-logo-text strong {
+
+    display: block;
+
+    color: #ffffff;
+
+    font-size: 16px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.5px;
+
+}
+
+
+.admin-logo-text strong span {
+
+    color: #60a5fa;
+
+}
+
+
+.admin-logo-text small {
+
+    display: block;
+
+    margin-top: 4px;
+
+    color: #64748b;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.2px;
+
+}
+
+
+/* =========================================================
+   CLOSE SIDEBAR MOBILE
+========================================================= */
+
+.admin-sidebar-close {
+
+    display: none;
+
+    width: 32px;
+    height: 32px;
+
+    margin-left: auto;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+
+    border-radius: 7px;
+
+    background: transparent;
+
+    color: #94a3b8;
+
+    cursor: pointer;
+
+}
+
+
+.admin-sidebar-close:hover {
+
+    background:
+            rgba(255, 255, 255, 0.07);
+
+    color: #ffffff;
+
+}
+
+
+/* =========================================================
+   ADMIN PROFILE
+========================================================= */
+
+.admin-sidebar-profile {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin: 16px 14px 8px;
+
+    padding: 10px;
+
+    border:
+            1px solid rgba(255, 255, 255, 0.06);
+
+    border-radius: 10px;
+
+    background:
+            rgba(255, 255, 255, 0.035);
+
+}
+
+
+.admin-profile-avatar {
+
+    width: 36px;
+    height: 36px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: #dbeafe;
+
+    color: #1d4ed8;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+}
+
+
+.admin-profile-info {
+
+    min-width: 0;
+
+}
+
+
+.admin-profile-info strong {
+
+    display: block;
+
+    overflow: hidden;
+
+    color: #f8fafc;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
+}
+
+
+.admin-profile-info span {
+
+    display: block;
+
+    margin-top: 3px;
+
+    color: #64748b;
+
+    font-size: 9px;
+
+}
+
+
+/* =========================================================
+   MENU
+========================================================= */
+
+.admin-menu {
+
+    flex: 1;
+
+    min-height: 0;
+
+    padding: 18px 12px 10px;
+
+    overflow-y: auto;
+
+}
+
+
+.admin-menu::-webkit-scrollbar {
+
+    width: 4px;
+
+}
+
+
+.admin-menu::-webkit-scrollbar-thumb {
+
+    background:
+            rgba(255, 255, 255, 0.1);
+
+    border-radius: 10px;
+
+}
+
+
+/* Tiêu đề nhóm */
+
+.admin-menu-heading {
+
+    padding: 0 10px;
+
+    margin-bottom: 8px;
+
+}
+
+
+.admin-menu-heading span {
+
+    color: #64748b;
+
+    font-size: 8px;
+
+    font-weight: 800;
+
+    letter-spacing: 1.2px;
+
+}
+
+
+/* Danh sách */
+
+.admin-menu-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+
+}
+
+
+/* =========================================================
+   MENU ITEM
+
+   Không có icon đầu dòng.
+========================================================= */
+
+.admin-menu-item {
+
+    position: relative;
+
+    min-height: 44px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding:
+            8px 10px 8px 12px;
+
+    border-radius: 8px;
+
+    color: #94a3b8;
+
+    text-decoration: none;
+
+    transition:
+            background 0.15s ease,
+            color 0.15s ease;
+
+}
+
+
+.admin-menu-item:hover {
+
+    color: #ffffff;
+
+    background:
+            rgba(255, 255, 255, 0.055);
+
+}
+
+
+/* Menu đang được chọn */
+
+.admin-menu-item.active {
+
+    color: #ffffff;
+
+    background: #2563eb;
+
+}
+
+
+/* Vạch xanh bên trái menu active */
+
+.admin-menu-item.active::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: -12px;
+
+    top: 9px;
+
+    bottom: 9px;
+
+    width: 3px;
+
+    border-radius:
+            0 4px 4px 0;
+
+    background: #60a5fa;
+
+}
+
+
+/* Tên chức năng */
+
+.admin-menu-label {
+
+    min-width: 0;
+
+    flex: 1;
+
+    font-size: 12px;
+
+    line-height: 1.3;
+
+    font-weight: 600;
+
+}
+
+
+/* Mũi tên bên phải */
+
+.admin-menu-arrow {
+
+    flex-shrink: 0;
+
+    color: #475569;
+
+    transition:
+            transform 0.15s ease,
+            color 0.15s ease;
+
+}
+
+
+.admin-menu-item:hover
+.admin-menu-arrow {
+
+    color: #ffffff;
+
+    transform:
+            translateX(2px);
+
+}
+
+
+.admin-menu-item.active
+.admin-menu-arrow {
+
+    color:
+            rgba(255, 255, 255, 0.75);
+
+}
+
+
+/* =========================================================
+   SIDEBAR BOTTOM
+========================================================= */
+
+.admin-sidebar-bottom {
+
+    padding:
+            12px 14px 14px;
+
+    border-top:
+            1px solid rgba(255, 255, 255, 0.07);
+
+}
+
+
+/* Chỉ còn nút đăng xuất */
+
+.admin-logout {
+
+    width: 100%;
+
+    height: 40px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 0 11px;
+
+    border: 0;
+
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: #94a3b8;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.15s ease;
+
+}
+
+
+.admin-logout:hover {
+
+    background:
+            rgba(239, 68, 68, 0.09);
+
+    color: #f87171;
+
+}
+
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+.admin-main {
+
+    width:
+            calc(100% - 250px);
+
+    min-height: 100vh;
+
+    margin-left: 250px;
+
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.admin-header {
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 100;
+
+    height: 70px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 0 28px;
+
+    background:
+            rgba(255, 255, 255, 0.97);
+
+    border-bottom:
+            1px solid #e5e7eb;
+
+    backdrop-filter:
+            blur(10px);
+
+}
+
+
+.admin-header-left {
+
+    min-width: 0;
+
+}
+
+
+/* =========================================================
+   BREADCRUMB
+========================================================= */
+
+.admin-breadcrumb {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    margin-bottom: 3px;
+
+    color: #94a3b8;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.7px;
+
+}
+
+
+.admin-breadcrumb strong {
+
+    overflow: hidden;
+
+    max-width: 300px;
+
+    color: #64748b;
+
+    font-weight: 700;
+
+    letter-spacing: 0;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
+}
+
+
+/* =========================================================
+   PAGE TITLE
+========================================================= */
+
+.admin-header-page-title h1 {
+
+    margin: 0;
+
+    color: #0f172a;
+
+    font-size: 17px;
+
+    line-height: 1.2;
+
+    font-weight: 750;
+
+}
+
+
+/* =========================================================
+   ADMIN HEADER RIGHT
+========================================================= */
+
+.admin-header-user {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding-left: 14px;
+
+    border-left:
+            1px solid #e5e7eb;
+
+}
+
+
+.admin-header-avatar {
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: #eff6ff;
+
+    color: #2563eb;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+}
+
+
+.admin-header-user-info strong {
+
+    display: block;
+
+    color: #1e293b;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+}
+
+
+.admin-header-user-info span {
+
+    display: block;
+
+    margin-top: 2px;
+
+    color: #94a3b8;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.7px;
+
+}
+
+
+/* =========================================================
+   MOBILE MENU
+========================================================= */
+
+.admin-mobile-menu {
+
+    display: none;
+
+    width: 38px;
+    height: 38px;
+
+    align-items: center;
+    justify-content: center;
+
+    border:
+            1px solid #e5e7eb;
+
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    color: #334155;
+
+    cursor: pointer;
+
+}
+
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.admin-content {
+
+    min-height:
+            calc(100vh - 70px);
+
+    padding:
+            26px 28px 36px;
+
+}
+
+
+/* =========================================================
+   MOBILE OVERLAY
+========================================================= */
+
+.admin-sidebar-overlay {
+
+    display: none;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1000px) {
+
+    .admin-sidebar {
+
+        width: 235px;
+
+    }
+
+
+    .admin-main {
+
+        width:
+                calc(100% - 235px);
+
+        margin-left: 235px;
+
+    }
+
+
+    .admin-header {
+
+        padding:
+                0 20px;
+
+    }
+
+
+    .admin-content {
+
+        padding:
+                22px 20px 30px;
+
+    }
+
+}
+
+
+@media (max-width: 800px) {
+
+    .admin-sidebar {
+
+        width: 250px;
+
+        transform:
+                translateX(-100%);
+
+        transition:
+                transform 0.2s ease;
+
+        box-shadow:
+                12px 0 30px
+                rgba(15, 23, 42, 0.18);
+
+    }
+
+
+    .admin-sidebar.admin-sidebar-open {
+
+        transform:
+                translateX(0);
+
+    }
+
+
+    .admin-sidebar-close {
+
+        display: flex;
+
+    }
+
+
+    .admin-sidebar-overlay {
+
+        position: fixed;
+
+        inset: 0;
+
+        z-index: 999;
+
+        display: block;
+
+        background:
+                rgba(15, 23, 42, 0.45);
+
+    }
+
+
+    .admin-main {
+
+        width: 100%;
+
+        margin-left: 0;
+
+    }
+
+
+    .admin-mobile-menu {
+
+        display: flex;
+
+    }
+
+
+    .admin-header {
+
+        height: 64px;
+
+        padding:
+                0 16px;
+
+        justify-content:
+                flex-start;
+
+    }
+
+
+    .admin-header-left {
+
+        flex: 1;
+
+    }
+
+
+    .admin-breadcrumb {
+
+        display: none;
+
+    }
+
+
+    .admin-header-page-title h1 {
+
+        font-size: 15px;
+
+    }
+
+
+    .admin-header-user {
+
+        padding-left: 0;
+
+        border-left: 0;
+
+    }
+
+
+    .admin-header-user-info {
+
+        display: none;
+
+    }
+
+
+    .admin-content {
+
+        padding:
+                18px 14px 26px;
+
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .admin-header-avatar {
+
+        width: 32px;
+        height: 32px;
+
+    }
+
+
+    .admin-menu-label {
+
+        font-size: 11.5px;
+
+    }
+
+}

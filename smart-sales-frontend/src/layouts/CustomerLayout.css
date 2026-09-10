@@ -1,0 +1,995 @@
+/* =========================================================
+   SMART SALES - CUSTOMER LAYOUT
+   ========================================================= */
+
+
+/* =========================
+   LAYOUT
+   ========================= */
+
+.customer-layout {
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #F5F9FF;
+}
+
+
+/* =========================
+   HEADER
+   ========================= */
+
+.customer-header {
+    position: sticky;
+
+    top: 0;
+
+    z-index: 1000;
+
+    height: 76px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 22px;
+
+    padding: 0 55px;
+
+    box-sizing: border-box;
+
+    background: rgba(255, 255, 255, 0.96);
+
+    border-bottom: 1px solid #E2EAF4;
+
+    box-shadow:
+            0 4px 18px
+            rgba(1, 23, 52, 0.04);
+
+    backdrop-filter: blur(16px);
+}
+
+.header-search {
+    flex: 1;
+
+    max-width: 600px;
+
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 0 16px;
+
+    box-sizing: border-box;
+
+    background: #FFFFFF;
+
+    border: 1px solid #C9D9EC;
+
+    border-radius: 12px;
+
+    color: #005BFF;
+
+    box-shadow:
+            0 2px 8px
+            rgba(1, 23, 52, 0.04);
+
+    transition:
+            border-color 0.25s ease,
+            box-shadow 0.25s ease;
+}
+
+
+.header-search:hover {
+    border-color: #8DBBFF;
+
+    box-shadow:
+            0 4px 12px
+            rgba(0, 91, 255, 0.06);
+}
+
+
+.header-search:focus-within {
+    background: #FFFFFF;
+
+    border-color: #005BFF;
+
+    box-shadow:
+            0 0 0 4px
+            rgba(0, 91, 255, 0.09);
+}
+
+
+.header-search svg {
+    flex-shrink: 0;
+
+    color: #005BFF;
+}
+
+
+.header-search input {
+    width: 100%;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    color: #071A36;
+
+    font-size: 14px;
+    font-weight: 500;
+}
+
+
+.header-search input::placeholder {
+    color: #7A8DA6;
+
+    opacity: 1;
+}
+/* =========================
+   LOGO
+   ========================= */
+
+.logo {
+    width: 150px;
+    height: 58px;
+
+    display: flex;
+    align-items: center;
+
+    flex-shrink: 0;
+
+    text-decoration: none;
+}
+
+.logo img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+/* =========================
+   CATEGORY
+   ========================= */
+
+.category-menu {
+    position: relative;
+
+    flex-shrink: 0;
+}
+
+
+.category-btn {
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 0 15px;
+
+    border: 1px solid #DCE7F4;
+
+    border-radius: 11px;
+
+    background: #F5F9FF;
+
+    color: #071A36;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+            0.25s ease;
+}
+
+
+.category-btn svg:first-child {
+    color: #005BFF;
+}
+
+
+.category-arrow {
+    color: #64748B;
+
+    transition:
+            transform 0.25s ease;
+}
+
+
+.category-btn:hover {
+    border-color: #B9D4FF;
+
+    background: #EDF5FF;
+
+    color: #005BFF;
+}
+
+
+/* =========================
+   CATEGORY DROPDOWN
+   ========================= */
+
+.category-dropdown {
+    position: absolute;
+
+    top: calc(100% + 10px);
+
+    left: 0;
+
+    width: 220px;
+
+    padding: 8px;
+
+    box-sizing: border-box;
+
+    background: #FFFFFF;
+
+    border: 1px solid #E2EAF4;
+
+    border-radius: 14px;
+
+    box-shadow:
+            0 15px 35px
+            rgba(1, 23, 52, 0.12);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    transform:
+            translateY(-8px);
+
+    transition:
+            opacity 0.2s ease,
+            visibility 0.2s ease,
+            transform 0.2s ease;
+}
+
+
+/*
+    Hiển thị khi hover vào Danh mục
+*/
+
+.category-menu:hover .category-dropdown {
+    opacity: 1;
+
+    visibility: visible;
+
+    transform:
+            translateY(0);
+}
+
+
+.category-menu:hover .category-arrow {
+    transform:
+            rotate(180deg);
+}
+
+
+.category-dropdown a {
+    display: flex;
+    align-items: center;
+
+    min-height: 42px;
+
+    padding: 0 12px;
+
+    border-radius: 9px;
+
+    box-sizing: border-box;
+
+    color: #42526B;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition:
+            0.2s ease;
+}
+
+
+.category-dropdown a:hover {
+    background: #EDF5FF;
+
+    color: #005BFF;
+
+    transform:
+            translateX(3px);
+}
+
+
+/* =========================
+   SEARCH
+   ========================= */
+
+.header-search {
+    flex: 1;
+
+    max-width: 600px;
+
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 0 15px;
+
+    box-sizing: border-box;
+
+    background: #F5F9FF;
+
+    border: 1px solid #DDE8F5;
+
+    border-radius: 11px;
+
+    color: #7DA7D9;
+
+    transition:
+            0.25s ease;
+}
+
+
+.header-search:hover {
+    border-color: #B9D4FF;
+}
+
+
+.header-search:focus-within {
+    background: #FFFFFF;
+
+    border-color: #005BFF;
+
+    box-shadow:
+            0 0 0 4px
+            rgba(0, 91, 255, 0.08);
+}
+
+
+.header-search input {
+    width: 100%;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    color: #071A36;
+
+    font-size: 14px;
+}
+
+
+.header-search input::placeholder {
+    color: #9AA9BC;
+}
+
+
+/* =========================
+   HEADER ACTIONS
+   ========================= */
+
+.header-actions {
+    margin-left: auto;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================
+   CART
+   ========================= */
+
+.cart-btn {
+    position: relative;
+
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #DCE7F4;
+
+    border-radius: 11px;
+
+    background: #F5F9FF;
+
+    color: #005BFF;
+
+    text-decoration: none;
+
+    transition:
+            0.25s ease;
+}
+
+
+.cart-btn:hover {
+    background:
+            linear-gradient(
+                    135deg,
+                    #005BFF,
+                    #008AF5
+            );
+
+    border-color: transparent;
+
+    color: #FFFFFF;
+
+    box-shadow:
+            0 7px 18px
+            rgba(0, 91, 255, 0.22);
+
+    transform:
+            translateY(-1px);
+}
+
+
+/* =========================
+   CART BADGE
+   ========================= */
+
+.cart-badge {
+    position: absolute;
+
+    top: -7px;
+    right: -7px;
+
+    min-width: 19px;
+    height: 19px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 5px;
+
+    box-sizing: border-box;
+
+    border-radius: 20px;
+
+    background: #F43F5E;
+
+    color: #FFFFFF;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    border: 2px solid #FFFFFF;
+}
+
+
+/* =========================
+   LOGIN
+   ========================= */
+
+.login-btn {
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 0 15px;
+
+    border-radius: 11px;
+
+    color: #42526B;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition:
+            0.25s ease;
+}
+
+
+.login-btn svg {
+    color: #005BFF;
+}
+
+
+.login-btn:hover {
+    background: #EDF5FF;
+
+    color: #005BFF;
+}
+
+
+/* =========================
+   USER
+   ========================= */
+
+.user-area {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+.user-info {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    color: #071A36;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+.user-info svg {
+    color: #005BFF;
+}
+
+
+.logout-btn {
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 0 11px;
+
+    border: 1px solid #E2EAF4;
+
+    border-radius: 9px;
+
+    background: #FFFFFF;
+
+    color: #64748B;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+            0.25s ease;
+}
+
+
+.logout-btn:hover {
+    border-color: #B9D4FF;
+
+    background: #F1F6FF;
+
+    color: #005BFF;
+}
+
+
+/* =========================
+   MAIN
+   ========================= */
+
+.customer-main {
+    flex: 1;
+
+    padding: 40px 60px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================
+   FOOTER
+   ========================= */
+
+.customer-footer {
+    margin-top: 50px;
+
+    padding: 50px 60px;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    #011734,
+                    #082955
+            );
+
+    color: #FFFFFF;
+
+    text-align: center;
+}
+
+
+.customer-footer h3 {
+    margin: 0 0 10px;
+
+    font-size: 23px;
+}
+
+
+.customer-footer p {
+    margin: 5px 0;
+
+    color: #AFC4DF;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+
+/* TABLET */
+
+@media (max-width: 1000px) {
+
+    .customer-header {
+        padding: 0 30px;
+
+        gap: 14px;
+    }
+
+    .logo {
+        width: 135px;
+    }
+
+    .category-btn span {
+        display: none;
+    }
+
+    .category-btn {
+        width: 44px;
+
+        justify-content: center;
+
+        padding: 0;
+    }
+
+    .category-arrow {
+        display: none;
+    }
+
+    .header-search {
+        max-width: none;
+    }
+
+    .customer-main {
+        padding: 35px 30px;
+    }
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 650px) {
+
+    .customer-header {
+        height: 68px;
+
+        padding: 0 15px;
+
+        gap: 8px;
+    }
+
+    .logo {
+        width: 115px;
+
+        height: 52px;
+    }
+
+    .category-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .header-search {
+        height: 40px;
+
+        padding: 0 10px;
+    }
+
+    .header-search input {
+        font-size: 12px;
+    }
+
+    .header-actions {
+        gap: 5px;
+    }
+
+    .cart-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .login-btn {
+        width: 40px;
+        height: 40px;
+
+        justify-content: center;
+
+        padding: 0;
+    }
+
+    .login-btn span {
+        display: none;
+    }
+
+    .user-info span,
+    .logout-btn span {
+        display: none;
+    }
+
+    .logout-btn {
+        width: 36px;
+
+        justify-content: center;
+
+        padding: 0;
+    }
+
+    .customer-main {
+        padding: 25px 15px;
+    }
+
+    .customer-footer {
+        padding: 40px 20px;
+    }
+
+}
+
+
+/* SMALL MOBILE */
+
+@media (max-width: 430px) {
+
+    .logo {
+        width: 100px;
+    }
+
+    .header-search {
+        flex: 1;
+    }
+
+    .category-menu {
+        display: none;
+    }
+
+}
+
+/* =========================================================
+   USER ACCOUNT DROPDOWN
+   Chỉ bổ sung menu khi hover vào tên tài khoản
+========================================================= */
+
+.user-area {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+
+/* =========================
+   TÊN TÀI KHOẢN
+========================= */
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 8px 10px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    color: #011734;
+
+    transition: all 0.2s ease;
+}
+
+.user-info:hover {
+    background: #f1f6ff;
+    color: #005bff;
+}
+
+
+/* Tên user */
+
+.user-info span {
+    max-width: 150px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* Mũi tên */
+
+.user-arrow {
+    transition: transform 0.2s ease;
+}
+
+
+/* Khi hover vào khu vực user */
+
+.user-area:hover .user-arrow {
+    transform: rotate(180deg);
+}
+
+
+/* =========================================================
+   DROPDOWN
+========================================================= */
+
+.user-dropdown {
+    position: absolute;
+
+    top: calc(100% + 8px);
+    right: 0;
+
+    width: 245px;
+
+    padding: 7px;
+
+    background: #ffffff;
+
+    border: 1px solid #e3ebf5;
+
+    border-radius: 12px;
+
+    box-shadow:
+            0 12px 30px rgba(1, 23, 52, 0.14);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: translateY(-5px);
+
+    transition:
+            opacity 0.18s ease,
+            visibility 0.18s ease,
+            transform 0.18s ease;
+
+    z-index: 9999;
+}
+
+
+/* =========================================================
+   HIỆN DROPDOWN KHI DI CHUỘT VÀO TÊN
+========================================================= */
+
+.user-area:hover .user-dropdown {
+    opacity: 1;
+    visibility: visible;
+
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   ITEM
+========================================================= */
+
+.user-dropdown-item {
+    width: 100%;
+    min-height: 42px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 0 11px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: #34465f;
+
+    text-decoration: none;
+
+    font-family: inherit;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    box-sizing: border-box;
+
+    transition: all 0.18s ease;
+}
+
+
+/* Icon */
+
+.user-dropdown-item svg {
+    flex-shrink: 0;
+
+    color: #71829a;
+
+    transition: color 0.18s ease;
+}
+
+
+/* Hover */
+
+.user-dropdown-item:hover {
+    background: #eef5ff;
+
+    color: #005bff;
+}
+
+.user-dropdown-item:hover svg {
+    color: #005bff;
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.user-dropdown-divider {
+    height: 1px;
+
+    margin: 6px 5px;
+
+    background: #e9eef5;
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+.logout-dropdown-item {
+    color: #e05263;
+}
+
+.logout-dropdown-item svg {
+    color: #e05263;
+}
+
+.logout-dropdown-item:hover {
+    background: #fff1f3;
+
+    color: #d9364d;
+}
+
+.logout-dropdown-item:hover svg {
+    color: #d9364d;
+}
