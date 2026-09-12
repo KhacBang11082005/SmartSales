@@ -1,7 +1,33 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-function ProtectedRoute({ children, allowedRoles }) {
+
+// =====================================================
+// NORMALIZE ROLE
+// =====================================================
+
+function normalizeRole(role) {
+
+    if (!role) {
+        return "";
+    }
+
+    return String(role)
+        .replace("ROLE_", "")
+        .toUpperCase()
+        .trim();
+
+}
+
+
+// =====================================================
+// PROTECTED ROUTE
+// =====================================================
+
+function ProtectedRoute({
+                            children,
+                            allowedRoles
+                        }) {
 
     const {
         user,
@@ -9,8 +35,11 @@ function ProtectedRoute({ children, allowedRoles }) {
     } = useAuth();
 
 
-    // Chưa đăng nhập
-    if (!isLoggedIn) {
+    // =================================================
+    // CHƯA ĐĂNG NHẬP
+    // =================================================
+
+    if (!isLoggedIn || !user) {
 
         return (
             <Navigate
@@ -22,11 +51,80 @@ function ProtectedRoute({ children, allowedRoles }) {
     }
 
 
-    // Không có quyền
+    // =================================================
+    // ROLE HIỆN TẠI
+    // =================================================
+
+    const currentRole =
+        normalizeRole(user.role);
+
+
+    // =================================================
+    // KIỂM TRA QUYỀN
+    // =================================================
+
+    const normalizedAllowedRoles =
+        allowedRoles?.map(
+            normalizeRole
+        );
+
+
+    const hasPermission =
+        !normalizedAllowedRoles ||
+        normalizedAllowedRoles.includes(
+            currentRole
+        );
+
+
+    // =================================================
+    // CÓ QUYỀN
+    // =================================================
+
+    if (hasPermission) {
+
+        return children;
+
+    }
+
+
+    // =================================================
+    // KHÔNG CÓ QUYỀN
+    //
+    // Không đưa về "/" nữa.
+    //
+    // ADMIN    → /admin
+    // EMPLOYEE → /staff
+    // CUSTOMER → /
+    // =================================================
+
+    if (currentRole === "ADMIN") {
+
+        return (
+            <Navigate
+                to="/admin"
+                replace
+            />
+        );
+
+    }
+
+
     if (
-        allowedRoles &&
-        !allowedRoles.includes(user.role)
+        currentRole === "EMPLOYEE" ||
+        currentRole === "STAFF"
     ) {
+
+        return (
+            <Navigate
+                to="/staff"
+                replace
+            />
+        );
+
+    }
+
+
+    if (currentRole === "CUSTOMER") {
 
         return (
             <Navigate
@@ -38,7 +136,18 @@ function ProtectedRoute({ children, allowedRoles }) {
     }
 
 
-    return children;
+    // =================================================
+    // ROLE KHÔNG XÁC ĐỊNH
+    // =================================================
+
+    return (
+        <Navigate
+            to="/login"
+            replace
+        />
+    );
+
 }
+
 
 export default ProtectedRoute;

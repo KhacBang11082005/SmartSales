@@ -123,33 +123,33 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
 
-                        // =================================================
-                        // PRODUCTS
-                        // =================================================
+                                // =========================================================
+                                // PRODUCT
+                                // =========================================================
 
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/products/**"
-                        )
-                        .permitAll()
+                                // ADMIN + EMPLOYEE
+                                // Trang quản lý sản phẩm được xem cả ACTIVE và INACTIVE
+                                .requestMatchers(HttpMethod.GET, "/api/products/manage/**")
+                                .hasAnyRole("ADMIN", "EMPLOYEE")
 
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/products/**"
-                        )
-                        .hasRole("ADMIN")
+                                // Khách hàng được xem sản phẩm đang bán
+                                .requestMatchers(HttpMethod.GET, "/api/products/**")
+                                .permitAll()
 
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/products/**"
-                        )
-                        .hasRole("ADMIN")
+                                // ADMIN + EMPLOYEE
+                                // Thêm sản phẩm
+                                .requestMatchers(HttpMethod.POST, "/api/products/**")
+                                .hasAnyRole("ADMIN", "EMPLOYEE")
 
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/products/**"
-                        )
-                        .hasRole("ADMIN")
+                                // ADMIN + EMPLOYEE
+                                // Sửa sản phẩm
+                                .requestMatchers(HttpMethod.PUT, "/api/products/**")
+                                .hasAnyRole("ADMIN", "EMPLOYEE")
+
+                                // Chỉ ADMIN
+                                // Xóa sản phẩm
+                                .requestMatchers(HttpMethod.DELETE, "/api/products/**")
+                                .hasRole("ADMIN")
 
 
                         // =================================================

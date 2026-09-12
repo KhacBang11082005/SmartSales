@@ -1,4 +1,17 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+    BrowserRouter,
+    Routes,
+    Route,
+    Navigate
+} from "react-router-dom";
+
+import { useAuth } from "./context/AuthContext";
+
+
+// =====================================================
+// CUSTOMER
+// =====================================================
+
 import Account from "./pages/customer/Account";
 import CustomerLayout from "./layouts/CustomerLayout";
 
@@ -14,7 +27,18 @@ import OrderDetail from "./pages/customer/OrderDetail";
 import Login from "./pages/customer/Login";
 import Register from "./pages/customer/Register";
 
+
+// =====================================================
+// PROTECTED ROUTE
+// =====================================================
+
 import ProtectedRoute from "./routes/ProtectedRoute";
+
+
+// =====================================================
+// ADMIN
+// =====================================================
+
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
@@ -22,6 +46,126 @@ import AdminCategories from "./pages/admin/AdminCategories";
 import AdminCustomers from "./pages/admin/AdminCustomers";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminEmployees from "./pages/admin/AdminEmployees";
+
+
+// =====================================================
+// EMPLOYEE / STAFF
+// =====================================================
+
+import StaffLayout from "./pages/staff/StaffLayout";
+import StaffDashboard from "./pages/staff/StaffDashboard";
+import StaffOrders from "./pages/staff/StaffOrders";
+import StaffCustomers from "./pages/staff/StaffCustomers";
+import StaffProducts from "./pages/staff/StaffProducts";
+import StaffCategories from "./pages/staff/StaffCategories";
+
+
+// =====================================================
+// ROLE NORMALIZER
+// =====================================================
+
+function normalizeRole(role) {
+
+    if (!role) {
+        return "";
+    }
+
+    return String(role)
+        .replace("ROLE_", "")
+        .toUpperCase()
+        .trim();
+}
+
+
+// =====================================================
+// CUSTOMER PUBLIC ROUTE
+//
+// Cho phép:
+// - Người chưa đăng nhập
+// - CUSTOMER
+//
+// Nếu là ADMIN:
+//      → /admin
+//
+// Nếu là EMPLOYEE:
+//      → /staff
+// =====================================================
+
+function CustomerPublicRoute({ children }) {
+
+    const {
+        user,
+        isLoggedIn
+    } = useAuth();
+
+
+    // ================================================
+    // CHƯA ĐĂNG NHẬP
+    // ================================================
+
+    if (!isLoggedIn || !user) {
+
+        return children;
+
+    }
+
+
+    // ================================================
+    // LẤY ROLE
+    // ================================================
+
+    const role =
+        normalizeRole(user.role);
+
+
+    // ================================================
+    // ADMIN
+    // ================================================
+
+    if (role === "ADMIN") {
+
+        return (
+            <Navigate
+                to="/admin"
+                replace
+            />
+        );
+
+    }
+
+
+    // ================================================
+    // EMPLOYEE / STAFF
+    // ================================================
+
+    if (
+        role === "EMPLOYEE" ||
+        role === "STAFF"
+    ) {
+
+        return (
+            <Navigate
+                to="/staff"
+                replace
+            />
+        );
+
+    }
+
+
+    // ================================================
+    // CUSTOMER
+    // ================================================
+
+    return children;
+
+}
+
+
+// =====================================================
+// APP
+// =====================================================
+
 function App() {
 
     return (
@@ -30,56 +174,87 @@ function App() {
 
             <Routes>
 
-                {/* ==========================================
-                    CUSTOMER
-                ========================================== */}
 
+                {/* =================================================
+                    CUSTOMER
+                ================================================= */}
 
                 <Route element={<CustomerLayout />}>
 
-                    {/* ==========================================
-                            HOME
-                        ========================================== */}
+
+                    {/* =================================================
+                        HOME
+
+                        Đây là điểm quan trọng nhất.
+
+                        ADMIN:
+                            / → /admin
+
+                        EMPLOYEE:
+                            / → /staff
+
+                        CUSTOMER:
+                            /
+
+                        Chưa đăng nhập:
+                            /
+                    ================================================= */}
 
                     <Route
                         path="/"
-                        element={<Home />}
+                        element={
+                            <CustomerPublicRoute>
+                                <Home />
+                            </CustomerPublicRoute>
+                        }
                     />
 
 
-                    {/* ==========================================
-                            PRODUCTS
-                        ========================================== */}
+                    {/* =================================================
+                        PRODUCTS
+                    ================================================= */}
 
                     <Route
                         path="/products"
-                        element={<Products />}
+                        element={
+                            <CustomerPublicRoute>
+                                <Products />
+                            </CustomerPublicRoute>
+                        }
                     />
 
 
-                    {/* ==========================================
-                            PRODUCT DETAIL
-                        ========================================== */}
+                    {/* =================================================
+                        PRODUCT DETAIL
+                    ================================================= */}
 
                     <Route
                         path="/products/:id"
-                        element={<ProductDetail />}
+                        element={
+                            <CustomerPublicRoute>
+                                <ProductDetail />
+                            </CustomerPublicRoute>
+                        }
                     />
 
 
-                    {/* ==========================================
-                            CART
-                        ========================================== */}
+                    {/* =================================================
+                        CART
+                    ================================================= */}
 
                     <Route
                         path="/cart"
-                        element={<Cart />}
+                        element={
+                            <CustomerPublicRoute>
+                                <Cart />
+                            </CustomerPublicRoute>
+                        }
                     />
 
 
-                    {/* ==========================================
-                            CHECKOUT
-                        ========================================== */}
+                    {/* =================================================
+                        CHECKOUT
+                    ================================================= */}
 
                     <Route
                         path="/checkout"
@@ -93,9 +268,9 @@ function App() {
                     />
 
 
-                    {/* ==========================================
-                            ACCOUNT
-                        ========================================== */}
+                    {/* =================================================
+                        ACCOUNT
+                    ================================================= */}
 
                     <Route
                         path="/account"
@@ -108,9 +283,10 @@ function App() {
                         }
                     />
 
-                    {/* ==========================================
+
+                    {/* =================================================
                         MY ORDERS
-                    ========================================== */}
+                    ================================================= */}
 
                     <Route
                         path="/orders"
@@ -124,9 +300,9 @@ function App() {
                     />
 
 
-                    {/* ==========================================
-                            ORDER DETAIL
-                        ========================================== */}
+                    {/* =================================================
+                        ORDER DETAIL
+                    ================================================= */}
 
                     <Route
                         path="/orders/:id"
@@ -142,9 +318,9 @@ function App() {
                 </Route>
 
 
-                {/* ==========================================
+                {/* =================================================
                     AUTH
-                ========================================== */}
+                ================================================= */}
 
                 <Route
                     path="/login"
@@ -157,9 +333,10 @@ function App() {
                 />
 
 
-                {/* ==========================================
+                {/* =================================================
                     ADMIN
-                ========================================== */}
+                ================================================= */}
+
                 <Route
                     path="/admin"
                     element={
@@ -170,42 +347,122 @@ function App() {
                         </ProtectedRoute>
                     }
                 >
+
+                    {/* Dashboard */}
+
                     <Route
                         index
                         element={<AdminDashboard />}
                     />
+
+
+                    {/* Products */}
 
                     <Route
                         path="products"
                         element={<AdminProducts />}
                     />
 
+
+                    {/* Categories */}
+
                     <Route
                         path="categories"
                         element={<AdminCategories />}
                     />
+
+
+                    {/* Customers */}
 
                     <Route
                         path="customers"
                         element={<AdminCustomers />}
                     />
 
+
+                    {/* Orders */}
+
                     <Route
                         path="orders"
                         element={<AdminOrders />}
                     />
 
+
+                    {/* Users / Employees */}
+
                     <Route
                         path="users"
                         element={<AdminEmployees />}
                     />
+
                 </Route>
 
 
+                {/* =================================================
+                    EMPLOYEE / STAFF
+                ================================================= */}
+
+                <Route
+                    path="/staff"
+                    element={
+                        <ProtectedRoute
+                            allowedRoles={["EMPLOYEE"]}
+                        >
+                            <StaffLayout />
+                        </ProtectedRoute>
+                    }
+                >
+
+                    {/* Dashboard */}
+
+                    <Route
+                        index
+                        element={<StaffDashboard />}
+                    />
 
 
+                    {/* Orders */}
+
+                    <Route
+                        path="orders"
+                        element={<StaffOrders />}
+                    />
 
 
+                    {/* Customers */}
+
+                    <Route
+                        path="customers"
+                        element={<StaffCustomers />}
+                    />
+
+
+                    {/* Products */}
+
+                    <Route
+                        path="products"
+                        element={<StaffProducts />}
+                    />
+
+
+                    {/* Categories */}
+
+                    <Route
+                        path="categories"
+                        element={<StaffCategories />}
+                    />
+
+                </Route>
+
+
+                {/* =================================================
+                    FALLBACK
+                ================================================= */}
+
+                <Route
+                    path="*"
+                    element={<Navigate to="/" replace />}
+                />
 
             </Routes>
 
@@ -214,13 +471,6 @@ function App() {
     );
 
 }
-
-
-
-
-
-
-
 
 
 export default App;

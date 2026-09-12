@@ -16,6 +16,10 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
+    // =========================================================
+    // DÀNH CHO KHÁCH HÀNG
+    // Chỉ lấy sản phẩm đang bán + danh mục đang hoạt động
+    // =========================================================
     public List<Product> getAllProducts() {
         return productRepository.findByStatusAndCategory_Status(
                 Product.Status.ACTIVE,
@@ -23,15 +27,50 @@ public class ProductService {
         );
     }
 
+    // =========================================================
+    // DÀNH CHO ADMIN / EMPLOYEE
+    // Lấy toàn bộ sản phẩm, kể cả sản phẩm INACTIVE
+    // =========================================================
+    public List<Product> getAllProductsForManagement() {
+        return productRepository.findAll();
+    }
+
+    // =========================================================
+    // Chi tiết sản phẩm dành cho khách hàng
+    // Chỉ cho xem sản phẩm ACTIVE + danh mục ACTIVE
+    // =========================================================
     public Product getProductById(Long id) {
+        return productRepository
+                .findById(id)
+                .filter(product ->
+                        product.getStatus() == Product.Status.ACTIVE
+                                && product.getCategory() != null
+                                && product.getCategory().getStatus() == Category.Status.ACTIVE
+                )
+                .orElse(null);
+    }
+
+    // =========================================================
+    // Chi tiết sản phẩm dành cho ADMIN / EMPLOYEE
+    // Có thể xem cả ACTIVE và INACTIVE
+    // =========================================================
+    public Product getProductByIdForManagement(Long id) {
         return productRepository.findById(id)
                 .orElse(null);
     }
 
+    // =========================================================
+    // THÊM SẢN PHẨM
+    // ADMIN + EMPLOYEE
+    // =========================================================
     public Product createProduct(Product product) {
         return productRepository.save(product);
     }
 
+    // =========================================================
+    // SỬA SẢN PHẨM
+    // ADMIN + EMPLOYEE
+    // =========================================================
     public Product updateProduct(Long id, Product product) {
 
         Product existingProduct = productRepository.findById(id)
@@ -49,6 +88,10 @@ public class ProductService {
         return productRepository.save(existingProduct);
     }
 
+    // =========================================================
+    // XÓA SẢN PHẨM
+    // Chỉ ADMIN mới được phép gọi API này
+    // =========================================================
     public void deleteProduct(Long id) {
 
         Product existingProduct = productRepository.findById(id)
@@ -58,7 +101,10 @@ public class ProductService {
         productRepository.delete(existingProduct);
     }
 
-    // XÓA TẤT CẢ SẢN PHẨM THUỘC DANH MỤC
+    // =========================================================
+    // XÓA TẤT CẢ SẢN PHẨM CỦA MỘT DANH MỤC
+    // Dùng khi ADMIN xóa danh mục
+    // =========================================================
     public void deleteProductsByCategoryId(Long categoryId) {
 
         List<Product> products =

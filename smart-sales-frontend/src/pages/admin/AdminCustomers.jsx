@@ -73,7 +73,7 @@ const getStatusConfig = (status) => {
     );
 };
 
-export default function AdminCustomers() {
+export default function AdminCustomers({ readOnly = false }) {
     const [customers, setCustomers] = useState([]);
 
     const [loading, setLoading] = useState(true);
@@ -430,7 +430,6 @@ export default function AdminCustomers() {
                             <th>Email</th>
                             <th>Số điện thoại</th>
                             <th>Trạng thái</th>
-                            <th>Ngày đăng ký</th>
                             <th>Thao tác</th>
                         </tr>
                         </thead>
@@ -490,12 +489,6 @@ export default function AdminCustomers() {
                                     </td>
 
                                     <td>
-                                        {formatDate(
-                                            customer.createdAt
-                                        )}
-                                    </td>
-
-                                    <td>
                                         <div className="customer-actions">
                                             <button
                                                 className="customer-action-btn customer-action-view"
@@ -507,26 +500,30 @@ export default function AdminCustomers() {
                                                 <Eye size={17} />
                                             </button>
 
-                                            <button
-                                                className="customer-action-btn customer-action-edit"
-                                                title="Chỉnh sửa"
-                                                onClick={() =>
-                                                    handleEdit(customer)
-                                                }
-                                            >
-                                                <Edit3 size={17} />
-                                            </button>
+                                            {!readOnly && (
+                                                <>
+                                                    <button
+                                                        className="customer-action-btn customer-action-edit"
+                                                        title="Chỉnh sửa"
+                                                        onClick={() =>
+                                                            handleEdit(customer)
+                                                        }
+                                                    >
+                                                        <Edit3 size={17} />
+                                                    </button>
 
-                                            <button
-                                                className="customer-action-btn customer-action-delete"
-                                                title="Xóa"
-                                                disabled={deleting}
-                                                onClick={() =>
-                                                    handleDelete(customer)
-                                                }
-                                            >
-                                                <Trash2 size={17} />
-                                            </button>
+                                                    <button
+                                                        className="customer-action-btn customer-action-delete"
+                                                        title="Xóa"
+                                                        disabled={deleting}
+                                                        onClick={() =>
+                                                            handleDelete(customer)
+                                                        }
+                                                    >
+                                                        <Trash2 size={17} />
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -704,7 +701,6 @@ export default function AdminCustomers() {
                                 )}
                             </div>
                         </div>
-
                         <div className="customer-modal-footer">
                             <button
                                 className="customer-btn customer-btn-secondary"
@@ -713,17 +709,20 @@ export default function AdminCustomers() {
                                 Đóng
                             </button>
 
-                            <button
-                                className="customer-btn customer-btn-primary"
-                                onClick={() => {
-                                    closeDetail();
-                                    handleEdit(selectedCustomer);
-                                }}
-                            >
-                                <Edit3 size={17} />
-                                Chỉnh sửa
-                            </button>
+                            {!readOnly && (
+                                <button
+                                    className="customer-btn customer-btn-primary"
+                                    onClick={() => {
+                                        closeDetail();
+                                        handleEdit(selectedCustomer);
+                                    }}
+                                >
+                                    <Edit3 size={17} />
+                                    Chỉnh sửa
+                                </button>
+                            )}
                         </div>
+
                     </div>
                 </div>
             )}

@@ -15,12 +15,12 @@ import {
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 
-import smartSalesLogo from "../../assets/logo.png";
+import logo from "../../assets/logo.png";
 
-import "./AdminLayout.css";
+import "./StaffLayout.css";
 
 
-function AdminLayout() {
+function StaffLayout() {
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -31,47 +31,42 @@ function AdminLayout() {
 
 
     // =====================================================
-    // MENU ADMIN
+    // MENU NHÂN VIÊN
     // =====================================================
 
     const menuItems = [
 
         {
-            to: "/admin",
+            to: "/staff",
             label: "Dashboard",
             end: true
         },
 
         {
-            to: "/admin/products",
-            label: "Quản lý sản phẩm"
+            to: "/staff/orders",
+            label: "Đơn hàng"
         },
 
         {
-            to: "/admin/categories",
-            label: "Quản lý danh mục"
+            to: "/staff/customers",
+            label: "Khách hàng"
         },
 
         {
-            to: "/admin/customers",
-            label: "Quản lý khách hàng"
+            to: "/staff/products",
+            label: "Sản phẩm"
         },
 
         {
-            to: "/admin/orders",
-            label: "Quản lý đơn hàng"
-        },
-
-        {
-            to: "/admin/users",
-            label: "Quản lý nhân viên"
+            to: "/staff/categories",
+            label: "Danh mục"
         }
 
     ];
 
 
     // =====================================================
-    // TRANG HIỆN TẠI
+    // XÁC ĐỊNH TRANG HIỆN TẠI
     // =====================================================
 
     const currentItem =
@@ -111,35 +106,35 @@ function AdminLayout() {
 
 
     // =====================================================
-    // THÔNG TIN ADMIN
+    // THÔNG TIN NHÂN VIÊN
     // =====================================================
 
-    const adminName =
+    const staffName =
         user?.fullName ||
         user?.name ||
         user?.username ||
-        "Administrator";
+        "Nhân viên";
 
 
-    const adminInitial =
-        adminName
+    const staffInitial =
+        staffName
             .charAt(0)
             .toUpperCase();
 
 
     return (
 
-        <div className="admin-layout">
+        <div className="staff-layout">
 
 
             {/* =================================================
-                MOBILE OVERLAY
+                OVERLAY MOBILE
             ================================================= */}
 
             {sidebarOpen && (
 
                 <div
-                    className="admin-sidebar-overlay"
+                    className="staff-sidebar-overlay"
                     onClick={closeSidebar}
                 />
 
@@ -152,9 +147,9 @@ function AdminLayout() {
 
             <aside
                 className={
-                    `admin-sidebar ${
+                    `staff-sidebar ${
                         sidebarOpen
-                            ? "admin-sidebar-open"
+                            ? "staff-sidebar-open"
                             : ""
                     }`
                 }
@@ -163,25 +158,22 @@ function AdminLayout() {
 
                 {/* =================================================
                     LOGO
-
-                    Chỉ hiển thị logo.
-                    Không có chữ SMARTSALES.
                 ================================================= */}
 
-                <div className="admin-logo">
+                <div className="staff-logo">
 
                     <img
-                        src={smartSalesLogo}
+                        src={logo}
                         alt="SmartSales"
-                        className="admin-logo-image"
+                        className="staff-logo-image"
                     />
 
 
-                    {/* Nút đóng sidebar mobile */}
+                    {/* Nút đóng sidebar trên mobile */}
 
                     <button
                         type="button"
-                        className="admin-sidebar-close"
+                        className="staff-sidebar-close"
                         onClick={closeSidebar}
                         aria-label="Đóng menu"
                     >
@@ -197,18 +189,18 @@ function AdminLayout() {
                     MENU
                 ================================================= */}
 
-                <nav className="admin-menu">
+                <nav className="staff-menu">
 
-                    <div className="admin-menu-heading">
+                    <div className="staff-menu-heading">
 
                         <span>
-                            QUẢN LÝ HỆ THỐNG
+                            BÁN HÀNG
                         </span>
 
                     </div>
 
 
-                    <div className="admin-menu-list">
+                    <div className="staff-menu-list">
 
                         {menuItems.map((item) => (
 
@@ -217,7 +209,7 @@ function AdminLayout() {
                                 to={item.to}
                                 end={item.end}
                                 className={({ isActive }) =>
-                                    `admin-menu-item ${
+                                    `staff-menu-item ${
                                         isActive
                                             ? "active"
                                             : ""
@@ -226,7 +218,7 @@ function AdminLayout() {
                                 onClick={closeSidebar}
                             >
 
-                                <span className="admin-menu-label">
+                                <span className="staff-menu-label">
 
                                     {item.label}
 
@@ -234,8 +226,8 @@ function AdminLayout() {
 
 
                                 <ChevronRight
-                                    className="admin-menu-arrow"
-                                    size={15}
+                                    className="staff-menu-arrow"
+                                    size={16}
                                 />
 
                             </NavLink>
@@ -248,18 +240,18 @@ function AdminLayout() {
 
 
                 {/* =================================================
-                    ĐĂNG XUẤT
+                    SIDEBAR BOTTOM
                 ================================================= */}
 
-                <div className="admin-sidebar-bottom">
+                <div className="staff-sidebar-bottom">
 
                     <button
                         type="button"
-                        className="admin-logout"
+                        className="staff-logout"
                         onClick={handleLogout}
                     >
 
-                        <LogOut size={17} />
+                        <LogOut size={18} />
 
                         <span>
                             Đăng xuất
@@ -276,28 +268,28 @@ function AdminLayout() {
                 MAIN
             ================================================= */}
 
-            <div className="admin-main">
+            <div className="staff-main">
 
 
                 {/* =================================================
                     HEADER
                 ================================================= */}
 
-                <header className="admin-header">
+                <header className="staff-header">
 
 
                     {/* Mobile menu */}
 
                     <button
                         type="button"
-                        className="admin-mobile-menu"
+                        className="staff-mobile-menu"
                         onClick={() =>
                             setSidebarOpen(true)
                         }
                         aria-label="Mở menu"
                     >
 
-                        <Menu size={20} />
+                        <Menu size={21} />
 
                     </button>
 
@@ -306,15 +298,20 @@ function AdminLayout() {
                         HEADER LEFT
                     ================================================= */}
 
-                    <div className="admin-header-left">
+                    <div className="staff-header-left">
 
-                        <div className="admin-breadcrumb">
+
+                        {/* Breadcrumb */}
+
+                        <div className="staff-breadcrumb">
 
                             <span>
-                                SMARTSALES
+                                BÁN HÀNG
                             </span>
 
-                            <ChevronRight size={13} />
+                            <ChevronRight
+                                size={13}
+                            />
 
                             <strong>
                                 {currentItem.label}
@@ -323,7 +320,9 @@ function AdminLayout() {
                         </div>
 
 
-                        <div className="admin-header-page-title">
+                        {/* Page title */}
+
+                        <div className="staff-header-page-title">
 
                             <h1>
                                 {currentItem.label}
@@ -335,26 +334,26 @@ function AdminLayout() {
 
 
                     {/* =================================================
-                        ADMIN USER
+                        STAFF INFO
                     ================================================= */}
 
-                    <div className="admin-header-user">
+                    <div className="staff-header-user">
 
-                        <div className="admin-header-avatar">
+                        <div className="staff-header-avatar">
 
-                            {adminInitial}
+                            {staffInitial}
 
                         </div>
 
 
-                        <div className="admin-header-user-info">
+                        <div className="staff-header-user-info">
 
                             <strong>
-                                {adminName}
+                                {staffName}
                             </strong>
 
                             <span>
-                                ADMIN
+                                NHÂN VIÊN
                             </span>
 
                         </div>
@@ -368,7 +367,7 @@ function AdminLayout() {
                     CONTENT
                 ================================================= */}
 
-                <main className="admin-content">
+                <main className="staff-content">
 
                     <Outlet />
 
@@ -383,4 +382,4 @@ function AdminLayout() {
 }
 
 
-export default AdminLayout;
+export default StaffLayout;

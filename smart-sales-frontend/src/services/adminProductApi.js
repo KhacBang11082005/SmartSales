@@ -1,77 +1,47 @@
 import api from "./api";
 
-
-/* =========================================================
-   LẤY TẤT CẢ SẢN PHẨM
-========================================================= */
-
+// =========================================================
+// ADMIN / EMPLOYEE
+// Lấy toàn bộ sản phẩm
+// Bao gồm cả ACTIVE và INACTIVE
+// =========================================================
 export const getAdminProducts = async () => {
-
-    const response = await api.get("/products");
-
+    const response = await api.get("/products/manage");
     return response.data;
-
 };
 
-
-/* =========================================================
-   LẤY SẢN PHẨM THEO ID
-========================================================= */
-
+// =========================================================
+// ADMIN / EMPLOYEE
+// Lấy chi tiết sản phẩm
+// =========================================================
 export const getAdminProductById = async (id) => {
-
-    const response = await api.get(`/products/${id}`);
-
+    const response = await api.get(`/products/manage/${id}`);
     return response.data;
-
 };
 
-
-/* =========================================================
-   THÊM SẢN PHẨM
-========================================================= */
-
+// =========================================================
+// ADMIN + EMPLOYEE
+// Thêm sản phẩm
+// =========================================================
 export const createProduct = async (product) => {
-
-    const response = await api.post(
-        "/products",
-        product
-    );
-
+    const response = await api.post("/products", product);
     return response.data;
-
 };
 
-
-/* =========================================================
-   SỬA SẢN PHẨM
-========================================================= */
-
-export const updateProduct = async (
-    id,
-    product
-) => {
-
-    const response = await api.put(
-        `/products/${id}`,
-        product
-    );
-
+// =========================================================
+// ADMIN + EMPLOYEE
+// Cập nhật sản phẩm
+// =========================================================
+export const updateProduct = async (id, product) => {
+    const response = await api.put(`/products/${id}`, product);
     return response.data;
-
 };
 
-
-/* =========================================================
-   XÓA SẢN PHẨM
-========================================================= */
-
+// =========================================================
+// ADMIN
+// Xóa sản phẩm
+// =========================================================
 export const deleteProduct = async (id) => {
-
-    const response = await api.delete(
-        `/products/${id}`
-    );
-
+    const response = await api.delete(`/products/${id}`);
     return response.data;
-
 };

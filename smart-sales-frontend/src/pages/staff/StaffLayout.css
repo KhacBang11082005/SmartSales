@@ -1,0 +1,737 @@
+/* =========================================================
+   STAFF LAYOUT
+========================================================= */
+
+.staff-layout {
+    min-height: 100vh;
+    background: #f5f8fc;
+    color: #17233d;
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.staff-sidebar {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+    bottom: 0;
+
+    width: 230px;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #ffffff;
+
+    border-right: 1px solid #e3eaf3;
+
+    z-index: 1000;
+
+    overflow: hidden;
+
+    transition:
+            transform 0.25s ease,
+            width 0.25s ease;
+}
+
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.staff-logo {
+    height: 90px;
+    padding: 0 20px;
+
+    display: flex;
+    align-items: center;
+
+    border-bottom: 1px solid #e5eaf1;
+    position: relative;
+}
+
+
+/* Logo */
+
+.staff-logo-image {
+    display: block;
+
+    width: 180px;
+    height: 70px;
+
+    object-fit: contain;
+
+    border-radius: 10px;
+}
+
+
+/* =========================================================
+   MOBILE CLOSE
+========================================================= */
+
+.staff-sidebar-close {
+    display: none;
+
+    position: absolute;
+
+    top: 14px;
+    right: 14px;
+
+    width: 34px;
+    height: 34px;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #e1e8f1;
+
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    color: #64748b;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.staff-sidebar-close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+
+/* =========================================================
+   MENU
+========================================================= */
+
+.staff-menu {
+    flex: 1;
+
+    padding: 24px 12px 18px;
+
+    overflow-y: auto;
+}
+
+
+/* Tiêu đề menu */
+
+.staff-menu-heading {
+    padding: 0 20px 11px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.04em;
+
+    color: #8b98aa;
+}
+
+
+/* Danh sách */
+
+.staff-menu-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+
+/* =========================================================
+   MENU ITEM
+========================================================= */
+
+.staff-menu-item {
+    position: relative;
+
+    width: 100%;
+
+    min-height: 47px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 13px 0 16px;
+
+    border-radius: 9px;
+
+    text-decoration: none;
+
+    color: #667386;
+
+    font-size: 13.5px;
+
+    font-weight: 600;
+
+    transition:
+            background 0.18s ease,
+            color 0.18s ease,
+            transform 0.18s ease;
+}
+
+
+/* Hover */
+
+.staff-menu-item:hover {
+    background: #f4f7fb;
+
+    color: #1769ff;
+}
+
+
+/* Active */
+
+.staff-menu-item.active {
+    background: #edf4ff;
+
+    color: #075ee8;
+
+    font-weight: 650;
+}
+
+
+/* Thanh xanh bên trái */
+
+.staff-menu-item.active::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 9px;
+    bottom: 9px;
+
+    width: 3px;
+
+    border-radius: 0 4px 4px 0;
+
+    background: #1769ff;
+}
+
+
+/* Label */
+
+.staff-menu-label {
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* Arrow */
+
+.staff-menu-arrow {
+    flex-shrink: 0;
+
+    color: #a7b5c7;
+
+    transition:
+            transform 0.2s ease,
+            color 0.2s ease;
+}
+
+
+.staff-menu-item:hover .staff-menu-arrow {
+    color: #1769ff;
+
+    transform: translateX(2px);
+}
+
+
+.staff-menu-item.active .staff-menu-arrow {
+    color: #1769ff;
+
+    transform: translateX(2px);
+}
+
+
+/* =========================================================
+   SIDEBAR BOTTOM
+========================================================= */
+
+.staff-sidebar-bottom {
+    padding: 15px 12px 18px;
+
+    border-top: 1px solid #e7edf5;
+
+    background: #ffffff;
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+.staff-logout {
+    width: 100%;
+
+    height: 43px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 9px;
+
+    border: 1px solid #e7ebf1;
+
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    color: #69768a;
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+            background 0.18s ease,
+            color 0.18s ease,
+            border-color 0.18s ease;
+}
+
+
+.staff-logout:hover {
+    background: #fff4f4;
+
+    color: #dc3d3d;
+
+    border-color: #f3d4d4;
+}
+
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+.staff-main {
+    width: calc(100% - 230px);
+
+    min-height: 100vh;
+
+    margin-left: 230px;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.staff-header {
+    position: sticky;
+
+    top: 0;
+
+    z-index: 100;
+
+    min-height: 82px;
+
+    display: flex;
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 15px 30px;
+
+    background: rgba(255, 255, 255, 0.96);
+
+    border-bottom: 1px solid #e4ebf3;
+
+    backdrop-filter: blur(10px);
+}
+
+
+/* =========================================================
+   HEADER LEFT
+========================================================= */
+
+.staff-header-left {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   BREADCRUMB
+========================================================= */
+
+.staff-breadcrumb {
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+
+    margin-bottom: 4px;
+
+    color: #94a2b5;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.03em;
+}
+
+
+.staff-breadcrumb strong {
+    color: #64748b;
+
+    font-weight: 600;
+}
+
+
+.staff-breadcrumb svg {
+    color: #b3bfcd;
+}
+
+
+/* =========================================================
+   PAGE TITLE
+========================================================= */
+
+.staff-header-page-title h1 {
+    margin: 0;
+
+    color: #17233d;
+
+    font-size: 22px;
+
+    line-height: 1.2;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   STAFF USER
+========================================================= */
+
+.staff-header-user {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    margin-left: 20px;
+}
+
+
+/* Avatar */
+
+.staff-header-avatar {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: #eaf2ff;
+
+    color: #1264e8;
+
+    border: 1px solid #d7e6ff;
+
+    font-size: 16px;
+
+    font-weight: 700;
+}
+
+
+/* User info */
+
+.staff-header-user-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 2px;
+}
+
+
+.staff-header-user-info strong {
+    max-width: 180px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    color: #26354d;
+
+    font-size: 14px;
+
+    font-weight: 650;
+}
+
+
+.staff-header-user-info span {
+    color: #8b98aa;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+}
+
+
+/* =========================================================
+   MOBILE MENU
+========================================================= */
+
+.staff-mobile-menu {
+    display: none;
+
+    width: 40px;
+    height: 40px;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-right: 13px;
+
+    border: 1px solid #dfe7f0;
+
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    color: #475569;
+
+    cursor: pointer;
+}
+
+
+.staff-mobile-menu:hover {
+    background: #f5f8fc;
+
+    color: #1769ff;
+}
+
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.staff-content {
+    width: 100%;
+
+    padding: 28px 30px 40px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   OVERLAY
+========================================================= */
+
+.staff-sidebar-overlay {
+    display: none;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.staff-menu::-webkit-scrollbar {
+    width: 5px;
+}
+
+
+.staff-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+.staff-menu::-webkit-scrollbar-thumb {
+    background: #dbe4ef;
+
+    border-radius: 10px;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .staff-sidebar {
+        width: 220px;
+    }
+
+
+    .staff-main {
+        width: calc(100% - 220px);
+
+        margin-left: 220px;
+    }
+
+
+    .staff-header {
+        padding: 14px 22px;
+    }
+
+
+    .staff-content {
+        padding: 24px 22px 35px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 850px) {
+
+    .staff-sidebar {
+        width: 230px;
+
+        transform: translateX(-100%);
+
+        box-shadow: 8px 0 30px rgba(15, 23, 42, 0.12);
+    }
+
+
+    .staff-sidebar.staff-sidebar-open {
+        transform: translateX(0);
+    }
+
+
+    .staff-sidebar-close {
+        display: flex;
+    }
+
+
+    .staff-sidebar-overlay {
+        display: block;
+
+        position: fixed;
+
+        inset: 0;
+
+        background: rgba(15, 23, 42, 0.38);
+
+        z-index: 999;
+    }
+
+
+    .staff-main {
+        width: 100%;
+
+        margin-left: 0;
+    }
+
+
+    .staff-mobile-menu {
+        display: flex;
+    }
+
+
+    .staff-header {
+        min-height: 72px;
+
+        padding: 12px 18px;
+    }
+
+
+    .staff-header-left {
+        display: flex;
+        align-items: center;
+
+        gap: 12px;
+    }
+
+
+    .staff-breadcrumb {
+        display: none;
+    }
+
+
+    .staff-header-page-title h1 {
+        font-size: 19px;
+    }
+
+
+    .staff-header-user-info {
+        display: none;
+    }
+
+
+    .staff-header-avatar {
+        width: 39px;
+        height: 39px;
+
+        font-size: 15px;
+    }
+
+
+    .staff-content {
+        padding: 20px 18px 30px;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 500px) {
+
+    .staff-header {
+        padding: 11px 14px;
+    }
+
+
+    .staff-content {
+        padding: 17px 14px 25px;
+    }
+
+
+    .staff-header-page-title h1 {
+        font-size: 18px;
+    }
+
+
+    .staff-mobile-menu {
+        width: 38px;
+        height: 38px;
+
+        margin-right: 9px;
+    }
+
+
+    .staff-header-avatar {
+        width: 37px;
+        height: 37px;
+    }
+
+}

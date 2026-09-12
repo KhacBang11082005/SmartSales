@@ -1098,3 +1098,752 @@
         padding: 0 10px;
     }
 }
+/* =========================================================
+   SMARTSALES - CUSTOMER TABLE RESPONSIVE
+   Tối ưu màn hình 1920x1080 và tự co khi thu nhỏ
+========================================================= */
+
+
+/* =========================================================
+   DESKTOP
+   1200px trở lên
+========================================================= */
+
+.customer-table {
+    width: 100%;
+    table-layout: fixed;
+}
+/* =========================================================
+   ADMIN CUSTOMERS - RESPONSIVE TABLE FIX
+========================================================= */
+
+
+/* =========================================================
+   BẢNG KHÁCH HÀNG
+========================================================= */
+
+.customer-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+
+/* =========================================================
+   KÍCH THƯỚC CÁC CỘT
+========================================================= */
+
+/* ID */
+
+.customer-table th:nth-child(1),
+.customer-table td:nth-child(1) {
+    width: 3%;
+}
+
+
+/* KHÁCH HÀNG */
+
+.customer-table th:nth-child(2),
+.customer-table td:nth-child(2) {
+    width: 20%;
+}
+
+
+/* USERNAME */
+
+.customer-table th:nth-child(3),
+.customer-table td:nth-child(3) {
+    width: 17%;
+}
+
+
+/* EMAIL */
+
+.customer-table th:nth-child(4),
+.customer-table td:nth-child(4) {
+    width: 20%;
+}
+
+
+/* SỐ ĐIỆN THOẠI */
+
+.customer-table th:nth-child(5),
+.customer-table td:nth-child(5) {
+    width: 12%;
+}
+
+
+/* TRẠNG THÁI */
+
+.customer-table th:nth-child(6),
+.customer-table td:nth-child(6) {
+    width: 10%;
+}
+
+
+
+
+
+/* THAO TÁC */
+
+.customer-table th:nth-child(8),
+.customer-table td:nth-child(8) {
+    width: 150px;
+}
+
+
+/* =========================================================
+   Ô KHÁCH HÀNG
+========================================================= */
+
+.customer-name-cell {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    width: 100%;
+
+    min-width: 0;
+}
+
+
+/* Avatar */
+
+.customer-name-cell .customer-avatar {
+    width: 38px;
+    height: 38px;
+
+    min-width: 38px;
+
+    flex-shrink: 0;
+}
+
+
+/* Phần tên */
+
+.customer-name-cell > div:last-child {
+    flex: 1;
+
+    min-width: 0;
+
+    overflow: hidden;
+}
+
+
+/* Tên khách hàng */
+
+.customer-name-cell strong {
+    display: block;
+
+    width: 100%;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    line-height: 1.4;
+
+    color: #111827;
+
+    /*
+       Không bẻ chữ giữa một từ
+    */
+
+    word-break: normal;
+
+    overflow-wrap: break-word;
+
+    white-space: normal;
+}
+
+
+/* =========================================================
+   USERNAME
+========================================================= */
+
+.customer-table td:nth-child(3) {
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   EMAIL
+========================================================= */
+
+.customer-table td:nth-child(4) {
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   SỐ ĐIỆN THOẠI
+========================================================= */
+
+.customer-table td:nth-child(5) {
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   TRẠNG THÁI
+========================================================= */
+
+.customer-table td:nth-child(6) {
+    white-space: nowrap;
+}
+
+/* =========================================================
+   THAO TÁC
+========================================================= */
+
+.customer-table th:nth-child(8),
+.customer-table td:nth-child(8) {
+    min-width: 15px;
+
+    width: 150px;
+
+    white-space: nowrap;
+}
+
+
+/*
+   Các nút thao tác nằm cùng một hàng
+*/
+
+.customer-actions {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-start;
+
+    gap: 7px;
+
+    width: 100%;
+
+    white-space: nowrap;
+}
+
+
+/*
+   Đảm bảo từng nút không bị co
+*/
+
+.customer-actions button {
+    flex: 0 0 40px;
+
+    width: 40px;
+    height: 40px;
+
+    min-width: 40px;
+}
+
+
+/* =========================================================
+   MÀN HÌNH LỚN
+   1920 x 1080
+========================================================= */
+
+@media (min-width: 1600px) {
+
+    .customer-table th,
+    .customer-table td {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+
+    .customer-table th {
+        font-size: 13px;
+    }
+
+
+    .customer-table td {
+        font-size: 14px;
+    }
+
+
+    .customer-name-cell strong {
+        font-size: 15px;
+    }
+
+
+    .customer-name-cell .customer-avatar {
+        width: 40px;
+        height: 40px;
+
+        min-width: 40px;
+    }
+
+
+    .customer-table th:nth-child(8),
+    .customer-table td:nth-child(8) {
+        width: 150px;
+        min-width: 150px;
+    }
+}
+
+
+/* =========================================================
+   LAPTOP
+   1200 - 1599
+========================================================= */
+
+@media (min-width: 1200px) and (max-width: 1599px) {
+
+    .customer-table th,
+    .customer-table td {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+
+    .customer-actions {
+        gap: 5px;
+    }
+
+
+    .customer-actions button {
+        width: 38px;
+        height: 38px;
+
+        min-width: 38px;
+    }
+
+
+    .customer-table th:nth-child(8),
+    .customer-table td:nth-child(8) {
+        width: 135px;
+        min-width: 135px;
+    }
+}
+
+
+/* =========================================================
+   MÀN HÌNH NHỎ
+========================================================= */
+
+@media (max-width: 1199px) {
+
+    /*
+       Không ép 8 cột vào màn hình nhỏ.
+       Cho phép bảng cuộn ngang.
+    */
+
+    .customer-table-wrapper {
+        width: 100%;
+
+        max-width: 100%;
+
+        overflow-x: auto;
+
+        overflow-y: hidden;
+
+        -webkit-overflow-scrolling: touch;
+    }
+
+
+    .customer-table {
+        width: 1150px;
+
+        min-width: 1150px;
+    }
+
+
+    .customer-table th:nth-child(2),
+    .customer-table td:nth-child(2) {
+        width: 200px;
+
+        min-width: 200px;
+    }
+
+
+    .customer-table th:nth-child(3),
+    .customer-table td:nth-child(3) {
+        width: 180px;
+
+        min-width: 180px;
+    }
+
+
+    .customer-table th:nth-child(4),
+    .customer-table td:nth-child(4) {
+        width: 220px;
+
+        min-width: 220px;
+    }
+
+
+    .customer-table th:nth-child(8),
+    .customer-table td:nth-child(8) {
+        width: 150px;
+
+        min-width: 150px;
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .customer-table-wrapper {
+        width: 100%;
+
+        max-width: 100%;
+
+        overflow-x: auto;
+
+        -webkit-overflow-scrolling: touch;
+    }
+
+
+    .customer-table {
+        width: 1150px;
+
+        min-width: 1150px;
+    }
+
+
+    .customer-table th,
+    .customer-table td {
+        padding: 13px 12px;
+    }
+
+
+    .customer-table th:nth-child(8),
+    .customer-table td:nth-child(8) {
+        width: 150px;
+
+        min-width: 150px;
+    }
+
+
+    .customer-actions {
+        gap: 6px;
+    }
+
+
+    .customer-actions button {
+        width: 40px;
+        height: 40px;
+
+        min-width: 40px;
+    }
+}
+
+
+
+
+/* =========================================================
+   KHÁCH HÀNG
+========================================================= */
+
+.customer-name-cell {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    width: 100%;
+    min-width: 0;
+}
+
+
+/* Avatar không bị co */
+
+.customer-name-cell .customer-avatar {
+    width: 38px;
+    height: 38px;
+
+    min-width: 38px;
+    max-width: 38px;
+
+    flex-shrink: 0;
+}
+
+
+/* Phần chứa tên */
+
+.customer-name-cell > div:last-child {
+    flex: 1;
+
+    min-width: 0;
+
+    overflow: hidden;
+}
+
+
+/* Tên */
+
+.customer-name-cell strong {
+    display: block;
+
+    width: 100%;
+
+    color: #111827;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    line-height: 1.35;
+
+    /*
+       Không cắt giữa chữ.
+       Ví dụ:
+
+       Bằng Nguyễn
+       Khắc
+
+       thay vì:
+
+       Bằn
+       g Ng
+       uyễ
+       n...
+    */
+
+    word-break: normal;
+
+    overflow-wrap: break-word;
+
+    white-space: normal;
+}
+
+
+/* =========================================================
+   USERNAME + EMAIL
+========================================================= */
+
+.customer-table td:nth-child(3),
+.customer-table td:nth-child(4) {
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   PHONE
+========================================================= */
+
+.customer-table td:nth-child(5) {
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.customer-table td:nth-child(6) {
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+.customer-table td:nth-child(7) {
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   ACTION
+========================================================= */
+
+.customer-table td:nth-child(8) {
+    white-space: nowrap;
+}
+
+.customer-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   MÀN HÌNH 1920x1080
+========================================================= */
+
+@media (min-width: 1600px) {
+
+    .admin-customers {
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+
+    .customer-page-header h1 {
+        font-size: 30px;
+    }
+
+    .customer-page-header p {
+        font-size: 15px;
+    }
+
+    .customer-table th {
+        padding: 15px 18px;
+
+        font-size: 13px;
+    }
+
+    .customer-table td {
+        padding: 17px 18px;
+
+        font-size: 15px;
+    }
+
+    .customer-name-cell strong {
+        font-size: 15px;
+    }
+
+    .customer-avatar {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+    }
+
+    .customer-search {
+        height: 50px;
+    }
+
+    .customer-status-filter {
+        width: 230px;
+        height: 50px;
+    }
+}
+
+
+/* =========================================================
+   LAPTOP
+   1200px - 1599px
+========================================================= */
+
+@media (min-width: 1200px) and (max-width: 1599px) {
+
+    .customer-table th {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .customer-table td {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .customer-name-cell {
+        gap: 9px;
+    }
+}
+
+
+/* =========================================================
+   TABLET / MÀN HÌNH NHỎ
+========================================================= */
+
+@media (max-width: 1199px) {
+
+    /*
+       Khi không đủ chỗ cho 8 cột,
+       bảng được cuộn ngang riêng.
+       Không làm cả trang bị tràn.
+    */
+
+    .customer-table-wrapper {
+        overflow-x: auto;
+
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .customer-table {
+        min-width: 1050px;
+    }
+
+    .customer-table th:nth-child(2),
+    .customer-table td:nth-child(2) {
+        width: 190px;
+    }
+
+    .customer-table th:nth-child(3),
+    .customer-table td:nth-child(3) {
+        width: 180px;
+    }
+
+    .customer-table th:nth-child(4),
+    .customer-table td:nth-child(4) {
+        width: 220px;
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .admin-customers {
+        padding: 18px 14px;
+    }
+
+    .customer-page-header {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 12px;
+    }
+
+    .customer-total {
+        width: 100%;
+
+        justify-content: center;
+    }
+
+    .customer-toolbar {
+        flex-direction: column;
+
+        align-items: stretch;
+
+        gap: 10px;
+    }
+
+    .customer-search {
+        width: 100%;
+    }
+
+    .customer-status-filter {
+        width: 100%;
+    }
+
+    .customer-table {
+        min-width: 1050px;
+    }
+
+    .customer-table th,
+    .customer-table td {
+        padding: 13px 14px;
+    }
+}
+

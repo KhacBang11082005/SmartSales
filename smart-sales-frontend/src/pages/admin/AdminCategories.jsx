@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import {
     Edit3,
@@ -26,7 +27,7 @@ const EMPTY_FORM = {
 };
 
 
-function AdminCategories() {
+function AdminCategories({ readOnly = false }) {
 
     const [categories, setCategories] = useState([]);
 
@@ -128,9 +129,15 @@ function AdminCategories() {
 
     /* =====================================================
        ADD
+       Chỉ ADMIN
     ===================================================== */
 
     const handleAdd = () => {
+
+        // Employee chỉ được xem
+        if (readOnly) {
+            return;
+        }
 
         setEditingId(null);
 
@@ -149,9 +156,15 @@ function AdminCategories() {
 
     /* =====================================================
        EDIT
+       Chỉ ADMIN
     ===================================================== */
 
     const handleEdit = (category) => {
+
+        // Employee chỉ được xem
+        if (readOnly) {
+            return;
+        }
 
         setEditingId(category.id);
 
@@ -223,11 +236,17 @@ function AdminCategories() {
 
     /* =====================================================
        SAVE
+       Chỉ ADMIN
     ===================================================== */
 
     const handleSubmit = async (e) => {
 
         e.preventDefault();
+
+        // Employee không được thêm / sửa
+        if (readOnly) {
+            return;
+        }
 
 
         if (!form.name.trim()) {
@@ -257,7 +276,7 @@ function AdminCategories() {
                     form.description.trim(),
 
                 status:
-                form.status
+                    form.status
 
             };
 
@@ -328,9 +347,16 @@ function AdminCategories() {
 
     /* =====================================================
        DELETE
+       Chỉ ADMIN
     ===================================================== */
 
     const handleDelete = async (category) => {
+
+        // Employee không được xóa
+        if (readOnly) {
+            return;
+        }
+
 
         const confirmed =
             window.confirm(
@@ -448,24 +474,35 @@ function AdminCategories() {
 
 
                     <p>
-                        Quản lý các nhóm sản phẩm của cửa hàng
+                        {readOnly
+                            ? "Xem các nhóm sản phẩm của cửa hàng"
+                            : "Quản lý các nhóm sản phẩm của cửa hàng"
+                        }
                     </p>
 
                 </div>
 
 
-                <button
-                    className="category-add-btn"
-                    onClick={handleAdd}
-                >
+                {/* =============================================
+                    CHỈ ADMIN MỚI CÓ NÚT THÊM
+                ============================================= */}
 
-                    <Plus size={17} />
+                {!readOnly && (
 
-                    <span>
-                        Thêm danh mục
-                    </span>
+                    <button
+                        className="category-add-btn"
+                        onClick={handleAdd}
+                    >
 
-                </button>
+                        <Plus size={17} />
+
+                        <span>
+                            Thêm danh mục
+                        </span>
+
+                    </button>
+
+                )}
 
             </div>
 
@@ -624,7 +661,7 @@ function AdminCategories() {
                         </p>
 
 
-                        {!search && (
+                        {!search && !readOnly && (
 
                             <button
                                 onClick={handleAdd}
@@ -697,9 +734,9 @@ function AdminCategories() {
 
                                             <td>
 
-                                                    <span className="category-id">
-                                                        #{category.id}
-                                                    </span>
+                                                <span className="category-id">
+                                                    #{category.id}
+                                                </span>
 
                                             </td>
 
@@ -710,15 +747,11 @@ function AdminCategories() {
 
                                                 <div className="category-name-cell">
 
-
-
-
                                                     <div>
 
                                                         <strong>
                                                             {category.name}
                                                         </strong>
-
 
                                                     </div>
 
@@ -745,15 +778,15 @@ function AdminCategories() {
 
                                             <td>
 
-                                                    <span
-                                                        className={`category-status ${status.className}`}
-                                                    >
+                                                <span
+                                                    className={`category-status ${status.className}`}
+                                                >
 
-                                                        <span className="category-status-dot" />
+                                                    <span className="category-status-dot" />
 
-                                                        {status.text}
+                                                    {status.text}
 
-                                                    </span>
+                                                </span>
 
                                             </td>
 
@@ -764,56 +797,78 @@ function AdminCategories() {
 
                                                 <div className="category-actions">
 
-                                                    <button
-                                                        type="button"
-                                                        className="category-action-btn category-edit-btn"
-                                                        title="Chỉnh sửa"
-                                                        onClick={() =>
-                                                            handleEdit(
-                                                                category
-                                                            )
-                                                        }
-                                                    >
+                                                    {/* =====================================
+                                                        CHỈ ADMIN MỚI THẤY SỬA + XÓA
+                                                    ===================================== */}
 
-                                                        <Edit3
-                                                            size={15}
-                                                        />
+                                                    {!readOnly && (
 
-                                                    </button>
+                                                        <>
+
+                                                            <button
+                                                                type="button"
+                                                                className="category-action-btn category-edit-btn"
+                                                                title="Chỉnh sửa"
+                                                                onClick={() =>
+                                                                    handleEdit(
+                                                                        category
+                                                                    )
+                                                                }
+                                                            >
+
+                                                                <Edit3
+                                                                    size={15}
+                                                                />
+
+                                                            </button>
 
 
-                                                    <button
-                                                        type="button"
-                                                        className="category-action-btn category-delete-btn"
-                                                        title="Xóa"
-                                                        disabled={
-                                                            deletingId ===
-                                                            category.id
-                                                        }
-                                                        onClick={() =>
-                                                            handleDelete(
-                                                                category
-                                                            )
-                                                        }
-                                                    >
+                                                            <button
+                                                                type="button"
+                                                                className="category-action-btn category-delete-btn"
+                                                                title="Xóa"
+                                                                disabled={
+                                                                    deletingId ===
+                                                                    category.id
+                                                                }
+                                                                onClick={() =>
+                                                                    handleDelete(
+                                                                        category
+                                                                    )
+                                                                }
+                                                            >
 
-                                                        {deletingId ===
-                                                        category.id ? (
+                                                                {deletingId ===
+                                                                category.id ? (
 
-                                                            <LoaderCircle
-                                                                size={15}
-                                                                className="category-spinner"
-                                                            />
+                                                                    <LoaderCircle
+                                                                        size={15}
+                                                                        className="category-spinner"
+                                                                    />
 
-                                                        ) : (
+                                                                ) : (
 
-                                                            <Trash2
-                                                                size={15}
-                                                            />
+                                                                    <Trash2
+                                                                        size={15}
+                                                                    />
 
-                                                        )}
+                                                                )}
 
-                                                    </button>
+                                                            </button>
+
+                                                        </>
+
+                                                    )}
+
+                                                    {/* Employee không có thao tác */}
+
+                                                    {readOnly && (
+
+                                                        <span className="category-readonly-text">
+                                                            Chỉ xem
+                                                        </span>
+
+                                                    )}
 
                                                 </div>
 
@@ -839,9 +894,10 @@ function AdminCategories() {
 
             {/* =================================================
                 ADD / EDIT MODAL
+                Chỉ Admin mới có thể mở
             ================================================= */}
 
-            {showModal && (
+            {showModal && !readOnly && (
 
                 <div
                     className="category-modal-overlay"
@@ -1088,3 +1144,4 @@ function AdminCategories() {
 
 
 export default AdminCategories;
+

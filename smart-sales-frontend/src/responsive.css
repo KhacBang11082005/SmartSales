@@ -1,0 +1,1432 @@
+/* =========================================================
+   SMARTSALES - FLUID RESPONSIVE SYSTEM
+   Co giãn mượt theo kích thước cửa sổ trình duyệt
+========================================================= */
+
+
+/* =========================================================
+   1. GLOBAL
+========================================================= */
+
+html,
+body,
+#root {
+    width: 100%;
+    max-width: 100%;
+    min-width: 320px;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+img {
+    max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+    max-width: 100%;
+}
+
+
+/* =========================================================
+   2. FLUID CONTAINER
+========================================================= */
+
+.customer-main {
+    width: 100%;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+
+    padding-left: clamp(16px, 4vw, 70px);
+    padding-right: clamp(16px, 4vw, 70px);
+}
+
+.customer-footer {
+    padding-left: clamp(16px, 4vw, 70px);
+    padding-right: clamp(16px, 4vw, 70px);
+}
+
+
+/* =========================================================
+   3. CUSTOMER HEADER
+========================================================= */
+
+.customer-header {
+    width: 100%;
+
+    padding-left: clamp(15px, 4vw, 55px);
+    padding-right: clamp(15px, 4vw, 55px);
+
+    gap: clamp(10px, 1.5vw, 22px);
+}
+
+
+/* LOGO */
+
+.logo {
+    width: clamp(105px, 10vw, 150px);
+    height: clamp(44px, 4vw, 58px);
+}
+
+
+/* CATEGORY BUTTON */
+
+.category-btn {
+    padding-left: clamp(9px, 1vw, 15px);
+    padding-right: clamp(9px, 1vw, 15px);
+}
+
+
+/* SEARCH */
+
+.header-search {
+    flex: 1 1 auto;
+
+    width: 100%;
+    max-width: 600px;
+    min-width: 120px;
+
+    height: clamp(40px, 3.2vw, 46px);
+}
+
+
+/* ACTIONS */
+
+.header-actions {
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: clamp(5px, 0.8vw, 12px);
+}
+
+
+/* =========================================================
+   4. HOME
+========================================================= */
+
+.home {
+    width: 100%;
+}
+
+
+/* HERO */
+
+.hero {
+    width: 100%;
+
+    min-height: clamp(390px, 38vw, 520px);
+
+    padding-top: clamp(35px, 5vw, 70px);
+    padding-bottom: clamp(35px, 5vw, 70px);
+    padding-left: clamp(25px, 5vw, 80px);
+    padding-right: clamp(25px, 5vw, 80px);
+}
+
+
+.hero-content {
+    width: 100%;
+    max-width: min(680px, 65%);
+}
+
+
+.hero h1 {
+    font-size: clamp(32px, 4vw, 56px);
+
+    line-height: 1.1;
+
+    letter-spacing:
+            clamp(-2px, -0.12vw, -0.5px);
+}
+
+
+.hero p {
+    width: 100%;
+    max-width: 570px;
+
+    font-size: clamp(14px, 1.2vw, 17px);
+}
+
+
+.hero-button {
+    padding:
+            clamp(11px, 1vw, 15px)
+            clamp(18px, 1.8vw, 26px);
+}
+
+
+/* =========================================================
+   5. HOME CATEGORY GRID
+========================================================= */
+
+.category-section,
+.product-section {
+    margin-top: clamp(35px, 5vw, 70px);
+}
+
+
+.section-header {
+    gap: 20px;
+}
+
+
+.section-header h2 {
+    font-size: clamp(23px, 2.2vw, 30px);
+}
+
+
+/*
+    Tự động thay đổi số cột dựa trên
+    chiều rộng thực tế.
+*/
+
+.category-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                    min(210px, 100%),
+                    1fr
+            )
+        );
+
+    gap: clamp(12px, 1.5vw, 20px);
+}
+
+
+.category-card {
+    width: 100%;
+
+    padding: clamp(16px, 2vw, 28px);
+}
+
+
+.category-icon {
+    width: clamp(50px, 4.5vw, 62px);
+    height: clamp(50px, 4.5vw, 62px);
+}
+
+
+/* =========================================================
+   6. PRODUCT GRID
+========================================================= */
+
+.product-grid,
+.products-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                    min(220px, 100%),
+                    1fr
+            )
+        );
+
+    gap: clamp(12px, 1.5vw, 22px);
+
+    width: 100%;
+}
+
+
+.product-card {
+    width: 100%;
+    min-width: 0;
+}
+
+
+.product-image {
+    width: 100%;
+
+    height: clamp(
+            180px,
+            18vw,
+            230px
+    );
+}
+
+
+.product-info {
+    padding:
+            clamp(12px, 1.5vw, 20px);
+}
+
+
+.product-info h3 {
+    font-size:
+            clamp(15px, 1.25vw, 18px);
+}
+
+
+.product-info p {
+    font-size:
+            clamp(12px, 0.95vw, 13px);
+}
+
+
+.product-bottom {
+    gap: clamp(6px, 1vw, 12px);
+}
+
+
+.product-bottom strong {
+    font-size:
+            clamp(14px, 1.2vw, 17px);
+}
+
+
+.view-product {
+    min-width:
+            clamp(85px, 8vw, 105px);
+
+    padding-left:
+            clamp(8px, 1vw, 13px);
+
+    padding-right:
+            clamp(8px, 1vw, 13px);
+}
+
+
+/* =========================================================
+   7. PRODUCTS PAGE
+========================================================= */
+
+.products-page {
+    width: 100%;
+
+    padding-top:
+            clamp(25px, 3vw, 40px);
+
+    padding-bottom:
+            clamp(40px, 5vw, 70px);
+}
+
+
+.products-header h1 {
+    font-size:
+            clamp(28px, 3vw, 42px);
+}
+
+
+/* =========================================================
+   8. PRODUCT DETAIL
+========================================================= */
+
+.product-detail-page {
+    width: 100%;
+}
+
+
+.product-detail {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap:
+            clamp(25px, 4vw, 60px);
+}
+
+
+.detail-image,
+.product-detail-image {
+    width: 100%;
+    max-width: 100%;
+}
+
+
+.detail-info {
+    width: 100%;
+    min-width: 0;
+}
+
+
+.detail-info h1 {
+    font-size:
+            clamp(25px, 3vw, 42px);
+
+    line-height: 1.2;
+}
+
+
+.detail-price {
+    font-size:
+            clamp(22px, 2.2vw, 32px);
+}
+
+
+.add-cart-button,
+.buy-now-button {
+    max-width: 100%;
+}
+
+
+/* =========================================================
+   9. CART
+========================================================= */
+
+.cart-page {
+    width: 100%;
+
+    padding-left:
+            clamp(15px, 4vw, 60px);
+
+    padding-right:
+            clamp(15px, 4vw, 60px);
+}
+
+
+.cart-content {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(280px, 350px);
+
+    gap:
+            clamp(18px, 3vw, 30px);
+}
+
+
+.cart-items {
+    width: 100%;
+    min-width: 0;
+}
+
+
+.cart-summary {
+    width: 100%;
+}
+
+
+.cart-item {
+    width: 100%;
+    min-width: 0;
+
+    grid-template-columns:
+        clamp(70px, 8vw, 100px)
+        minmax(0, 1fr)
+        auto
+        auto
+        40px;
+
+    gap:
+            clamp(8px, 1.5vw, 20px);
+
+    padding:
+            clamp(12px, 1.5vw, 20px);
+}
+
+
+.cart-item-image {
+    width:
+            clamp(70px, 8vw, 100px);
+
+    height:
+            clamp(70px, 8vw, 100px);
+}
+
+
+.cart-item-info {
+    min-width: 0;
+}
+
+
+.cart-item-info h3 {
+    font-size:
+            clamp(14px, 1.2vw, 17px);
+}
+
+
+/* =========================================================
+   10. CHECKOUT
+========================================================= */
+
+.checkout-page {
+    width: 100%;
+
+    padding-left:
+            clamp(15px, 3vw, 30px);
+
+    padding-right:
+            clamp(15px, 3vw, 30px);
+}
+
+
+.checkout-container {
+    width: min(
+            1180px,
+            100%
+    );
+
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+.checkout-grid {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(300px, 380px);
+
+    gap:
+            clamp(18px, 3vw, 35px);
+}
+
+
+.checkout-main,
+.checkout-sidebar {
+    width: 100%;
+    min-width: 0;
+}
+
+
+.checkout-card {
+    width: 100%;
+
+    padding:
+            clamp(16px, 2vw, 26px);
+}
+
+
+.form-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap:
+            clamp(10px, 1.3vw, 18px);
+}
+
+
+.form-group {
+    min-width: 0;
+}
+
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+
+/* =========================================================
+   11. ACCOUNT
+========================================================= */
+
+.account-page {
+    width: 100%;
+
+    padding-left:
+            clamp(15px, 4vw, 60px);
+
+    padding-right:
+            clamp(15px, 4vw, 60px);
+}
+
+
+.account-grid {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(230px, 290px)
+        minmax(0, 1fr);
+
+    gap:
+            clamp(18px, 3vw, 30px);
+}
+
+
+.account-sidebar,
+.account-content {
+    width: 100%;
+    min-width: 0;
+}
+
+
+.account-card {
+    width: 100%;
+
+    padding:
+            clamp(18px, 2vw, 28px);
+}
+
+
+.account-fields {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap:
+            clamp(10px, 1.2vw, 18px);
+}
+
+
+.account-input {
+    width: 100%;
+}
+
+
+.account-input input,
+.account-input textarea,
+.account-input select {
+    width: 100%;
+    max-width: 100%;
+}
+
+
+/* =========================================================
+   12. MY ORDERS
+========================================================= */
+
+.my-orders-page {
+    width: 100%;
+
+    padding-left:
+            clamp(15px, 4vw, 60px);
+
+    padding-right:
+            clamp(15px, 4vw, 60px);
+}
+
+
+.my-orders-page > * {
+    width: min(
+            1160px,
+            100%
+    );
+
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+.orders-overview {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                    150px,
+                    1fr
+            )
+        );
+
+    gap:
+            clamp(10px, 1.5vw, 18px);
+}
+
+
+.order-card {
+    width: 100%;
+    min-width: 0;
+}
+
+
+.order-product {
+    min-width: 0;
+}
+
+
+.order-product-info {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   13. ORDER DETAIL
+========================================================= */
+
+.order-detail-page {
+    width: 100%;
+
+    padding-left:
+            clamp(15px, 4vw, 60px);
+
+    padding-right:
+            clamp(15px, 4vw, 60px);
+}
+
+
+.order-detail-container {
+    width: min(
+            1200px,
+            100%
+    );
+
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+.order-main-grid {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(280px, 360px);
+
+    gap:
+            clamp(18px, 3vw, 30px);
+}
+
+
+.detail-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap:
+            clamp(10px, 1.3vw, 18px);
+}
+
+
+/* =========================================================
+   14. LOGIN / REGISTER
+========================================================= */
+
+.login-page,
+.register-page {
+    width: 100%;
+
+    padding-left:
+            clamp(15px, 3vw, 40px);
+
+    padding-right:
+            clamp(15px, 3vw, 40px);
+}
+
+
+.login-card,
+.register-card {
+    width: min(
+            440px,
+            100%
+    );
+
+    padding:
+            clamp(22px, 3vw, 42px);
+}
+
+
+/* =========================================================
+   15. ADMIN LAYOUT
+========================================================= */
+
+.admin-layout {
+    width: 100%;
+    min-height: 100vh;
+}
+
+
+.admin-sidebar {
+    width:
+            clamp(220px, 17vw, 250px);
+}
+
+
+.admin-main {
+    width:
+            calc(
+                    100% -
+                    clamp(220px, 17vw, 250px)
+            );
+
+    margin-left:
+            clamp(220px, 17vw, 250px);
+
+    min-width: 0;
+}
+
+
+.admin-header {
+    width: 100%;
+
+    padding-left:
+            clamp(15px, 2.5vw, 28px);
+
+    padding-right:
+            clamp(15px, 2.5vw, 28px);
+
+    gap:
+            clamp(10px, 1.5vw, 20px);
+}
+
+
+.admin-content {
+    width: 100%;
+
+    padding-top:
+            clamp(18px, 2vw, 26px);
+
+    padding-right:
+            clamp(15px, 2.5vw, 28px);
+
+    padding-bottom:
+            clamp(25px, 3vw, 36px);
+
+    padding-left:
+            clamp(15px, 2.5vw, 28px);
+}
+
+
+/* =========================================================
+   16. ADMIN PAGE CONTAINERS
+========================================================= */
+
+.admin-dashboard,
+.admin-products,
+.admin-categories,
+.admin-customers,
+.admin-employees,
+.admin-orders {
+    width: 100%;
+    max-width: 1500px;
+
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* =========================================================
+   17. ADMIN HEADER
+========================================================= */
+
+.admin-products-header,
+.admin-page-header,
+.category-page-header,
+.customer-page-header,
+.employee-page-header,
+.admin-orders-header {
+    width: 100%;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-end;
+
+    gap:
+            clamp(12px, 2vw, 25px);
+}
+
+
+.admin-products-header h1,
+.admin-page-header h1,
+.category-page-header h1,
+.customer-page-header h1,
+.employee-page-header h1,
+.admin-orders-header h1 {
+    font-size:
+            clamp(23px, 2.2vw, 30px);
+}
+
+
+/* =========================================================
+   18. ADMIN TOOLBAR
+========================================================= */
+
+.admin-products-toolbar,
+.category-toolbar,
+.customer-toolbar,
+.employee-toolbar,
+.order-toolbar {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap:
+            clamp(8px, 1.2vw, 14px);
+}
+
+
+.admin-search-box,
+.category-search,
+.customer-search,
+.employee-search,
+.order-search {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+
+.admin-search-box input,
+.category-search input,
+.customer-search input,
+.employee-search input,
+.order-search input {
+    width: 100%;
+}
+
+
+/* =========================================================
+   19. ADMIN TABLE
+========================================================= */
+
+.admin-products-table-wrapper,
+.category-table-container,
+.category-table-scroll,
+.customer-table-wrapper,
+.employee-table-wrapper,
+.order-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+
+    overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+
+.admin-products-table,
+.category-table,
+.customer-table,
+.employee-table,
+.order-table {
+    width: 100%;
+}
+
+
+/*
+   Chỉ giữ min-width cho bảng.
+   Không làm cả trang bị tràn ngang.
+*/
+
+.admin-products-table {
+    min-width: 900px;
+}
+
+
+/* =========================================================
+   20. ADMIN GRID / DASHBOARD
+========================================================= */
+
+.admin-stat-grid {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                    210px,
+                    1fr
+            )
+        );
+
+    gap:
+            clamp(10px, 1.5vw, 20px);
+}
+
+
+.admin-order-status-grid {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                    170px,
+                    1fr
+            )
+        );
+
+    gap:
+            clamp(10px, 1.5vw, 18px);
+}
+
+
+.admin-stat-card {
+    min-width: 0;
+
+    padding:
+            clamp(14px, 1.5vw, 22px);
+}
+
+
+/* =========================================================
+   21. STAFF LAYOUT
+========================================================= */
+
+.staff-layout {
+    width: 100%;
+    min-height: 100vh;
+}
+
+
+.staff-sidebar {
+    width:
+            clamp(220px, 17vw, 250px);
+}
+
+
+.staff-main {
+    width:
+            calc(
+                    100% -
+                    clamp(220px, 17vw, 250px)
+            );
+
+    margin-left:
+            clamp(220px, 17vw, 250px);
+
+    min-width: 0;
+}
+
+
+.staff-content {
+    width: 100%;
+
+    padding-left:
+            clamp(15px, 2.5vw, 30px);
+
+    padding-right:
+            clamp(15px, 2.5vw, 30px);
+}
+
+
+.staff-stat-grid {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(
+                    200px,
+                    1fr
+            )
+        );
+
+    gap:
+            clamp(10px, 1.5vw, 18px);
+}
+
+
+/* =========================================================
+   22. MODAL
+========================================================= */
+
+.admin-modal-overlay,
+.category-modal-overlay,
+.customer-modal-overlay,
+.employee-modal-overlay,
+.order-modal-overlay {
+    padding:
+            clamp(10px, 2vw, 30px);
+}
+
+
+.admin-product-modal,
+.category-modal,
+.customer-detail-modal,
+.customer-edit-modal,
+.employee-modal,
+.order-modal {
+    width: min(
+            900px,
+            100%
+    );
+
+    max-width: 100%;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+}
+
+
+/* =========================================================
+   23. FLUID FONT SCALE
+========================================================= */
+
+.admin-products p,
+.admin-categories p,
+.admin-customers p,
+.admin-employees p,
+.admin-orders p {
+    font-size:
+            clamp(12px, 0.95vw, 14px);
+}
+
+
+/* =========================================================
+   24. PREVENT TEXT OVERFLOW
+========================================================= */
+
+.product-card,
+.category-card,
+.cart-item,
+.order-card,
+.admin-stat-card,
+.staff-stat-card,
+.admin-top-product {
+    overflow-wrap: anywhere;
+}
+
+
+.product-info h3,
+.admin-product-info strong,
+.admin-top-product strong,
+.order-product-info strong {
+    min-width: 0;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   25. RESPONSIVE BREAKPOINTS
+   Chỉ đổi layout khi thật sự cần thiết.
+========================================================= */
+
+
+/* -----------------------------------------
+   TABLET / SMALL LAPTOP
+----------------------------------------- */
+
+@media (max-width: 900px) {
+
+    .customer-header {
+        flex-wrap: wrap;
+
+        height: auto;
+
+        min-height: 68px;
+
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .header-search {
+        order: 5;
+
+        flex: 0 0 100%;
+
+        max-width: none;
+    }
+
+
+    .product-detail {
+        grid-template-columns: 1fr;
+    }
+
+
+    .cart-content {
+        grid-template-columns: 1fr;
+    }
+
+
+    .checkout-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .account-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .order-main-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .admin-main,
+    .staff-main {
+        width: 100%;
+
+        margin-left: 0;
+    }
+
+
+    .admin-sidebar,
+    .staff-sidebar {
+        transform: translateX(-100%);
+
+        transition:
+                transform 0.25s ease;
+    }
+
+
+    .admin-sidebar-open,
+    .staff-sidebar-open {
+        transform: translateX(0);
+    }
+
+
+    .admin-mobile-menu {
+        display: flex;
+    }
+}
+
+
+/* -----------------------------------------
+   MOBILE
+----------------------------------------- */
+
+@media (max-width: 650px) {
+
+    .customer-main {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+
+    .customer-header {
+        gap: 8px;
+    }
+
+
+    .category-menu {
+        display: none;
+    }
+
+
+    .header-actions {
+        margin-left: auto;
+    }
+
+
+    .logo {
+        width: 115px;
+    }
+
+
+    .hero {
+        min-height: 390px;
+
+        padding:
+                35px 22px;
+    }
+
+
+    .hero-content {
+        max-width: 100%;
+    }
+
+
+    .hero h1 {
+        font-size: clamp(
+                28px,
+                8vw,
+                38px
+        );
+    }
+
+
+    .hero p {
+        font-size: 14px;
+    }
+
+
+    .hero-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+
+    .section-header {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+
+    .form-grid,
+    .account-fields,
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .cart-item {
+        grid-template-columns:
+            70px
+            minmax(0, 1fr)
+            35px;
+    }
+
+
+    .cart-quantity,
+    .cart-item-total {
+        grid-column: 2 / 4;
+    }
+
+
+    .admin-content {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+
+    .admin-products-header,
+    .admin-page-header,
+    .category-page-header,
+    .customer-page-header,
+    .employee-page-header,
+    .admin-orders-header {
+        align-items: stretch;
+
+        flex-direction: column;
+    }
+
+
+    .admin-products-header button,
+    .admin-page-header button,
+    .category-page-header button,
+    .customer-page-header button,
+    .employee-page-header button,
+    .admin-orders-header button {
+        width: 100%;
+    }
+
+
+    .admin-products-toolbar,
+    .category-toolbar,
+    .customer-toolbar,
+    .employee-toolbar,
+    .order-toolbar {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .admin-filter-select {
+        width: 100%;
+    }
+
+
+    .staff-content {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+
+/* -----------------------------------------
+   SMALL PHONE
+----------------------------------------- */
+
+@media (max-width: 420px) {
+
+    .customer-header {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+
+    .logo {
+        width: 100px;
+    }
+
+
+    .cart-btn,
+    .login-btn {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+
+    .hero {
+        padding:
+                30px 16px;
+    }
+
+
+    .hero h1 {
+        font-size: 27px;
+    }
+
+
+    .product-grid,
+    .products-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap: 8px;
+    }
+
+
+    .product-info {
+        padding: 10px;
+    }
+
+
+    .product-info h3 {
+        font-size: 14px;
+    }
+
+
+    .product-bottom {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .view-product {
+        width: 100%;
+    }
+
+
+    .admin-stat-grid,
+    .admin-order-status-grid,
+    .staff-stat-grid {
+        grid-template-columns: 1fr;
+    }
+}

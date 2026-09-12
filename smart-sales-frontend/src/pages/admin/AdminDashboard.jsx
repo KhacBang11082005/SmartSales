@@ -218,9 +218,6 @@ function AdminDashboard() {
 
                 <div>
 
-                    <span className="admin-page-label">
-                        DASHBOARD
-                    </span>
 
                     <h1>
                         Tổng quan hệ thống

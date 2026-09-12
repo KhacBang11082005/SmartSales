@@ -29,20 +29,10 @@ const ADDRESS_API =
 
 function formatPrice(price) {
     return new Intl.NumberFormat("vi-VN")
-        .format(price) + " ₫";
+        .format(Number(price || 0)) + " ₫";
 }
 
 
-/**
- * API trả về:
- *
- * {
- *   success: true,
- *   data: [...]
- * }
- *
- * Hàm này giúp lấy data an toàn.
- */
 function extractData(response) {
 
     if (Array.isArray(response)) {
@@ -68,9 +58,9 @@ function Checkout() {
     } = useCart();
 
 
-    // =====================================================
-    // SẢN PHẨM ĐƯỢC CHỌN
-    // =====================================================
+    /* =====================================================
+       SẢN PHẨM ĐƯỢC CHỌN
+    ===================================================== */
 
     const selectedIds =
         location.state?.selectedItems || [];
@@ -82,64 +72,51 @@ function Checkout() {
             selectedIds.includes(item.id)
         );
 
-    }, [
-        cartItems,
-        selectedIds
-    ]);
+    }, [cartItems, selectedIds]);
 
 
-    // =====================================================
-    // THÔNG TIN KHÁCH HÀNG
-    // =====================================================
+    /* =====================================================
+       THÔNG TIN KHÁCH HÀNG
+    ===================================================== */
 
     const [formData, setFormData] = useState({
 
         fullName: "",
         phone: "",
-
-        // Địa chỉ chi tiết
         address: "",
-
         note: ""
 
     });
-// =====================================================
-// TỰ ĐỘNG LẤY THÔNG TIN TÀI KHOẢN
-// =====================================================
+
+
+    /* =====================================================
+       TỰ ĐỘNG LẤY THÔNG TIN TÀI KHOẢN
+    ===================================================== */
 
     useEffect(() => {
 
         let cancelled = false;
 
-
-        const loadAccountShippingInfo = async () => {
+        const loadProfile = async () => {
 
             const token =
                 localStorage.getItem("token");
 
-
-            // Chưa đăng nhập
-
             if (!token) {
-
                 return;
             }
-
 
             try {
 
                 const profile =
                     await getMyProfile();
 
-
                 if (
                     cancelled ||
                     !profile
                 ) {
-
                     return;
                 }
-
 
                 setFormData(current => ({
 
@@ -162,31 +139,29 @@ function Checkout() {
 
                 }));
 
-
             } catch (error) {
 
                 console.error(
                     "Không thể lấy thông tin tài khoản:",
                     error
                 );
+
             }
+
         };
 
-
-        loadAccountShippingInfo();
-
+        loadProfile();
 
         return () => {
-
             cancelled = true;
-
         };
 
     }, []);
 
-    // =====================================================
-    // ĐỊA GIỚI HÀNH CHÍNH
-    // =====================================================
+
+    /* =====================================================
+       ĐỊA GIỚI HÀNH CHÍNH
+    ===================================================== */
 
     const [provinces, setProvinces] =
         useState([]);
@@ -194,57 +169,44 @@ function Checkout() {
     const [wards, setWards] =
         useState([]);
 
-
-    // Tỉnh / thành đang chọn
     const [selectedProvince, setSelectedProvince] =
         useState("");
 
-
-    // Xã / phường đang chọn
     const [selectedWard, setSelectedWard] =
         useState("");
 
-
-    // Loading
     const [loadingProvinces, setLoadingProvinces] =
         useState(false);
 
     const [loadingWards, setLoadingWards] =
         useState(false);
 
-
-    // Lỗi API địa chỉ
     const [addressError, setAddressError] =
         useState("");
 
 
-    // =====================================================
-    // PAYMENT
-    // =====================================================
+    /* =====================================================
+       PAYMENT
+    ===================================================== */
 
     const [paymentMethod, setPaymentMethod] =
         useState("COD");
 
 
-    // =====================================================
-    // ERROR
-    // =====================================================
+    /* =====================================================
+       ERROR
+    ===================================================== */
 
     const [error, setError] =
         useState("");
-
-
-    // =====================================================
-    // SUBMIT
-    // =====================================================
 
     const [isSubmitting, setIsSubmitting] =
         useState(false);
 
 
-    // =====================================================
-    // TỔNG SẢN PHẨM
-    // =====================================================
+    /* =====================================================
+       TỔNG SỐ LƯỢNG
+    ===================================================== */
 
     const selectedCount =
         selectedProducts.reduce(
@@ -255,9 +217,9 @@ function Checkout() {
         );
 
 
-    // =====================================================
-    // TỔNG TIỀN
-    // =====================================================
+    /* =====================================================
+       TỔNG TIỀN
+    ===================================================== */
 
     const selectedTotal =
         selectedProducts.reduce(
@@ -269,15 +231,15 @@ function Checkout() {
         );
 
 
-    // =====================================================
-    // LẤY DANH SÁCH TỈNH / THÀNH
-    // =====================================================
+    /* =====================================================
+       LẤY TỈNH / THÀNH
+    ===================================================== */
 
     useEffect(() => {
 
         let cancelled = false;
 
-        async function loadProvinces() {
+        const loadProvinces = async () => {
 
             setLoadingProvinces(true);
             setAddressError("");
@@ -288,26 +250,22 @@ function Checkout() {
                     `${ADDRESS_API}/new-provinces?limit=100&page=1`
                 );
 
-
                 if (!response.ok) {
-                    throw new Error(
-                        "Không thể tải danh sách tỉnh/thành."
-                    );
-                }
 
+                    throw new Error(
+                        "Không thể tải tỉnh/thành."
+                    );
+
+                }
 
                 const result =
                     await response.json();
 
-
                 const data =
                     extractData(result);
 
-
                 if (!cancelled) {
-
                     setProvinces(data);
-
                 }
 
             } catch (err) {
@@ -317,11 +275,10 @@ function Checkout() {
                     err
                 );
 
-
                 if (!cancelled) {
 
                     setAddressError(
-                        "Không thể tải danh sách tỉnh/thành. Vui lòng thử lại."
+                        "Không thể tải danh sách tỉnh/thành."
                     );
 
                 }
@@ -329,31 +286,25 @@ function Checkout() {
             } finally {
 
                 if (!cancelled) {
-
                     setLoadingProvinces(false);
-
                 }
 
             }
 
-        }
-
+        };
 
         loadProvinces();
 
-
         return () => {
-
             cancelled = true;
-
         };
 
     }, []);
 
 
-    // =====================================================
-    // KHI CHỌN TỈNH / THÀNH
-    // =====================================================
+    /* =====================================================
+       LẤY XÃ / PHƯỜNG
+    ===================================================== */
 
     useEffect(() => {
 
@@ -366,17 +317,14 @@ function Checkout() {
 
         }
 
-
         let cancelled = false;
 
-
-        async function loadWards() {
+        const loadWards = async () => {
 
             setLoadingWards(true);
             setAddressError("");
-            setSelectedWard("");
             setWards([]);
-
+            setSelectedWard("");
 
             try {
 
@@ -384,26 +332,22 @@ function Checkout() {
                     `${ADDRESS_API}/new-provinces/${selectedProvince}/wards?limit=500&page=1`
                 );
 
-
                 if (!response.ok) {
-                    throw new Error(
-                        "Không thể tải danh sách xã/phường."
-                    );
-                }
 
+                    throw new Error(
+                        "Không thể tải xã/phường."
+                    );
+
+                }
 
                 const result =
                     await response.json();
 
-
                 const data =
                     extractData(result);
 
-
                 if (!cancelled) {
-
                     setWards(data);
-
                 }
 
             } catch (err) {
@@ -412,7 +356,6 @@ function Checkout() {
                     "Lỗi tải xã/phường:",
                     err
                 );
-
 
                 if (!cancelled) {
 
@@ -425,108 +368,25 @@ function Checkout() {
             } finally {
 
                 if (!cancelled) {
-
                     setLoadingWards(false);
-
                 }
 
             }
 
-        }
-
+        };
 
         loadWards();
 
-
         return () => {
-
             cancelled = true;
-
         };
 
     }, [selectedProvince]);
 
 
-    // =====================================================
-    // HANDLE INPUT
-    // =====================================================
-
-    const handleChange = (event) => {
-
-        const {
-            name,
-            value
-        } = event.target;
-
-
-        setFormData(current => ({
-
-            ...current,
-
-            [name]: value
-
-        }));
-
-
-        if (error) {
-
-            setError("");
-
-        }
-
-    };
-
-
-    // =====================================================
-    // CHỌN TỈNH / THÀNH
-    // =====================================================
-
-    const handleProvinceChange = (event) => {
-
-        const provinceCode =
-            event.target.value;
-
-
-        setSelectedProvince(
-            provinceCode
-        );
-
-
-        setSelectedWard("");
-
-
-        if (error) {
-
-            setError("");
-
-        }
-
-    };
-
-
-    // =====================================================
-    // CHỌN XÃ / PHƯỜNG
-    // =====================================================
-
-    const handleWardChange = (event) => {
-
-        setSelectedWard(
-            event.target.value
-        );
-
-
-        if (error) {
-
-            setError("");
-
-        }
-
-    };
-
-
-    // =====================================================
-    // TÌM OBJECT TỈNH / THÀNH
-    // =====================================================
+    /* =====================================================
+       OBJECT TỈNH
+    ===================================================== */
 
     const provinceObject =
         provinces.find(
@@ -536,9 +396,9 @@ function Checkout() {
         );
 
 
-    // =====================================================
-    // TÌM OBJECT XÃ / PHƯỜNG
-    // =====================================================
+    /* =====================================================
+       OBJECT XÃ
+    ===================================================== */
 
     const wardObject =
         wards.find(
@@ -548,9 +408,9 @@ function Checkout() {
         );
 
 
-    // =====================================================
-    // TỰ GHÉP SHIPPING ADDRESS
-    // =====================================================
+    /* =====================================================
+       GHÉP ĐỊA CHỈ
+    ===================================================== */
 
     const shippingAddress = useMemo(() => {
 
@@ -568,7 +428,6 @@ function Checkout() {
 
         ].filter(Boolean);
 
-
         return parts.join(", ");
 
     }, [
@@ -578,20 +437,69 @@ function Checkout() {
     ]);
 
 
-    // =====================================================
-    // SUBMIT ORDER
-    // =====================================================
+    /* =====================================================
+       HANDLE INPUT
+    ===================================================== */
 
-    const handleSubmit = async (event) => {
+    const handleChange = event => {
+
+        const {
+            name,
+            value
+        } = event.target;
+
+        setFormData(current => ({
+            ...current,
+            [name]: value
+        }));
+
+        setError("");
+
+    };
+
+
+    /* =====================================================
+       CHỌN TỈNH
+    ===================================================== */
+
+    const handleProvinceChange = event => {
+
+        setSelectedProvince(
+            event.target.value
+        );
+
+        setSelectedWard("");
+
+        setError("");
+
+    };
+
+
+    /* =====================================================
+       CHỌN XÃ
+    ===================================================== */
+
+    const handleWardChange = event => {
+
+        setSelectedWard(
+            event.target.value
+        );
+
+        setError("");
+
+    };
+
+
+    /* =====================================================
+       ĐẶT HÀNG
+    ===================================================== */
+
+    const handleSubmit = async event => {
 
         event.preventDefault();
 
         setError("");
 
-
-        // =================================================
-        // KIỂM TRA SẢN PHẨM
-        // =================================================
 
         if (selectedProducts.length === 0) {
 
@@ -600,13 +508,8 @@ function Checkout() {
             );
 
             return;
-
         }
 
-
-        // =================================================
-        // KIỂM TRA HỌ TÊN
-        // =================================================
 
         if (!formData.fullName.trim()) {
 
@@ -615,13 +518,8 @@ function Checkout() {
             );
 
             return;
-
         }
 
-
-        // =================================================
-        // KIỂM TRA SỐ ĐIỆN THOẠI
-        // =================================================
 
         if (!formData.phone.trim()) {
 
@@ -630,7 +528,6 @@ function Checkout() {
             );
 
             return;
-
         }
 
 
@@ -643,13 +540,8 @@ function Checkout() {
             );
 
             return;
-
         }
 
-
-        // =================================================
-        // KIỂM TRA TỈNH / THÀNH
-        // =================================================
 
         if (!selectedProvince) {
 
@@ -658,13 +550,8 @@ function Checkout() {
             );
 
             return;
-
         }
 
-
-        // =================================================
-        // KIỂM TRA XÃ / PHƯỜNG
-        // =================================================
 
         if (!selectedWard) {
 
@@ -673,13 +560,8 @@ function Checkout() {
             );
 
             return;
-
         }
 
-
-        // =================================================
-        // KIỂM TRA ĐỊA CHỈ CHI TIẾT
-        // =================================================
 
         if (!formData.address.trim()) {
 
@@ -688,39 +570,24 @@ function Checkout() {
             );
 
             return;
-
         }
 
 
         if (isSubmitting) {
-
             return;
-
         }
 
 
-        // =================================================
-        // DANH SÁCH SẢN PHẨM
-        // =================================================
+        const orderData = {
 
-        const orderItems =
-            selectedProducts.map(item => ({
+            items: selectedProducts.map(item => ({
 
                 productId: item.id,
 
                 quantity:
                     Number(item.quantity)
 
-            }));
-
-
-        // =================================================
-        // DỮ LIỆU ĐẶT HÀNG
-        // =================================================
-
-        const orderData = {
-
-            items: orderItems,
+            })),
 
             shippingName:
                 formData.fullName.trim(),
@@ -728,8 +595,6 @@ function Checkout() {
             shippingPhone:
                 formData.phone.trim(),
 
-            // QUAN TRỌNG:
-            // Địa chỉ được ghép tự động
             shippingAddress:
             shippingAddress,
 
@@ -739,57 +604,20 @@ function Checkout() {
         };
 
 
-        // =================================================
-        // DEBUG
-        // =================================================
-
-        console.log(
-            "🛒 DỮ LIỆU ĐẶT HÀNG:",
-            orderData
-        );
-
-
-        console.log(
-            "📍 SHIPPING ADDRESS:",
-            shippingAddress
-        );
-
-
         try {
 
             setIsSubmitting(true);
 
-
             const createdOrder =
-                await createOrder(
-                    orderData
-                );
+                await createOrder(orderData);
 
 
-            console.log(
-                "✅ ĐƠN HÀNG ĐÃ TẠO:",
-                createdOrder
-            );
+            selectedProducts.forEach(item => {
 
+                removeFromCart(item.id);
 
-            // =============================================
-            // XÓA CART
-            // =============================================
+            });
 
-            selectedProducts.forEach(
-                item => {
-
-                    removeFromCart(
-                        item.id
-                    );
-
-                }
-            );
-
-
-            // =============================================
-            // THÔNG BÁO
-            // =============================================
 
             alert(
                 `Đặt hàng thành công! Mã đơn hàng: #${createdOrder.id}`
@@ -798,11 +626,10 @@ function Checkout() {
 
             navigate("/");
 
-
         } catch (err) {
 
             console.error(
-                "❌ LỖI TẠO ĐƠN HÀNG:",
+                "Lỗi tạo đơn hàng:",
                 err
             );
 
@@ -819,9 +646,7 @@ function Checkout() {
                     "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
                 );
 
-            }
-
-            else if (
+            } else if (
                 err.response?.status === 403
             ) {
 
@@ -829,17 +654,13 @@ function Checkout() {
                     "Bạn không có quyền thực hiện đặt hàng."
                 );
 
-            }
-
-            else if (backendMessage) {
+            } else if (backendMessage) {
 
                 setError(
                     backendMessage
                 );
 
-            }
-
-            else {
+            } else {
 
                 setError(
                     "Không thể đặt hàng. Vui lòng kiểm tra kết nối với máy chủ."
@@ -856,9 +677,9 @@ function Checkout() {
     };
 
 
-    // =====================================================
-    // EMPTY CART
-    // =====================================================
+    /* =====================================================
+       EMPTY
+    ===================================================== */
 
     if (selectedProducts.length === 0) {
 
@@ -874,17 +695,14 @@ function Checkout() {
 
                     </div>
 
-
                     <h1>
                         Chưa có sản phẩm thanh toán
                     </h1>
-
 
                     <p>
                         Vui lòng quay lại giỏ hàng
                         và chọn ít nhất một sản phẩm.
                     </p>
-
 
                     <Link
                         to="/cart"
@@ -912,10 +730,7 @@ function Checkout() {
 
             <div className="checkout-container">
 
-
-                {/* =================================================
-                    HEADER
-                ================================================= */}
+                {/* HEADER */}
 
                 <div className="checkout-header">
 
@@ -932,12 +747,9 @@ function Checkout() {
 
 
 
-
-
                     <h1>
                         Thanh toán
                     </h1>
-
 
                     <p>
                         Kiểm tra thông tin trước khi đặt hàng.
@@ -946,10 +758,6 @@ function Checkout() {
                 </div>
 
 
-                {/* =================================================
-                    CONTENT
-                ================================================= */}
-
                 <form
                     className="checkout-grid"
                     onSubmit={handleSubmit}
@@ -957,15 +765,13 @@ function Checkout() {
 
 
                     {/* =================================================
-                        LEFT
+                       LEFT
                     ================================================= */}
 
                     <div className="checkout-main">
 
 
-                        {/* =================================================
-                            SHIPPING INFORMATION
-                        ================================================= */}
+                        {/* THÔNG TIN NHẬN HÀNG */}
 
                         <section className="checkout-card">
 
@@ -977,7 +783,6 @@ function Checkout() {
 
                                 </div>
 
-
                                 <div>
 
                                     <h2>
@@ -985,8 +790,8 @@ function Checkout() {
                                     </h2>
 
                                     <p>
-                                        Chọn địa giới hành chính
-                                        và nhập địa chỉ chi tiết.
+                                        Nhập thông tin người nhận
+                                        và địa chỉ giao hàng.
                                     </p>
 
                                 </div>
@@ -997,10 +802,6 @@ function Checkout() {
                             <div className="form-grid">
 
 
-                                {/* =================================================
-                                    FULL NAME
-                                ================================================= */}
-
                                 <div className="form-group">
 
                                     <label htmlFor="fullName">
@@ -1010,7 +811,6 @@ function Checkout() {
                                         Họ và tên
 
                                     </label>
-
 
                                     <input
                                         id="fullName"
@@ -1028,10 +828,6 @@ function Checkout() {
                                 </div>
 
 
-                                {/* =================================================
-                                    PHONE
-                                ================================================= */}
-
                                 <div className="form-group">
 
                                     <label htmlFor="phone">
@@ -1041,7 +837,6 @@ function Checkout() {
                                         Số điện thoại
 
                                     </label>
-
 
                                     <input
                                         id="phone"
@@ -1060,10 +855,6 @@ function Checkout() {
                                 </div>
 
 
-                                {/* =================================================
-                                    PROVINCE
-                                ================================================= */}
-
                                 <div className="form-group">
 
                                     <label htmlFor="province">
@@ -1073,7 +864,6 @@ function Checkout() {
                                         Tỉnh/Thành phố
 
                                     </label>
-
 
                                     <select
                                         id="province"
@@ -1089,10 +879,12 @@ function Checkout() {
                                     >
 
                                         <option value="">
+
                                             {loadingProvinces
                                                 ? "Đang tải..."
                                                 : "Chọn Tỉnh/Thành phố"
                                             }
+
                                         </option>
 
 
@@ -1107,10 +899,12 @@ function Checkout() {
                                                         province.code
                                                     }
                                                 >
+
                                                     {province.type
                                                         ? `${province.type} ${province.name}`
                                                         : province.name
                                                     }
+
                                                 </option>
 
                                             )
@@ -1121,10 +915,6 @@ function Checkout() {
                                 </div>
 
 
-                                {/* =================================================
-                                    WARD
-                                ================================================= */}
-
                                 <div className="form-group">
 
                                     <label htmlFor="ward">
@@ -1134,7 +924,6 @@ function Checkout() {
                                         Xã/Phường
 
                                     </label>
-
 
                                     <select
                                         id="ward"
@@ -1153,15 +942,10 @@ function Checkout() {
                                         <option value="">
 
                                             {!selectedProvince
-
                                                 ? "Chọn Tỉnh/Thành trước"
-
                                                 : loadingWards
-
                                                     ? "Đang tải..."
-
                                                     : "Chọn Xã/Phường"
-
                                             }
 
                                         </option>
@@ -1178,10 +962,12 @@ function Checkout() {
                                                         ward.code
                                                     }
                                                 >
+
                                                     {ward.type
                                                         ? `${ward.type} ${ward.name}`
                                                         : ward.name
                                                     }
+
                                                 </option>
 
                                             )
@@ -1192,10 +978,6 @@ function Checkout() {
                                 </div>
 
 
-                                {/* =================================================
-                                    DETAIL ADDRESS
-                                ================================================= */}
-
                                 <div className="form-group form-group-full">
 
                                     <label htmlFor="address">
@@ -1205,7 +987,6 @@ function Checkout() {
                                         Địa chỉ chi tiết
 
                                     </label>
-
 
                                     <textarea
                                         id="address"
@@ -1223,10 +1004,6 @@ function Checkout() {
                                 </div>
 
 
-                                {/* =================================================
-                                    PREVIEW SHIPPING ADDRESS
-                                ================================================= */}
-
                                 {shippingAddress && (
 
                                     <div className="form-group form-group-full">
@@ -1234,7 +1011,6 @@ function Checkout() {
                                         <label>
                                             Địa chỉ giao hàng
                                         </label>
-
 
                                         <div className="shipping-address-preview">
 
@@ -1247,23 +1023,16 @@ function Checkout() {
                                 )}
 
 
-                                {/* =================================================
-                                    NOTE
-                                ================================================= */}
-
                                 <div className="form-group form-group-full">
 
                                     <label htmlFor="note">
-
                                         Ghi chú
-
                                     </label>
-
 
                                     <textarea
                                         id="note"
                                         name="note"
-                                        rows="3"
+                                        rows="2"
                                         value={
                                             formData.note
                                         }
@@ -1281,9 +1050,7 @@ function Checkout() {
                             {addressError && (
 
                                 <div className="checkout-error">
-
                                     {addressError}
-
                                 </div>
 
                             )}
@@ -1292,7 +1059,7 @@ function Checkout() {
 
 
                         {/* =================================================
-                            PAYMENT
+                           PAYMENT
                         ================================================= */}
 
                         <section className="checkout-card">
@@ -1304,7 +1071,6 @@ function Checkout() {
                                     <CreditCard size={20} />
 
                                 </div>
-
 
                                 <div>
 
@@ -1324,8 +1090,6 @@ function Checkout() {
 
                             <div className="payment-options">
 
-
-                                {/* COD */}
 
                                 <label
                                     className={
@@ -1351,7 +1115,6 @@ function Checkout() {
                                         }
                                     />
 
-
                                     <div className="payment-option-content">
 
                                         <strong>
@@ -1367,8 +1130,6 @@ function Checkout() {
 
                                 </label>
 
-
-                                {/* BANKING */}
 
                                 <label
                                     className={
@@ -1394,7 +1155,6 @@ function Checkout() {
                                         }
                                     />
 
-
                                     <div className="payment-option-content">
 
                                         <strong>
@@ -1418,13 +1178,15 @@ function Checkout() {
 
 
                     {/* =================================================
-                        RIGHT
+                       RIGHT - BẢN CŨ
                     ================================================= */}
 
                     <aside className="checkout-sidebar">
 
-                        <section className="checkout-card order-summary-card">
+                        <section className="checkout-card">
 
+
+                            {/* ĐƠN HÀNG */}
 
                             <div className="section-heading compact-heading">
 
@@ -1434,7 +1196,6 @@ function Checkout() {
 
                                 </div>
 
-
                                 <div>
 
                                     <h2>
@@ -1442,8 +1203,7 @@ function Checkout() {
                                     </h2>
 
                                     <p>
-                                        {selectedCount}
-                                        {" "}sản phẩm được chọn
+                                        {selectedCount} sản phẩm
                                     </p>
 
                                 </div>
@@ -1451,72 +1211,86 @@ function Checkout() {
                             </div>
 
 
-                            {/* PRODUCTS */}
+                            {/* SẢN PHẨM */}
 
                             <div className="checkout-products">
 
-                                {selectedProducts.map(item => (
+                                {selectedProducts.map(item => {
 
-                                    <div
-                                        className="checkout-product"
-                                        key={item.id}
-                                    >
+                                    const quantity =
+                                        Number(item.quantity || 0);
 
-                                        <div className="checkout-product-image">
+                                    const total =
+                                        Number(item.price || 0) *
+                                        quantity;
 
-                                            {item.image_url ? (
+                                    return (
 
-                                                <img
-                                                    src={item.image_url}
-                                                    alt={item.name}
-                                                />
+                                        <div
+                                            className="checkout-product"
+                                            key={item.id}
+                                        >
 
-                                            ) : (
+                                            <div className="checkout-product-image">
 
-                                                <ShoppingBag
-                                                    size={25}
-                                                />
+                                                {item.image_url ? (
 
-                                            )}
+                                                    <img
+                                                        src={
+                                                            item.image_url
+                                                        }
+                                                        alt={
+                                                            item.name
+                                                        }
+                                                    />
+
+                                                ) : (
+
+                                                    <ShoppingBag size={22} />
+
+                                                )}
+
+                                            </div>
+
+
+                                            <div className="checkout-product-info">
+
+                                                <h3
+                                                    title={item.name}
+                                                >
+                                                    {item.name}
+                                                </h3>
+
+                                                <span>
+                                                    {formatPrice(item.price)}
+                                                    {" × "}
+                                                    {quantity}
+                                                </span>
+
+                                            </div>
+
+
+                                            <strong>
+
+                                                {formatPrice(total)}
+
+                                            </strong>
 
                                         </div>
 
+                                    );
 
-                                        <div className="checkout-product-info">
-
-                                            <h3>
-                                                {item.name}
-                                            </h3>
-
-                                            <span>
-                                                Số lượng:
-                                                {" "}
-                                                {item.quantity}
-                                            </span>
-
-                                        </div>
-
-
-                                        <strong>
-
-                                            {formatPrice(
-                                                Number(item.price || 0) *
-                                                Number(item.quantity || 0)
-                                            )}
-
-                                        </strong>
-
-                                    </div>
-
-                                ))}
+                                })}
 
                             </div>
 
 
+                            {/* LINE */}
+
                             <div className="summary-line" />
 
 
-                            {/* SUBTOTAL */}
+                            {/* TẠM TÍNH */}
 
                             <div className="checkout-summary-row">
 
@@ -1525,15 +1299,13 @@ function Checkout() {
                                 </span>
 
                                 <strong>
-                                    {formatPrice(
-                                        selectedTotal
-                                    )}
+                                    {formatPrice(selectedTotal)}
                                 </strong>
 
                             </div>
 
 
-                            {/* SHIPPING */}
+                            {/* VẬN CHUYỂN */}
 
                             <div className="checkout-summary-row">
 
@@ -1548,6 +1320,8 @@ function Checkout() {
                             </div>
 
 
+                            {/* LINE */}
+
                             <div className="summary-line" />
 
 
@@ -1555,14 +1329,16 @@ function Checkout() {
 
                             <div className="checkout-total">
 
-                                <span>
-                                    Tổng cộng
-                                </span>
+                                <div>
+
+                                    <span>
+                                        Tổng thanh toán
+                                    </span>
+
+                                </div>
 
                                 <strong>
-                                    {formatPrice(
-                                        selectedTotal
-                                    )}
+                                    {formatPrice(selectedTotal)}
                                 </strong>
 
                             </div>
@@ -1581,7 +1357,7 @@ function Checkout() {
                             )}
 
 
-                            {/* SUBMIT */}
+                            {/* BUTTON */}
 
                             <button
                                 type="submit"
@@ -1589,22 +1365,26 @@ function Checkout() {
                                 disabled={isSubmitting}
                             >
 
-                                <CheckCircle2 size={19} />
+                                {isSubmitting ? (
 
-                                {isSubmitting
-                                    ? "Đang đặt hàng..."
-                                    : "Đặt hàng"
-                                }
+                                    <>
+                                        <span className="order-loading-spinner" />
+
+                                        Đang xử lý...
+                                    </>
+
+                                ) : (
+
+                                    <>
+                                        <CheckCircle2 size={18} />
+
+                                        Xác nhận đặt hàng
+                                    </>
+
+                                )}
 
                             </button>
 
-
-                            <p className="checkout-security-note">
-
-                                Bằng cách đặt hàng, bạn xác nhận
-                                thông tin nhận hàng là chính xác.
-
-                            </p>
 
                         </section>
 

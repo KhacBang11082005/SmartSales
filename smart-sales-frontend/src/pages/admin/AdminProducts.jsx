@@ -75,7 +75,7 @@ const emptyForm = {
    ADMIN PRODUCTS
 ========================================================= */
 
-function AdminProducts() {
+function AdminProducts({ employeeMode = false }) {
 
     const [products, setProducts] = useState([]);
 
@@ -564,8 +564,10 @@ function AdminProducts() {
                     </h1>
 
                     <p>
-                        Quản lý toàn bộ sản phẩm
-                        trong hệ thống Smart Sales.
+                        {employeeMode
+                            ? "Thêm và cập nhật sản phẩm trong hệ thống Smart Sales."
+                            : "Quản lý toàn bộ sản phẩm trong hệ thống Smart Sales."
+                        }
                     </p>
 
                 </div>
@@ -915,21 +917,14 @@ function AdminProducts() {
                                             </button>
 
 
-                                            <button
-                                                className="admin-action-delete"
-                                                title="Xóa"
-                                                onClick={() =>
-                                                    handleDelete(
-                                                        product
-                                                    )
-                                                }
-                                            >
-
-                                                <Trash2
-                                                    size={17}
-                                                />
-
-                                            </button>
+                                            {!employeeMode && (
+                                                <button
+                                                    className="admin-action-delete"
+                                                    onClick={() => handleDelete(product)}
+                                                >
+                                                    <Trash2 size={17} />
+                                                </button>
+                                            )}
 
                                         </div>
 
