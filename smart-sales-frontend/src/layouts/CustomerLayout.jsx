@@ -6,6 +6,7 @@ import {
 
 import { useEffect, useState } from "react";
 import { getCategories } from "../services/categoryApi";
+
 import {
     ShoppingCart,
     User,
@@ -33,27 +34,65 @@ function CustomerLayout() {
         logout
     } = useAuth();
 
+
     const {
-        cartCount
+        cartItems
     } = useCart();
 
+
     const navigate = useNavigate();
+
     const [categories, setCategories] = useState([]);
+
+
+    // ==========================================
+    // TÍNH TỔNG SỐ LƯỢNG SẢN PHẨM TRONG GIỎ
+    // ==========================================
+    //
+    // Ví dụ:
+    //
+    // Sony × 14
+    // Dell × 10
+    //
+    // Badge = 24
+    //
+    // Nếu giỏ hàng trống:
+    // Badge không hiển thị
+    //
+    // ==========================================
+
+    const cartCount = cartItems.reduce(
+        (total, item) => {
+            return total + Number(item.quantity || 0);
+        },
+        0
+    );
+
+
+    // ==========================================
+    // LẤY DANH MỤC
+    // ==========================================
+
     useEffect(() => {
 
         const fetchCategories = async () => {
 
             try {
 
-                const data = await getCategories();
+                const data =
+                    await getCategories();
+
 
                 console.log(
                     "📂 CATEGORIES FROM API:",
                     data
                 );
 
+
                 setCategories(
-                    Array.isArray(data) ? data : []
+                    Array.isArray(data)
+                        ? data
+                        : []
                 );
 
             } catch (error) {
@@ -71,9 +110,33 @@ function CustomerLayout() {
         fetchCategories();
 
     }, []);
-    // =========================
+
+
+    // ==========================================
+    // DEBUG CART
+    // ==========================================
+
+    useEffect(() => {
+
+        console.log(
+            "🛒 CART HEADER:",
+            cartItems
+        );
+
+        console.log(
+            "🛒 TỔNG SỐ LƯỢNG:",
+            cartCount
+        );
+
+    }, [
+        cartItems,
+        cartCount
+    ]);
+
+
+    // ==========================================
     // ĐĂNG XUẤT
-    // =========================
+    // ==========================================
 
     const handleLogout = () => {
 
@@ -88,13 +151,17 @@ function CustomerLayout() {
 
         <div className="customer-layout">
 
-            {/* =========================
+
+            {/* ==================================
                 HEADER
-            ========================= */}
+            ================================== */}
 
             <header className="customer-header">
 
-                {/* LOGO */}
+
+                {/* ==================================
+                    LOGO
+                ================================== */}
 
                 <Link
                     to="/"
@@ -109,11 +176,16 @@ function CustomerLayout() {
                 </Link>
 
 
-                {/* CATEGORY */}
+                {/* ==================================
+                    CATEGORY
+                ================================== */}
 
                 <div className="category-menu">
 
-                    <button className="category-btn">
+                    <button
+                        type="button"
+                        className="category-btn"
+                    >
 
                         <Menu size={19} />
 
@@ -127,35 +199,35 @@ function CustomerLayout() {
                         />
 
                     </button>
+
+
                     <div className="category-dropdown">
 
-                        {/* =========================
-                                DANH MỤC TỪ DATABASE
-                            ========================= */}
+                        {categories.map(
+                            category => (
 
-                        {categories.map(category => (
+                                <Link
+                                    key={category.id}
+                                    to={`/products?category=${encodeURIComponent(
+                                        category.name
+                                    )}`}
+                                >
 
-                            <Link
-                                key={category.id}
-                                to={`/products?category=${encodeURIComponent(
-                                    category.name
-                                )}`}
-                            >
+                                    {category.name}
 
-                                {category.name}
+                                </Link>
 
-                            </Link>
-
-                        ))}
+                            )
+                        )}
 
                     </div>
-
-
 
                 </div>
 
 
-                {/* SEARCH */}
+                {/* ==================================
+                    SEARCH
+                ================================== */}
 
                 <div className="header-search">
 
@@ -169,24 +241,55 @@ function CustomerLayout() {
                 </div>
 
 
-                {/* ACTIONS */}
+                {/* ==================================
+                    HEADER ACTIONS
+                ================================== */}
 
                 <div className="header-actions">
 
-                    {/* CART */}
+
+                    {/* ==================================
+                        GIỎ HÀNG
+                    ================================== */}
 
                     <Link
                         to="/cart"
                         className="cart-btn"
-                        aria-label="Giỏ hàng"
+                        aria-label={
+                            cartCount > 0
+                                ? `Giỏ hàng, ${cartCount} sản phẩm`
+                                : "Giỏ hàng"
+                        }
                     >
 
-                        <ShoppingCart size={21} />
+                        <ShoppingCart
+                            size={21}
+                        />
+
+
+                        {/* ==================================
+                            BADGE SỐ LƯỢNG
+
+                            Badge chỉ xuất hiện khi
+                            giỏ hàng có sản phẩm.
+
+                            Ví dụ:
+
+                            Sony × 14
+                            Dell × 10
+
+                            → Badge = 24
+                        ================================== */}
 
                         {cartCount > 0 && (
 
                             <span className="cart-badge">
-                                {cartCount}
+
+                                {cartCount > 99
+                                    ? "99+"
+                                    : cartCount
+                                }
+
                             </span>
 
                         )}
@@ -194,7 +297,9 @@ function CustomerLayout() {
                     </Link>
 
 
-                    {/* ACCOUNT */}
+                    {/* ==================================
+                        CHƯA ĐĂNG NHẬP
+                    ================================== */}
 
                     {!isLoggedIn ? (
 
@@ -213,25 +318,26 @@ function CustomerLayout() {
 
                     ) : (
 
-                        /*
-                         * ==================================
-                         * USER MENU
-                         * ==================================
-                         */
+                        /* ==================================
+                           USER ĐÃ ĐĂNG NHẬP
+                        ================================== */
 
                         <div className="user-area">
 
-                            {/* TÊN TÀI KHOẢN */}
+
+                            {/* USER INFO */}
 
                             <div className="user-info">
 
                                 <User size={19} />
 
                                 <span>
+
                                     {user?.name ||
                                         user?.fullName ||
                                         user?.username ||
                                         "Tài khoản"}
+
                                 </span>
 
                                 <ChevronDown
@@ -242,9 +348,10 @@ function CustomerLayout() {
                             </div>
 
 
-                            {/* DROPDOWN */}
+                            {/* USER DROPDOWN */}
 
                             <div className="user-dropdown">
+
 
                                 {/* THÔNG TIN TÀI KHOẢN */}
 
@@ -290,6 +397,7 @@ function CustomerLayout() {
                                 {/* ĐĂNG XUẤT */}
 
                                 <button
+                                    type="button"
                                     className="user-dropdown-item logout-dropdown-item"
                                     onClick={handleLogout}
                                 >
@@ -315,9 +423,9 @@ function CustomerLayout() {
             </header>
 
 
-            {/* =========================
+            {/* ==================================
                 MAIN
-            ========================= */}
+            ================================== */}
 
             <main className="customer-main">
 
@@ -326,9 +434,9 @@ function CustomerLayout() {
             </main>
 
 
-            {/* =========================
+            {/* ==================================
                 FOOTER
-            ========================= */}
+            ================================== */}
 
             <footer className="customer-footer">
 
@@ -349,6 +457,7 @@ function CustomerLayout() {
         </div>
 
     );
+
 }
 
 

@@ -445,3 +445,31 @@
     }
 
 }
+
+/* =========================
+   QUANTITY INPUT
+========================= */
+
+.quantity-control input {
+    width: 45px;
+    height: 42px;
+
+    padding: 0;
+
+    border: none;
+    outline: none;
+
+    background: white;
+
+    color: var(--text);
+
+    text-align: center;
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.quantity-control input:focus {
+    outline: none;
+    background: #F8FBFF;
+}
