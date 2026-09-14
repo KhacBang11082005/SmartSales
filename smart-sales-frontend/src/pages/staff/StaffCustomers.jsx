@@ -1,7 +1,6 @@
-import AdminProducts from "../admin/AdminProducts";
+import AdminCustomers from "../admin/AdminCustomers";
 
-function StaffProducts() {
-    return <AdminProducts employeeMode />;
+export default function StaffCustomers() {
+    return <AdminCustomers readOnly={true} />;
 }
 
-export default StaffProducts;
