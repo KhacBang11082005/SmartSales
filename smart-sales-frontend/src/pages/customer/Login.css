@@ -58,7 +58,7 @@
 }
 
 .login-logo img {
-    width: 150px;
+    width: 2500px;
 
     max-height: 65px;
 
@@ -336,4 +336,84 @@
         transform: none;
     }
 
+}
+
+/* ========================================
+   REGISTER + FORGOT PASSWORD
+======================================== */
+
+.login-bottom {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    margin-top: 25px;
+}
+
+
+/* ========================================
+   REGISTER
+======================================== */
+
+.login-register {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 6px;
+
+    margin: 0;
+
+    font-size: 14px;
+
+    color: var(--text-secondary);
+}
+
+.login-register a {
+    color: var(--primary);
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition: 0.2s;
+}
+
+.login-register a:hover {
+    text-decoration: underline;
+}
+
+
+/* ========================================
+   FORGOT PASSWORD
+======================================== */
+
+.login-forgot {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    margin: 0;
+}
+
+.login-forgot a {
+    color: var(--primary);
+
+    font-weight: 650;
+
+    text-decoration: none;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.login-forgot a:hover {
+    text-decoration: underline;
 }

@@ -26,7 +26,9 @@ import OrderDetail from "./pages/customer/OrderDetail";
 
 import Login from "./pages/customer/Login";
 import Register from "./pages/customer/Register";
-
+import ForgotPassword from "./pages/customer/ForgotPassword";
+import VerifyOtp from "./pages/customer/VerifyOtp";
+import ResetPassword from "./pages/customer/ResetPassword";
 
 // =====================================================
 // PROTECTED ROUTE
@@ -330,6 +332,20 @@ function App() {
                 <Route
                     path="/register"
                     element={<Register />}
+                />
+                <Route
+                    path="/forgot-password"
+                    element={<ForgotPassword />}
+                />
+
+                <Route
+                    path="/verify-otp"
+                    element={<VerifyOtp />}
+                />
+
+                <Route
+                    path="/reset-password"
+                    element={<ResetPassword />}
                 />
 
 

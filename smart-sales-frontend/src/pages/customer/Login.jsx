@@ -303,7 +303,7 @@ function Login() {
 
                 </form>
 
-
+                <div className="login-bottom">
                 {/* ==================================
                     REGISTER
                 ================================== */}
@@ -319,7 +319,18 @@ function Login() {
                     </Link>
 
                 </div>
+                {/* ==================================
+                        FORGOT PASSWORD
+                    ================================== */}
 
+                <div className="login-forgot">
+
+                    <Link to="/forgot-password">
+                        Quên mật khẩu?
+                    </Link>
+
+                </div>
+                </div>
 
                 {/* ==================================
                     BACK TO PRODUCTS

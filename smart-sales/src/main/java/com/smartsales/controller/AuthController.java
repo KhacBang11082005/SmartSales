@@ -5,6 +5,12 @@ import com.smartsales.dto.LoginResponse;
 import com.smartsales.dto.RegisterRequest;
 import com.smartsales.service.AuthService;
 
+
+import com.smartsales.dto.ForgotPasswordRequest;
+import com.smartsales.dto.VerifyOtpRequest;
+import com.smartsales.dto.ResetPasswordRequest;
+
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,7 +66,96 @@ public class AuthController {
         }
     }
 
+    // =====================================================
+// FORGOT PASSWORD - SEND OTP
+// =====================================================
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(
+            @RequestBody ForgotPasswordRequest request) {
+
+        try {
+
+            authService.sendForgotPasswordOtp(request);
+
+            return ResponseEntity.ok(
+                    new MessageResponse(
+                            "Mã OTP đã được gửi đến email của bạn."
+                    )
+            );
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            new MessageResponse(
+                                    e.getMessage()
+                            )
+                    );
+        }
+    }
+
+// =====================================================
+// VERIFY OTP
+// =====================================================
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(
+            @RequestBody VerifyOtpRequest request) {
+
+        try {
+
+            authService.verifyForgotPasswordOtp(request);
+
+            return ResponseEntity.ok(
+                    new MessageResponse(
+                            "Xác thực OTP thành công."
+                    )
+            );
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            new MessageResponse(
+                                    e.getMessage()
+                            )
+                    );
+        }
+    }
+
+
+    // =====================================================
+// RESET PASSWORD
+// =====================================================
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @RequestBody ResetPasswordRequest request) {
+
+        try {
+
+            authService.resetPassword(request);
+
+            return ResponseEntity.ok(
+                    new MessageResponse(
+                            "Đặt lại mật khẩu thành công."
+                    )
+            );
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            new MessageResponse(
+                                    e.getMessage()
+                            )
+                    );
+        }
+    }
     // =====================================================
     // MESSAGE
     // =====================================================
