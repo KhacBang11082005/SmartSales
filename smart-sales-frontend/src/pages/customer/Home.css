@@ -181,40 +181,113 @@
     display: flex;
     justify-content: space-between;
     align-items: end;
+
     margin-bottom: 30px;
 }
 
 .section-label {
     color: #16a34a;
+
     font-size: 13px;
     font-weight: 700;
+
     letter-spacing: 1.5px;
 }
 
 .section-header h2 {
     margin-top: 8px;
+
     color: #111827;
+
     font-size: 30px;
 }
 
 .section-header a {
     display: flex;
+
     align-items: center;
     gap: 6px;
+
     color: #16a34a;
+
     font-weight: 600;
 }
 
 
 /* CATEGORY */
 
+/*
+ * Danh mục hiển thị theo hàng ngang.
+ * Có thể giữ chuột và kéo sang trái/phải.
+ * Thanh cuộn được ẩn hoàn toàn.
+ */
+
 .category-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
+
+    flex-direction: row;
+
     gap: 20px;
+
+    width: 100%;
+
+    flex-wrap: nowrap;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding: 5px 4px 20px;
+
+    box-sizing: border-box;
+
+    scroll-behavior: smooth;
+
+    -webkit-overflow-scrolling: touch;
+
+    /* Ẩn thanh cuộn Firefox */
+    scrollbar-width: none;
+
+    /* Hiện biểu tượng bàn tay */
+    cursor: grab;
+
+    /* Không cho bôi đen nội dung khi kéo */
+    user-select: none;
 }
 
+
+/* Ẩn thanh cuộn Chrome / Edge / Safari */
+
+.category-grid::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* Khi đang giữ chuột kéo */
+
+.category-grid.dragging {
+    cursor: grabbing;
+
+    scroll-behavior: auto;
+}
+
+
+/* Khi đang kéo không click nhầm vào danh mục */
+
+.category-grid.dragging .category-card {
+    pointer-events: none;
+}
+
+
+/* CATEGORY CARD */
+
 .category-card {
+    flex: 0 0 250px;
+
+    width: 250px;
+    min-width: 250px;
+
+    box-sizing: border-box;
+
     padding: 28px;
 
     background: var(--surface);
@@ -226,6 +299,8 @@
     box-shadow: var(--shadow-sm);
 
     transition: 0.25s;
+
+    text-decoration: none;
 }
 
 .category-card:hover {
@@ -238,11 +313,15 @@
             rgba(0, 91, 255, 0.10);
 }
 
+
+/* CATEGORY ICON */
+
 .category-icon {
     width: 62px;
     height: 62px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -261,11 +340,98 @@
 }
 
 
+/* CATEGORY TITLE */
+
+.category-card h3 {
+    margin: 0 0 8px;
+
+    color: var(--navy);
+
+    font-size: 18px;
+
+    line-height: 1.4;
+}
+
+
+/* CATEGORY TEXT */
+
+.category-card > span {
+    color: #6B7280;
+
+    font-size: 14px;
+}
+
+
+/* CATEGORY RESPONSIVE */
+
+/* TABLET */
+
+@media (max-width: 1024px) {
+
+    .category-grid {
+        gap: 18px;
+    }
+
+    .category-card {
+        flex: 0 0 240px;
+
+        width: 240px;
+        min-width: 240px;
+    }
+}
+
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+
+    .category-grid {
+        gap: 16px;
+
+        padding-bottom: 15px;
+
+        scroll-snap-type: x mandatory;
+    }
+
+    .category-card {
+        flex: 0 0 75%;
+
+        width: 75%;
+        min-width: 75%;
+
+        scroll-snap-align: start;
+
+        padding: 24px;
+    }
+}
+
+
+/* ĐIỆN THOẠI MÀN HÌNH NHỎ */
+
+@media (max-width: 480px) {
+
+    .category-grid {
+        gap: 14px;
+    }
+
+    .category-card {
+        flex: 0 0 82%;
+
+        width: 82%;
+        min-width: 82%;
+
+        padding: 22px;
+    }
+}
+
+
 /* PRODUCT */
 
 .product-grid {
     display: grid;
+
     grid-template-columns: repeat(4, 1fr);
+
     gap: 20px;
 }
 
@@ -295,6 +461,7 @@
     height: 220px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -312,6 +479,7 @@
     color: var(--primary);
 
     font-size: 13px;
+
     font-weight: 700;
 }
 
@@ -326,10 +494,12 @@
     height: 40px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
     border: none;
+
     border-radius: 10px;
 
     background:

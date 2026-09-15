@@ -1,45 +1,114 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import {
     ArrowRight,
     Headphones,
     Laptop,
     Smartphone,
-    ShoppingBag
+    ShoppingBag,
+    Tv,
+    Camera,
+    Tablet,
+    Watch,
+    Package
 } from "lucide-react";
 
 import "./Home.css";
 
 import { getProducts } from "../../services/productApi";
+import { getCategories } from "../../services/categoryApi";
 
 
 /* =========================================================
-   DANH MỤC
+   ICON DANH MỤC
 ========================================================= */
 
-const categories = [
-    {
-        id: 1,
-        name: "Điện thoại",
-        icon: Smartphone
-    },
-    {
-        id: 2,
-        name: "Laptop",
-        icon: Laptop
-    },
-    {
-        id: 3,
-        name: "Tai nghe",
-        icon: Headphones
-    },
-    {
-        id: 4,
-        name: "Phụ kiện",
-        icon: ShoppingBag
+/*
+ * Giữ icon cũ cho các danh mục hiện tại.
+ * Các danh mục mới thêm từ Admin sẽ tự động được
+ * chọn icon phù hợp theo tên.
+ */
+
+const getCategoryIcon = (name) => {
+
+    if (!name) {
+        return Package;
     }
-];
+
+    const categoryName = name.toLowerCase();
+
+    /* Điện thoại */
+    if (
+        categoryName.includes("điện thoại") ||
+        categoryName.includes("smartphone") ||
+        categoryName.includes("phone")
+    ) {
+        return Smartphone;
+    }
+
+    /* Laptop */
+    if (
+        categoryName.includes("laptop") ||
+        categoryName.includes("máy tính xách tay")
+    ) {
+        return Laptop;
+    }
+
+    /* Tai nghe */
+    if (
+        categoryName.includes("tai nghe") ||
+        categoryName.includes("headphone") ||
+        categoryName.includes("earphone") ||
+        categoryName.includes("earbuds")
+    ) {
+        return Headphones;
+    }
+
+    /* Phụ kiện */
+    if (
+        categoryName.includes("phụ kiện") ||
+        categoryName.includes("accessory")
+    ) {
+        return ShoppingBag;
+    }
+
+    /* Tivi */
+    if (
+        categoryName.includes("tivi") ||
+        categoryName.includes("tv") ||
+        categoryName.includes("tivi")
+    ) {
+        return Tv;
+    }
+
+    /* Camera */
+    if (
+        categoryName.includes("camera") ||
+        categoryName.includes("máy ảnh")
+    ) {
+        return Camera;
+    }
+
+    /* Máy tính bảng */
+    if (
+        categoryName.includes("tablet") ||
+        categoryName.includes("máy tính bảng")
+    ) {
+        return Tablet;
+    }
+
+    /* Đồng hồ */
+    if (
+        categoryName.includes("đồng hồ") ||
+        categoryName.includes("smartwatch")
+    ) {
+        return Watch;
+    }
+
+    /* Không xác định */
+    return Package;
+};
 
 
 /* =========================================================
@@ -65,18 +134,35 @@ function Home() {
 
     const [products, setProducts] = useState([]);
 
+    const [categories, setCategories] = useState([]);
+
     const [loading, setLoading] = useState(true);
 
     const [error, setError] = useState("");
 
 
     /* =====================================================
-       LẤY TẤT CẢ SẢN PHẨM
+       ĐIỀU KHIỂN KÉO DANH MỤC
+    ===================================================== */
+
+    const categoryGridRef = useRef(null);
+
+    const isDragging = useRef(false);
+
+    const startX = useRef(0);
+
+    const scrollLeft = useRef(0);
+
+    const hasDragged = useRef(false);
+
+
+    /* =====================================================
+       LẤY TẤT CẢ SẢN PHẨM VÀ DANH MỤC
     ===================================================== */
 
     useEffect(() => {
 
-        const fetchProducts = async () => {
+        const fetchHomeData = async () => {
 
             try {
 
@@ -84,11 +170,45 @@ function Home() {
 
                 setError("");
 
-                const data = await getProducts();
+
+                /* =========================
+                   LẤY SẢN PHẨM
+                ========================= */
+
+                const productData = await getProducts();
 
                 console.log(
                     "📦 Sản phẩm trang chủ:",
-                    data
+                    productData
+                );
+
+
+                if (Array.isArray(productData)) {
+
+                    setProducts(productData);
+
+                } else if (
+                    Array.isArray(productData?.content)
+                ) {
+
+                    setProducts(productData.content);
+
+                } else {
+
+                    setProducts([]);
+
+                }
+
+
+                /* =========================
+                   LẤY DANH MỤC
+                ========================= */
+
+                const categoryData = await getCategories();
+
+                console.log(
+                    "📂 Danh mục trang chủ:",
+                    categoryData
                 );
 
 
@@ -107,17 +227,19 @@ function Home() {
                  * }
                  */
 
-                if (Array.isArray(data)) {
+                if (Array.isArray(categoryData)) {
 
-                    setProducts(data);
+                    setCategories(categoryData);
 
-                } else if (Array.isArray(data?.content)) {
+                } else if (
+                    Array.isArray(categoryData?.content)
+                ) {
 
-                    setProducts(data.content);
+                    setCategories(categoryData.content);
 
                 } else {
 
-                    setProducts([]);
+                    setCategories([]);
 
                 }
 
@@ -125,12 +247,12 @@ function Home() {
             } catch (error) {
 
                 console.error(
-                    "❌ Không lấy được sản phẩm:",
+                    "❌ Không lấy được dữ liệu trang chủ:",
                     error
                 );
 
                 setError(
-                    "Không thể tải danh sách sản phẩm."
+                    "Không thể tải dữ liệu trang chủ."
                 );
 
             } finally {
@@ -142,9 +264,130 @@ function Home() {
         };
 
 
-        fetchProducts();
+        fetchHomeData();
 
     }, []);
+
+
+    /* =====================================================
+       BẮT ĐẦU KÉO DANH MỤC
+    ===================================================== */
+
+    const handleMouseDown = (e) => {
+
+        if (!categoryGridRef.current) {
+            return;
+        }
+
+        isDragging.current = true;
+
+        hasDragged.current = false;
+
+        startX.current =
+            e.pageX -
+            categoryGridRef.current.offsetLeft;
+
+        scrollLeft.current =
+            categoryGridRef.current.scrollLeft;
+
+        categoryGridRef.current.classList.add("dragging");
+
+    };
+
+
+    /* =====================================================
+       DI CHUYỂN DANH MỤC KHI KÉO
+    ===================================================== */
+
+    const handleMouseMove = (e) => {
+
+        if (
+            !isDragging.current ||
+            !categoryGridRef.current
+        ) {
+            return;
+        }
+
+        e.preventDefault();
+
+        const x =
+            e.pageX -
+            categoryGridRef.current.offsetLeft;
+
+        const walk =
+            x -
+            startX.current;
+
+
+        if (Math.abs(walk) > 5) {
+
+            hasDragged.current = true;
+
+        }
+
+
+        categoryGridRef.current.scrollLeft =
+            scrollLeft.current -
+            walk;
+
+    };
+
+
+    /* =====================================================
+       KẾT THÚC KÉO
+    ===================================================== */
+
+    const handleMouseUp = () => {
+
+        isDragging.current = false;
+
+        if (categoryGridRef.current) {
+
+            categoryGridRef.current.classList.remove(
+                "dragging"
+            );
+
+        }
+
+    };
+
+
+    /* =====================================================
+       RỜI KHỎI VÙNG DANH MỤC
+    ===================================================== */
+
+    const handleMouseLeave = () => {
+
+        isDragging.current = false;
+
+        if (categoryGridRef.current) {
+
+            categoryGridRef.current.classList.remove(
+                "dragging"
+            );
+
+        }
+
+    };
+
+
+    /* =====================================================
+       NGĂN CLICK KHI VỪA KÉO
+    ===================================================== */
+
+    const handleCategoryClick = (e) => {
+
+        if (hasDragged.current) {
+
+            e.preventDefault();
+
+            e.stopPropagation();
+
+            hasDragged.current = false;
+
+        }
+
+    };
 
 
     return (
@@ -225,12 +468,41 @@ function Home() {
                 </div>
 
 
+                {/* =================================================
+                    CATEGORY SLIDER
+                ================================================= */}
 
-                <div className="category-grid">
+                <div
+                    className="category-grid"
+                    ref={categoryGridRef}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseLeave}
+                >
 
                     {categories.map((category) => {
 
-                        const Icon = category.icon;
+                        /*
+                         * Lấy tên danh mục.
+                         *
+                         * Hỗ trợ cả trường hợp API trả:
+                         * category.name
+                         * hoặc category.categoryName
+                         */
+
+                        const categoryName =
+                            category.name ||
+                            category.categoryName ||
+                            "Danh mục";
+
+
+                        /*
+                         * Tự động chọn icon.
+                         */
+
+                        const Icon =
+                            getCategoryIcon(categoryName);
 
 
                         return (
@@ -238,9 +510,10 @@ function Home() {
                             <Link
                                 key={category.id}
                                 to={`/products?category=${encodeURIComponent(
-                                    category.name
+                                    categoryName
                                 )}`}
                                 className="category-card"
+                                onClick={handleCategoryClick}
                             >
 
                                 <div className="category-icon">
@@ -252,7 +525,7 @@ function Home() {
 
                                 <h3>
 
-                                    {category.name}
+                                    {categoryName}
 
                                 </h3>
 
@@ -482,7 +755,8 @@ function Home() {
                                         <p className="product-description">
 
                                             {product.description
-                                                || "Sản phẩm chất lượng cao tại Smart Sales."
+                                                ||
+                                                "Sản phẩm chất lượng cao tại Smart Sales."
                                             }
 
                                         </p>
