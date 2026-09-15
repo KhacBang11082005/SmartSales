@@ -103,7 +103,53 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                         .findByEmail(usernameOrEmail)
                                         .orElse(null)
                         );
+                // =========================================================
+                // KIỂM TRA TÀI KHOẢN BỊ KHÓA
+                //
+                // Trường hợp:
+                //
+                // CUSTOMER đã đăng nhập
+                // -> có JWT
+                // -> ADMIN khóa tài khoản
+                // -> JWT cũ vẫn còn hạn
+                //
+                // Nếu không kiểm tra ở đây thì CUSTOMER vẫn có thể
+                // tiếp tục gọi API.
+                //
+                // Vì vậy phải kiểm tra trạng thái user ở mỗi request.
+                // =========================================================
 
+                if (
+                        user != null &&
+                                user.getStatus() == User.Status.LOCKED
+                ) {
+
+                    // Xóa authentication hiện tại
+                    SecurityContextHolder.clearContext();
+
+                    // Trả HTTP 401
+                    response.setStatus(
+                            HttpServletResponse.SC_UNAUTHORIZED
+                    );
+
+                    response.setContentType(
+                            "application/json"
+                    );
+
+                    response.setCharacterEncoding(
+                            "UTF-8"
+                    );
+
+                    response.getWriter().write(
+                            """
+                            {
+                                "message": "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên."
+                            }
+                            """
+                    );
+
+                    return;
+                }
                 // =====================================================
                 // 5. Kiểm tra user và role
                 // =====================================================

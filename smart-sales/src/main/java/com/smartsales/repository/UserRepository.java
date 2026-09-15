@@ -8,23 +8,59 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    // Tìm tài khoản theo username
+    // =========================================================
+    // TÌM USER THEO USERNAME
+    // =========================================================
+
     Optional<User> findByUsername(String username);
 
-    // Tìm tài khoản theo email
+
+    // =========================================================
+    // TÌM USER THEO EMAIL
+    //
+    // SmartSales hiện tại đăng nhập bằng email.
+    // =========================================================
+
     Optional<User> findByEmail(String email);
 
-    // Kiểm tra username đã tồn tại chưa
+
+    // =========================================================
+    // KIỂM TRA USERNAME ĐÃ TỒN TẠI
+    // =========================================================
+
     boolean existsByUsername(String username);
 
-    // Kiểm tra email đã tồn tại chưa
+
+    // =========================================================
+    // KIỂM TRA EMAIL ĐÃ TỒN TẠI
+    // =========================================================
+
     boolean existsByEmail(String email);
 
-    // Lấy danh sách ADMIN + EMPLOYEE
+
+    // =========================================================
+    // LẤY ADMIN + EMPLOYEE
+    // =========================================================
+
     List<User> findByRole_NameInOrderByCreatedAtDesc(
             List<String> roleNames
     );
 
-    // Đếm số lượng user theo role
+
+    // =========================================================
+    // ĐẾM USER THEO ROLE
+    // =========================================================
+
     long countByRole_Id(Long roleId);
+
+
+    // =========================================================
+    // LẤY CÁC CUSTOMER
+    //
+    // Dùng cho Scheduler kiểm tra:
+    // CUSTOMER nào đã quá 7 ngày không đăng nhập.
+    // =========================================================
+    List<User> findByRole_NameIgnoreCase(
+            String roleName
+    );
 }

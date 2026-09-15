@@ -441,8 +441,36 @@ public class AuthService {
     // LOGIN
     // =====================================================
 
+    // =========================================================
+// LOGIN
+// =========================================================
+//
+// Quy tắc:
+//
+// 1. Không tìm thấy email
+//    -> Email hoặc mật khẩu không đúng
+//
+// 2. Tài khoản LOCKED
+//    -> Không cho đăng nhập
+//    -> Trả thông báo tài khoản bị khóa
+//
+// 3. Tài khoản INACTIVE
+//    -> Vẫn cho đăng nhập
+//    -> Sau khi đăng nhập thành công:
+//       INACTIVE -> ACTIVE
+//
+// 4. Đăng nhập thành công:
+//    -> cập nhật lastLoginAt
+//
+// =========================================================
+
+    @Transactional
     public LoginResponse login(
             LoginRequest request) {
+
+        // =====================================================
+        // 1. TÌM USER THEO EMAIL
+        // =====================================================
 
         User user =
                 userRepository
@@ -456,16 +484,26 @@ public class AuthService {
                         );
 
 
-        if (
-                user.getStatus()
-                        != User.Status.ACTIVE
-        ) {
+        // =====================================================
+        // 2. KIỂM TRA TÀI KHOẢN BỊ KHÓA
+        //
+        // LOCKED là do ADMIN chủ động khóa.
+        //
+        // Tài khoản LOCKED tuyệt đối không được đăng nhập.
+        // =====================================================
+
+        if (user.getStatus() == User.Status.LOCKED) {
 
             throw new RuntimeException(
-                    "Tài khoản hiện không hoạt động"
+                    "Tài khoản của bạn đã bị khóa. " +
+                            "Vui lòng liên hệ quản trị viên."
             );
         }
 
+
+        // =====================================================
+        // 3. KIỂM TRA MẬT KHẨU
+        // =====================================================
 
         if (
                 !passwordEncoder.matches(
@@ -480,9 +518,63 @@ public class AuthService {
         }
 
 
+        // =====================================================
+        // 4. ĐĂNG NHẬP THÀNH CÔNG
+        //
+        // Lưu thời gian đăng nhập mới nhất.
+        //
+        // Ví dụ:
+        //
+        // 14/09/2026 20:00
+        //
+        // Nếu lần sau đăng nhập:
+        //
+        // 15/09/2026 20:00
+        //
+        // lastLoginAt sẽ được cập nhật lại.
+        // =====================================================
+
+        user.setLastLoginAt(
+                LocalDateTime.now()
+        );
+
+
+        // =====================================================
+        // 5. NẾU TÀI KHOẢN ĐANG INACTIVE
+        //
+        // Có nghĩa là tài khoản trước đó đã hơn 7 ngày
+        // không đăng nhập.
+        //
+        // Nhưng bây giờ khách hàng đã đăng nhập thành công,
+        // vì vậy chuyển lại ACTIVE.
+        // =====================================================
+
+        if (user.getStatus() == User.Status.INACTIVE) {
+
+            user.setStatus(
+                    User.Status.ACTIVE
+            );
+        }
+
+
+        // =====================================================
+        // 6. LƯU USER
+        // =====================================================
+
+        userRepository.save(user);
+
+
+        // =====================================================
+        // 7. TẠO JWT
+        // =====================================================
+
         String token =
                 jwtService.generateToken(user);
 
+
+        // =====================================================
+        // 8. TRẢ LOGIN RESPONSE
+        // =====================================================
 
         return new LoginResponse(
 

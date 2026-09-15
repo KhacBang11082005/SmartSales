@@ -579,6 +579,17 @@ public class CustomerService {
 
         // =====================================================
         // VALIDATE STATUS
+        //
+        // ADMIN CHỈ ĐƯỢC PHÉP CHỌN:
+        //
+        // ACTIVE = Hoạt động
+        // LOCKED = Đã khóa
+        //
+        // ADMIN KHÔNG ĐƯỢC CHỌN:
+        //
+        // INACTIVE = Không hoạt động
+        //
+        // INACTIVE do hệ thống Scheduler tự động xử lý.
         // =====================================================
 
         if (
@@ -600,21 +611,20 @@ public class CustomerService {
                         .toUpperCase();
 
 
-        try {
+        // =====================================================
+        // CHỈ CHẤP NHẬN ACTIVE VÀ LOCKED
+        // =====================================================
 
-            User.Status.valueOf(
-                    status
-            );
+                if (
+                        !status.equals("ACTIVE") &&
+                                !status.equals("LOCKED")
+                ) {
 
-        } catch (
-                IllegalArgumentException ex
-        ) {
-
-            throw new RuntimeException(
-                    "Trạng thái không hợp lệ. " +
-                            "Chỉ chấp nhận ACTIVE, INACTIVE hoặc LOCKED."
-            );
-        }
+                    throw new RuntimeException(
+                            "Trạng thái không hợp lệ. " +
+                                    "Admin chỉ được chọn Hoạt động hoặc Đã khóa."
+                    );
+                }
 
 
         // =====================================================

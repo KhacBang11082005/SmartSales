@@ -27,14 +27,39 @@ public class AuthController {
 
 
     // =====================================================
-    // LOGIN
-    // =====================================================
+// LOGIN
+// =====================================================
+//
+// Backend bắt lỗi từ AuthService để frontend nhận được
+// đúng thông báo.
+//
+// Đặc biệt:
+//
+// "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ
+// quản trị viên."
+//
+// =====================================================
 
     @PostMapping("/login")
-    public LoginResponse login(
+    public ResponseEntity<?> login(
             @RequestBody LoginRequest request) {
 
-        return authService.login(request);
+        try {
+
+            return ResponseEntity.ok(
+                    authService.login(request)
+            );
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(
+                            new MessageResponse(
+                                    e.getMessage()
+                            )
+                    );
+        }
     }
 
 

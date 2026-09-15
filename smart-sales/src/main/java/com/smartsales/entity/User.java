@@ -55,6 +55,19 @@ public class User {
     // Ngày tạo tài khoản
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+// =========================================================
+// NGÀY GIỜ ĐĂNG NHẬP GẦN NHẤT
+//
+// Dùng để xác định khách hàng có đăng nhập trong vòng
+// 7 ngày gần nhất hay không.
+//
+// Nếu quá 7 ngày không đăng nhập:
+// ACTIVE -> INACTIVE
+// =========================================================
+
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
 
     public enum Status {
         ACTIVE,
@@ -127,5 +140,17 @@ public class User {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    // =========================================================
+// GETTER / SETTER - LAST LOGIN
+// =========================================================
+
+    public LocalDateTime getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(LocalDateTime lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
     }
 }

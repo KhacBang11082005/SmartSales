@@ -186,7 +186,12 @@ export function AuthProvider({ children }) {
 
             return loggedInUser;
 
-        } catch (error) {
+        }
+        catch (error) {
+
+            // ==============================================
+            // HIỂN THỊ LOG ĐỂ DEBUG
+            // ==============================================
 
             console.error(
                 "❌ LOGIN ERROR:",
@@ -198,7 +203,29 @@ export function AuthProvider({ children }) {
                 error.response?.data
             );
 
-            return null;
+
+            // ==============================================
+            // LẤY MESSAGE TỪ BACKEND
+            //
+            // Backend trả:
+            //
+            // {
+            //     "message": "Tài khoản của bạn đã bị khóa..."
+            // }
+            //
+            // ==============================================
+
+            const message =
+                error.response?.data?.message ||
+                error.response?.data?.error ||
+                "Email hoặc mật khẩu không chính xác.";
+
+
+            // ==============================================
+            // NÉM MESSAGE LÊN LOGIN.JSX
+            // ==============================================
+
+            throw new Error(message);
         }
 
     };

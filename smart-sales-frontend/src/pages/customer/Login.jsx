@@ -149,22 +149,38 @@ function Login() {
 
             navigate(from);
 
-        } catch (error) {
+        }  catch (error) {
 
-            console.error(
-                "❌ LOGIN ERROR:",
-                error
-            );
+        // ==========================================
+        // LOGIN ERROR
+        // ==========================================
 
-            setError(
-                "Không thể kết nối với máy chủ. Vui lòng thử lại."
-            );
+        console.error(
+            "❌ LOGIN ERROR:",
+            error
+        );
 
-        } finally {
 
-            setLoading(false);
+        // ==========================================
+        // HIỂN THỊ ĐÚNG MESSAGE BACKEND
+        //
+        // Ví dụ:
+        //
+        // Tài khoản của bạn đã bị khóa.
+        // Vui lòng liên hệ quản trị viên.
+        //
+        // ==========================================
 
-        }
+        setError(
+            error.message ||
+            "Không thể kết nối với máy chủ. Vui lòng thử lại."
+        );
+
+    } finally {
+
+        setLoading(false);
+
+    }
 
     };
 

@@ -898,11 +898,6 @@ export default function AdminCustomers({ readOnly = false }) {
                                                 <option value="ACTIVE">
                                                     Hoạt động
                                                 </option>
-
-                                                <option value="INACTIVE">
-                                                    Không hoạt động
-                                                </option>
-
                                                 <option value="LOCKED">
                                                     Đã khóa
                                                 </option>
