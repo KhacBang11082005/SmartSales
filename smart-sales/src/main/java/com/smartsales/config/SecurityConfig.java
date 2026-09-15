@@ -397,7 +397,45 @@ public class SecurityConfig {
                                 "EMPLOYEE"
                         )
 
+                            // =================================================
+                            // ẢNH SẢN PHẨM
+                            //
+                            // Cho phép trình duyệt lấy ảnh đã upload.
+                            // =================================================
 
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/uploads/**"
+                                )
+                                .permitAll()
+
+
+                            // =================================================
+                            // UPLOAD ẢNH SẢN PHẨM
+                            //
+                            // ADMIN + EMPLOYEE
+                            // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/upload/product-image"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
+                                // =========================================================
+                                // UPLOAD NHIỀU ẢNH SẢN PHẨM
+                                // =========================================================
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/upload/product-images"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
                         // =================================================
                         // OTHER
                         // =================================================

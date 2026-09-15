@@ -29,7 +29,33 @@ import { getCategories } from "../../services/categoryApi";
  * Các danh mục mới thêm từ Admin sẽ tự động được
  * chọn icon phù hợp theo tên.
  */
+// =========================================================
+// XỬ LÝ URL ẢNH SẢN PHẨM
+// =========================================================
+// Backend lưu:
+// /uploads/abc.jpg
+//
+// Frontend cần chuyển thành:
+// http://localhost:8080/uploads/abc.jpg
+// =========================================================
 
+function getImageUrl(imageUrl) {
+
+    if (!imageUrl) {
+        return "";
+    }
+
+    // Nếu đã là URL đầy đủ thì giữ nguyên
+    if (
+        imageUrl.startsWith("http://") ||
+        imageUrl.startsWith("https://")
+    ) {
+        return imageUrl;
+    }
+
+    // Nếu là ảnh upload từ Backend
+    return `http://localhost:8080${imageUrl}`;
+}
 const getCategoryIcon = (name) => {
 
     if (!name) {
@@ -678,7 +704,7 @@ function Home() {
                                         {product.imageUrl ? (
 
                                             <img
-                                                src={product.imageUrl}
+                                                src={getImageUrl(product.imageUrl)}
                                                 alt={product.name}
                                                 style={{
                                                     width: "100%",
@@ -690,7 +716,7 @@ function Home() {
                                         ) : product.image_url ? (
 
                                             <img
-                                                src={product.image_url}
+                                                src={getImageUrl(product.image_url)}
                                                 alt={product.name}
                                                 style={{
                                                     width: "100%",

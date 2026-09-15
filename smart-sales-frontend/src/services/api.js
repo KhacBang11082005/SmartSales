@@ -1,13 +1,12 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "http://localhost:8080/api",
-    headers: {
-        "Content-Type": "application/json"
-    }
+    baseURL: "http://localhost:8080/api"
 });
 
-// Tự động gắn JWT vào tất cả request
+// =====================================================
+// TỰ ĐỘNG GỬI JWT TOKEN TRONG MỖI REQUEST
+// =====================================================
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");

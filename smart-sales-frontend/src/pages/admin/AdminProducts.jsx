@@ -1,10 +1,16 @@
+
 import {
     Edit3,
     LoaderCircle,
     Plus,
     Search,
     Trash2,
-    X
+    X,
+    ImagePlus,
+    Star,
+    Trash,
+    ChevronUp,
+    ChevronDown
 } from "lucide-react";
 
 import {
@@ -13,12 +19,23 @@ import {
     useState
 } from "react";
 
+
 import {
     createProduct,
     deleteProduct,
     getAdminProducts,
-    updateProduct
+    updateProduct,
+    uploadProductImages,
+    getProductImages,
+    addProductImages,
+
+    // API quản lý ảnh
+    deleteProductImage,
+    reorderProductImages,
+    setPrimaryProductImage
+
 } from "../../services/adminProductApi";
+
 
 import {
     getCategories
@@ -44,8 +61,30 @@ function formatPrice(price) {
     return new Intl.NumberFormat(
         "vi-VN"
     ).format(price) + " ₫";
-
 }
+
+
+/* =========================================================
+   CHUYỂN IMAGE PATH THÀNH URL ĐẦY ĐỦ
+========================================================= */
+
+function getImageUrl(imageUrl) {
+
+    if (!imageUrl) {
+        return "";
+    }
+
+    // Nếu đã là URL đầy đủ
+    if (
+        imageUrl.startsWith("http://") ||
+        imageUrl.startsWith("https://")
+    ) {
+        return imageUrl;
+    }
+
+    // Nếu là ảnh upload từ Backend
+    return `http://localhost:8080${imageUrl}`;
+    }
 
 
 /* =========================================================
@@ -100,6 +139,45 @@ function AdminProducts({ employeeMode = false }) {
 
     const [form, setForm] =
         useState(emptyForm);
+
+
+    /* =====================================================
+       ẢNH CŨ CỦA SẢN PHẨM
+    ===================================================== */
+
+    const [existingImages, setExistingImages] =
+        useState([]);
+
+
+    /* =====================================================
+       FILE ẢNH MỚI ADMIN CHỌN
+    ===================================================== */
+
+    const [newImageFiles, setNewImageFiles] =
+        useState([]);
+
+
+    /* =====================================================
+       PREVIEW ẢNH MỚI
+    ===================================================== */
+
+    const [newImagePreviews, setNewImagePreviews] =
+        useState([]);
+
+
+    /* =====================================================
+       ẢNH ĐƯỢC CHỌN LÀM ẢNH CHÍNH
+
+       Có thể là:
+
+       old-15
+       old-16
+       new-0
+       new-1
+    ===================================================== */
+
+    const [primaryImage, setPrimaryImage] =
+        useState(null);
 
 
     /* =====================================================
@@ -212,6 +290,39 @@ function AdminProducts({ employeeMode = false }) {
 
 
     /* =====================================================
+       RESET ẢNH
+    ===================================================== */
+
+    const resetImages = () => {
+
+        // Giải phóng URL preview
+        newImagePreviews.forEach(
+            preview => {
+
+                if (preview.url) {
+
+                    URL.revokeObjectURL(
+                        preview.url
+                    );
+
+                }
+
+            }
+        );
+
+
+        setExistingImages([]);
+
+        setNewImageFiles([]);
+
+        setNewImagePreviews([]);
+
+        setPrimaryImage(null);
+
+    };
+
+
+    /* =====================================================
        MỞ FORM THÊM
     ===================================================== */
 
@@ -219,14 +330,20 @@ function AdminProducts({ employeeMode = false }) {
 
         setEditingId(null);
 
+        resetImages();
+
+
         setForm({
+
             ...emptyForm,
 
             categoryId:
                 categories.length > 0
                     ? categories[0].id
                     : ""
+
         });
+
 
         setShowModal(true);
 
@@ -239,13 +356,17 @@ function AdminProducts({ employeeMode = false }) {
        MỞ FORM SỬA
     ===================================================== */
 
-    const handleEdit = (product) => {
+    const handleEdit = async (product) => {
 
         setEditingId(product.id);
 
+        resetImages();
+
+
         setForm({
 
-            name: product.name || "",
+            name:
+                product.name || "",
 
             categoryId:
                 product.category?.id || "",
@@ -267,6 +388,184 @@ function AdminProducts({ employeeMode = false }) {
 
         });
 
+
+        try {
+
+            /* =============================================
+               LẤY DANH SÁCH ẢNH CŨ
+            ============================================= */
+
+            const images =
+                await getProductImages(
+                    product.id
+                );
+
+
+            if (
+                Array.isArray(images) &&
+                images.length > 0
+            ) {
+
+                // Sắp xếp theo displayOrder
+                const sortedImages =
+                    [...images].sort(
+                        (a, b) =>
+                            Number(
+                                a.displayOrder || 0
+                            ) -
+                            Number(
+                                b.displayOrder || 0
+                            )
+                    );
+
+
+                setExistingImages(
+                    sortedImages
+                );
+
+
+                /* =========================================
+                   TÌM ẢNH CHÍNH
+                ========================================= */
+
+                const primary =
+                    sortedImages.find(
+                        image =>
+                            image.primary === true
+                    );
+
+
+                if (primary) {
+
+                    setPrimaryImage(
+                        `old-${primary.id}`
+                    );
+
+                    setForm(prev => ({
+
+                        ...prev,
+
+                        imageUrl:
+                        primary.imageUrl
+
+                    }));
+
+                } else {
+
+                    /* =====================================
+                       Nếu Backend chưa có is_primary
+                       thì tìm theo image_url
+                    ===================================== */
+
+                    const current =
+                        sortedImages.find(
+                            image =>
+                                image.imageUrl ===
+                                product.imageUrl
+                        );
+
+
+                    if (current) {
+
+                        setPrimaryImage(
+                            `old-${current.id}`
+                        );
+
+                    } else {
+
+                        // Mặc định ảnh đầu tiên
+                        setPrimaryImage(
+                            `old-${sortedImages[0].id}`
+                        );
+
+                    }
+
+                }
+
+            } else {
+
+                /* =========================================
+                   SẢN PHẨM CŨ CHƯA CÓ product_images
+                ========================================= */
+
+                if (product.imageUrl) {
+
+                    const legacyImage = {
+
+                        id:
+                            `legacy-${product.id}`,
+
+                        imageUrl:
+                        product.imageUrl,
+
+                        primary:
+                            true,
+
+                        displayOrder:
+                            1
+
+                    };
+
+
+                    setExistingImages([
+                        legacyImage
+                    ]);
+
+
+                    setPrimaryImage(
+                        `old-${legacyImage.id}`
+                    );
+
+                }
+
+            }
+
+
+        } catch (err) {
+
+            console.warn(
+                "Không lấy được ảnh sản phẩm:",
+                err
+            );
+
+
+            /* =============================================
+               FALLBACK ẢNH CŨ
+            ============================================= */
+
+            if (product.imageUrl) {
+
+                const legacyImage = {
+
+                    id:
+                        `legacy-${product.id}`,
+
+                    imageUrl:
+                    product.imageUrl,
+
+                    primary:
+                        true,
+
+                    displayOrder:
+                        1
+
+                };
+
+
+                setExistingImages([
+                    legacyImage
+                ]);
+
+
+                setPrimaryImage(
+                    `old-${legacyImage.id}`
+                );
+
+            }
+
+        }
+
+
         setShowModal(true);
 
         setError("");
@@ -283,6 +582,10 @@ function AdminProducts({ employeeMode = false }) {
         if (saving) {
             return;
         }
+
+
+        resetImages();
+
 
         setShowModal(false);
 
@@ -317,6 +620,958 @@ function AdminProducts({ employeeMode = false }) {
 
 
     /* =====================================================
+       CHỌN NHIỀU ẢNH
+    ===================================================== */
+
+    const handleImageChange = (event) => {
+
+        const files =
+            Array.from(
+                event.target.files || []
+            );
+
+
+        if (files.length === 0) {
+            return;
+        }
+
+
+        const MAX_NEW_IMAGES = 10;
+
+
+        if (
+            newImageFiles.length +
+            files.length >
+            MAX_NEW_IMAGES
+        ) {
+
+            alert(
+                `Bạn chỉ có thể chọn tối đa ${MAX_NEW_IMAGES} ảnh mới.`
+            );
+
+            event.target.value = "";
+
+            return;
+        }
+
+
+        const validFiles = [];
+
+
+        for (const file of files) {
+
+            /* =============================================
+               KIỂM TRA ĐỊNH DẠNG
+            ============================================= */
+
+            if (
+                !file.type.startsWith("image/")
+            ) {
+
+                alert(
+                    `File "${file.name}" không phải là hình ảnh.`
+                );
+
+                continue;
+            }
+
+
+            /* =============================================
+               GIỚI HẠN 5MB
+            ============================================= */
+
+            if (
+                file.size >
+                5 * 1024 * 1024
+            ) {
+
+                alert(
+                    `Ảnh "${file.name}" vượt quá 5MB.`
+                );
+
+                continue;
+            }
+
+
+            validFiles.push(file);
+
+        }
+
+
+        if (validFiles.length === 0) {
+
+            event.target.value = "";
+
+            return;
+        }
+
+
+        /* =============================================
+           TẠO PREVIEW
+        ============================================= */
+
+        const startIndex =
+            newImageFiles.length;
+
+
+        const previews =
+            validFiles.map(
+                (file, index) => ({
+
+                    file,
+
+                    url:
+                        URL.createObjectURL(
+                            file
+                        ),
+
+                    originalIndex:
+                        startIndex + index
+
+                })
+            );
+
+
+        setNewImageFiles(
+            prev => [
+                ...prev,
+                ...validFiles
+            ]
+        );
+
+
+        setNewImagePreviews(
+            prev => [
+                ...prev,
+                ...previews
+            ]
+        );
+
+
+        /* =============================================
+           NẾU CHƯA CÓ ẢNH CHÍNH
+           -> chọn ảnh mới đầu tiên
+        ============================================= */
+
+        if (!primaryImage) {
+
+            setPrimaryImage(
+                `new-${startIndex}`
+            );
+
+        }
+
+
+        event.target.value = "";
+
+    };
+
+
+    /* =====================================================
+       XÓA ẢNH MỚI
+    ===================================================== */
+
+    const handleRemoveNewImage = (index) => {
+
+        const image =
+            newImagePreviews[index];
+
+
+        if (image?.url) {
+
+            URL.revokeObjectURL(
+                image.url
+            );
+
+        }
+
+
+        const oldPrimary =
+            primaryImage;
+
+
+        /* =============================================
+           XÓA FILE
+        ============================================= */
+
+        setNewImageFiles(prev =>
+            prev.filter(
+                (_, i) =>
+                    i !== index
+            )
+        );
+
+
+        /* =============================================
+           XÓA PREVIEW
+        ============================================= */
+
+        setNewImagePreviews(prev =>
+            prev.filter(
+                (_, i) =>
+                    i !== index
+            )
+        );
+
+
+        /* =============================================
+           CẬP NHẬT ẢNH CHÍNH
+        ============================================= */
+
+        if (
+            oldPrimary ===
+            `new-${index}`
+        ) {
+
+            const remainingNew =
+                newImagePreviews.filter(
+                    (_, i) =>
+                        i !== index
+                );
+
+
+            if (
+                remainingNew.length > 0
+            ) {
+
+                setPrimaryImage(
+                    `new-${
+                        index === 0
+                            ? 0
+                            : 0
+                    }`
+                );
+
+            } else if (
+                existingImages.length > 0
+            ) {
+
+                setPrimaryImage(
+                    `old-${existingImages[0].id}`
+                );
+
+                setForm(prev => ({
+
+                    ...prev,
+
+                    imageUrl:
+                    existingImages[0].imageUrl
+
+                }));
+
+            } else {
+
+                setPrimaryImage(null);
+
+                setForm(prev => ({
+
+                    ...prev,
+
+                    imageUrl: ""
+
+                }));
+
+            }
+
+        } else if (
+            oldPrimary?.startsWith("new-")
+        ) {
+
+            /* =========================================
+               Nếu xóa ảnh đứng trước ảnh chính
+               -> giảm index ảnh chính
+            ========================================= */
+
+            const primaryIndex =
+                Number(
+                    oldPrimary.replace(
+                        "new-",
+                        ""
+                    )
+                );
+
+
+            if (
+                primaryIndex > index
+            ) {
+
+                setPrimaryImage(
+                    `new-${primaryIndex - 1}`
+                );
+
+            }
+
+        }
+
+    };
+
+
+    /* =====================================================
+       CHỌN ẢNH CHÍNH
+    ===================================================== */
+
+    const handleSetPrimary = (imageKey) => {
+
+        setPrimaryImage(
+            imageKey
+        );
+
+
+        /* =============================================
+           Nếu là ảnh cũ
+           -> cập nhật imageUrl ngay trên form
+        ============================================= */
+
+        if (
+            imageKey.startsWith("old-")
+        ) {
+
+            const oldId =
+                imageKey.replace(
+                    "old-",
+                    ""
+                );
+
+
+            const image =
+                existingImages.find(
+                    item =>
+                        String(item.id) ===
+                        String(oldId)
+                );
+
+
+            if (image) {
+
+                setForm(prev => ({
+
+                    ...prev,
+
+                    imageUrl:
+                    image.imageUrl
+
+                }));
+
+            }
+
+        }
+
+    };
+
+
+    /* =========================================================
+       XÓA ẢNH CŨ ĐÃ LƯU
+    ========================================================= */
+
+    const handleDeleteOldImage = async (image) => {
+
+        /* =============================================
+           ẢNH LEGACY
+
+           legacy-10
+
+           Không có ID database thật
+        ============================================= */
+
+        if (
+            String(image.id)
+                .startsWith("legacy-")
+        ) {
+
+            alert(
+                "Ảnh này là ảnh cũ chưa được lưu trong danh sách ảnh. Bạn không thể xóa trực tiếp ảnh này."
+            );
+
+            return;
+        }
+
+
+        /* =============================================
+           XÁC NHẬN
+        ============================================= */
+
+        const confirmed =
+            window.confirm(
+                "Bạn có chắc chắn muốn xóa ảnh này không?"
+            );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        try {
+
+            setSaving(true);
+
+
+            /* =========================================
+               GỌI API XÓA
+            ========================================= */
+
+            let updatedImages =
+                await deleteProductImage(
+                    editingId,
+                    image.id
+                );
+
+
+            if (
+                !Array.isArray(updatedImages)
+            ) {
+
+                updatedImages =
+                    await getProductImages(
+                        editingId
+                    );
+
+            }
+
+
+            /* =========================================
+               SẮP XẾP LẠI
+            ========================================= */
+
+            const sortedImages =
+                [...(updatedImages || [])]
+                    .sort(
+                        (a, b) =>
+                            Number(
+                                a.displayOrder || 0
+                            ) -
+                            Number(
+                                b.displayOrder || 0
+                            )
+                    );
+
+
+            setExistingImages(
+                sortedImages
+            );
+
+
+            /* =========================================
+               KIỂM TRA ẢNH CHÍNH
+            ========================================= */
+
+            const currentPrimary =
+                sortedImages.find(
+                    item =>
+                        item.primary === true
+                );
+
+
+            if (currentPrimary) {
+
+                setPrimaryImage(
+                    `old-${currentPrimary.id}`
+                );
+
+                setForm(prev => ({
+
+                    ...prev,
+
+                    imageUrl:
+                    currentPrimary.imageUrl
+
+                }));
+
+            } else if (
+                sortedImages.length > 0
+            ) {
+
+                /* =====================================
+                   Nếu Backend chưa tự chọn ảnh chính
+                   -> chọn ảnh đầu tiên
+                ===================================== */
+
+                const firstImage =
+                    sortedImages[0];
+
+
+                try {
+
+                    const primaryResult =
+                        await setPrimaryProductImage(
+                            editingId,
+                            firstImage.id
+                        );
+
+
+                    if (
+                        Array.isArray(
+                            primaryResult
+                        )
+                    ) {
+
+                        setExistingImages(
+                            primaryResult
+                        );
+
+                    }
+
+                } catch (primaryError) {
+
+                    console.warn(
+                        "Không thể tự chọn ảnh chính:",
+                        primaryError
+                    );
+
+                }
+
+
+                setPrimaryImage(
+                    `old-${firstImage.id}`
+                );
+
+
+                setForm(prev => ({
+
+                    ...prev,
+
+                    imageUrl:
+                    firstImage.imageUrl
+
+                }));
+
+            } else {
+
+                /* =====================================
+                   Không còn ảnh
+                ===================================== */
+
+                setPrimaryImage(null);
+
+                setForm(prev => ({
+
+                    ...prev,
+
+                    imageUrl: ""
+
+                }));
+
+            }
+
+
+            alert(
+                "Đã xóa ảnh thành công."
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "DELETE PRODUCT IMAGE ERROR:",
+                error
+            );
+
+
+            alert(
+                error?.response?.data?.message ||
+                error?.response?.data ||
+                "Không thể xóa ảnh. Vui lòng thử lại."
+            );
+
+        } finally {
+
+            setSaving(false);
+
+        }
+
+    };
+
+
+    /* =========================================================
+       ĐỔI VỊ TRÍ ẢNH CŨ
+    ========================================================= */
+
+    const handleMoveOldImage = async (
+        index,
+        direction
+    ) => {
+
+        const newIndex =
+            index + direction;
+
+
+        /* =============================================
+           Không vượt giới hạn
+        ============================================= */
+
+        if (
+            newIndex < 0 ||
+            newIndex >= existingImages.length
+        ) {
+
+            return;
+        }
+
+
+        /* =============================================
+           ẢNH LEGACY KHÔNG REORDER ĐƯỢC
+        ============================================= */
+
+        const currentImage =
+            existingImages[index];
+
+        const targetImage =
+            existingImages[newIndex];
+
+
+        if (
+            String(currentImage.id)
+                .startsWith("legacy-") ||
+            String(targetImage.id)
+                .startsWith("legacy-")
+        ) {
+
+            alert(
+                "Ảnh cũ này chưa được lưu trong danh sách ảnh nên chưa thể đổi thứ tự."
+            );
+
+            return;
+        }
+
+
+        /* =============================================
+           TẠO DANH SÁCH MỚI
+        ============================================= */
+
+        const reorderedImages =
+            [...existingImages];
+
+
+        [
+            reorderedImages[index],
+            reorderedImages[newIndex]
+        ] = [
+            reorderedImages[newIndex],
+            reorderedImages[index]
+        ];
+
+
+        /* =============================================
+           HIỂN THỊ NGAY TRÊN GIAO DIỆN
+        ============================================= */
+
+        setExistingImages(
+            reorderedImages
+        );
+
+
+        try {
+
+            setSaving(true);
+
+
+            const imageIds =
+                reorderedImages.map(
+                    image =>
+                        Number(image.id)
+                );
+
+
+            /* =========================================
+               GỌI BACKEND
+            ========================================= */
+
+            const updatedImages =
+                await reorderProductImages(
+                    editingId,
+                    imageIds
+                );
+
+
+            if (
+                Array.isArray(updatedImages)
+            ) {
+
+                setExistingImages(
+                    [...updatedImages].sort(
+                        (a, b) =>
+                            Number(
+                                a.displayOrder || 0
+                            ) -
+                            Number(
+                                b.displayOrder || 0
+                            )
+                    )
+                );
+
+            }
+
+
+        } catch (error) {
+
+            console.error(
+                "REORDER IMAGE ERROR:",
+                error
+            );
+
+
+            alert(
+                error?.response?.data?.message ||
+                error?.response?.data ||
+                "Không thể thay đổi thứ tự ảnh."
+            );
+
+
+            /* =========================================
+               LOAD LẠI THỨ TỰ THẬT
+            ========================================= */
+
+            try {
+
+                const images =
+                    await getProductImages(
+                        editingId
+                    );
+
+
+                setExistingImages(
+                    [...(images || [])].sort(
+                        (a, b) =>
+                            Number(
+                                a.displayOrder || 0
+                            ) -
+                            Number(
+                                b.displayOrder || 0
+                            )
+                    )
+                );
+
+            } catch (reloadError) {
+
+                console.error(
+                    reloadError
+                );
+
+            }
+
+        } finally {
+
+            setSaving(false);
+
+        }
+
+    };
+
+
+    /* =========================================================
+       ĐỔI VỊ TRÍ ẢNH MỚI
+
+       Ảnh mới chưa lưu Backend nên chỉ đổi trong Frontend.
+    ========================================================= */
+
+    const handleMoveNewImage = (
+        index,
+        direction
+    ) => {
+
+        const newIndex =
+            index + direction;
+
+
+        if (
+            newIndex < 0 ||
+            newIndex >= newImagePreviews.length
+        ) {
+
+            return;
+        }
+
+
+        /* =============================================
+           ĐỔI FILE
+        ============================================= */
+
+        const updatedFiles =
+            [...newImageFiles];
+
+
+        [
+            updatedFiles[index],
+            updatedFiles[newIndex]
+        ] = [
+            updatedFiles[newIndex],
+            updatedFiles[index]
+        ];
+
+
+        /* =============================================
+           ĐỔI PREVIEW
+        ============================================= */
+
+        const updatedPreviews =
+            [...newImagePreviews];
+
+
+        [
+            updatedPreviews[index],
+            updatedPreviews[newIndex]
+        ] = [
+            updatedPreviews[newIndex],
+            updatedPreviews[index]
+        ];
+
+
+        setNewImageFiles(
+            updatedFiles
+        );
+
+
+        setNewImagePreviews(
+            updatedPreviews
+        );
+
+
+        /* =============================================
+           CẬP NHẬT PRIMARY INDEX
+        ============================================= */
+
+        if (
+            primaryImage?.startsWith("new-")
+        ) {
+
+            const primaryIndex =
+                Number(
+                    primaryImage.replace(
+                        "new-",
+                        ""
+                    )
+                );
+
+
+            if (
+                primaryIndex === index
+            ) {
+
+                setPrimaryImage(
+                    `new-${newIndex}`
+                );
+
+            } else if (
+                primaryIndex === newIndex
+            ) {
+
+                setPrimaryImage(
+                    `new-${index}`
+                );
+
+            }
+
+        }
+
+    };
+
+
+    /* =========================================================
+       CHỌN ẢNH CŨ LÀM ẢNH CHÍNH
+    ========================================================= */
+
+    const handleSetOldImagePrimary = async (
+        image
+    ) => {
+
+        /* =============================================
+           LEGACY IMAGE
+        ============================================= */
+
+        if (
+            String(image.id)
+                .startsWith("legacy-")
+        ) {
+
+            setPrimaryImage(
+                `old-${image.id}`
+            );
+
+
+            setForm(prev => ({
+
+                ...prev,
+
+                imageUrl:
+                image.imageUrl
+
+            }));
+
+
+            return;
+        }
+
+
+        try {
+
+            setSaving(true);
+
+
+            /* =========================================
+               GỌI BACKEND
+            ========================================= */
+
+            const updatedImages =
+                await setPrimaryProductImage(
+                    editingId,
+                    image.id
+                );
+
+
+            if (
+                Array.isArray(updatedImages)
+            ) {
+
+                setExistingImages(
+                    updatedImages
+                );
+
+            }
+
+
+            /* =========================================
+               CẬP NHẬT STATE
+            ========================================= */
+
+            setPrimaryImage(
+                `old-${image.id}`
+            );
+
+
+            setForm(prev => ({
+
+                ...prev,
+
+                imageUrl:
+                image.imageUrl
+
+            }));
+
+
+        } catch (error) {
+
+            console.error(
+                "SET PRIMARY IMAGE ERROR:",
+                error
+            );
+
+
+            alert(
+                error?.response?.data?.message ||
+                error?.response?.data ||
+                "Không thể chọn ảnh chính."
+            );
+
+        } finally {
+
+            setSaving(false);
+
+        }
+
+    };
+
+
+    /* =====================================================
        SUBMIT
     ===================================================== */
 
@@ -325,6 +1580,10 @@ function AdminProducts({ employeeMode = false }) {
         event.preventDefault();
 
 
+        /* =================================================
+           VALIDATE
+        ================================================= */
+
         if (!form.name.trim()) {
 
             alert(
@@ -332,7 +1591,6 @@ function AdminProducts({ employeeMode = false }) {
             );
 
             return;
-
         }
 
 
@@ -343,7 +1601,6 @@ function AdminProducts({ employeeMode = false }) {
             );
 
             return;
-
         }
 
 
@@ -357,7 +1614,6 @@ function AdminProducts({ employeeMode = false }) {
             );
 
             return;
-
         }
 
 
@@ -371,7 +1627,6 @@ function AdminProducts({ employeeMode = false }) {
             );
 
             return;
-
         }
 
 
@@ -380,13 +1635,129 @@ function AdminProducts({ employeeMode = false }) {
             setSaving(true);
 
 
+            /* =================================================
+               1. UPLOAD ẢNH MỚI
+            ================================================= */
+
+            let uploadedImageUrls = [];
+
+
+            if (
+                newImageFiles.length > 0
+            ) {
+
+                const uploadResult =
+                    await uploadProductImages(
+                        newImageFiles
+                    );
+
+
+                uploadedImageUrls =
+                    Array.isArray(
+                        uploadResult?.imageUrls
+                    )
+                        ? uploadResult.imageUrls
+                        : [];
+
+
+                if (
+                    uploadedImageUrls.length !==
+                    newImageFiles.length
+                ) {
+
+                    throw new Error(
+                        "Upload ảnh không đầy đủ. Vui lòng thử lại."
+                    );
+
+                }
+
+            }
+
+
+            /* =================================================
+               2. XÁC ĐỊNH ẢNH CHÍNH
+            ================================================= */
+
+            let mainImageUrl =
+                form.imageUrl || null;
+
+
+            /* =================================================
+               NẾU ẢNH CHÍNH LÀ ẢNH MỚI
+            ================================================= */
+
+            if (
+                primaryImage?.startsWith("new-")
+            ) {
+
+                const newIndex =
+                    Number(
+                        primaryImage.replace(
+                            "new-",
+                            ""
+                        )
+                    );
+
+
+                if (
+                    uploadedImageUrls[newIndex]
+                ) {
+
+                    mainImageUrl =
+                        uploadedImageUrls[
+                            newIndex
+                            ];
+
+                }
+
+            }
+
+
+            /* =================================================
+               NẾU ẢNH CHÍNH LÀ ẢNH CŨ
+            ================================================= */
+
+            if (
+                primaryImage?.startsWith("old-")
+            ) {
+
+                const oldId =
+                    primaryImage.replace(
+                        "old-",
+                        ""
+                    );
+
+
+                const oldImage =
+                    existingImages.find(
+                        image =>
+                            String(image.id) ===
+                            String(oldId)
+                    );
+
+
+                if (oldImage) {
+
+                    mainImageUrl =
+                        oldImage.imageUrl;
+
+                }
+
+            }
+
+
+            /* =================================================
+               3. PRODUCT DATA
+            ================================================= */
+
             const productData = {
 
                 category: {
 
-                    id: Number(
-                        form.categoryId
-                    )
+                    id:
+                        Number(
+                            form.categoryId
+                        )
 
                 },
 
@@ -402,9 +1773,9 @@ function AdminProducts({ employeeMode = false }) {
                 quantity:
                     Number(form.quantity),
 
+                // imageUrl = ảnh chính
                 imageUrl:
-                    form.imageUrl.trim() ||
-                    null,
+                mainImageUrl,
 
                 status:
                 form.status
@@ -412,31 +1783,238 @@ function AdminProducts({ employeeMode = false }) {
             };
 
 
-            if (editingId) {
+            /* =================================================
+               4. THÊM SẢN PHẨM
+            ================================================= */
+
+            if (!editingId) {
+
+                /* =============================================
+                   TẠO PRODUCT
+                ============================================= */
+
+                const createdProduct =
+                    await createProduct(
+                        productData
+                    );
+
+
+                const productId =
+                    createdProduct?.id;
+
+
+                if (!productId) {
+
+                    throw new Error(
+                        "Không lấy được ID sản phẩm sau khi tạo."
+                    );
+
+                }
+
+
+                /* =============================================
+                   LƯU NHIỀU ẢNH
+                ============================================= */
+
+                if (
+                    uploadedImageUrls.length > 0
+                ) {
+
+                    await addProductImages(
+                        productId,
+                        uploadedImageUrls
+                    );
+
+
+                    /* =========================================
+                       Nếu ảnh chính không phải ảnh đầu tiên
+                       -> cập nhật lại ảnh chính
+                    ========================================= */
+
+                    if (
+                        primaryImage?.startsWith(
+                            "new-"
+                        )
+                    ) {
+
+                        const newIndex =
+                            Number(
+                                primaryImage.replace(
+                                    "new-",
+                                    ""
+                                )
+                            );
+
+
+                        const mainUrl =
+                            uploadedImageUrls[
+                                newIndex
+                                ];
+
+
+                        const savedImages =
+                            await getProductImages(
+                                productId
+                            );
+
+
+                        const mainImage =
+                            savedImages.find(
+                                image =>
+                                    image.imageUrl ===
+                                    mainUrl
+                            );
+
+
+                        if (mainImage) {
+
+                            await setPrimaryProductImage(
+                                productId,
+                                mainImage.id
+                            );
+
+                        }
+
+                    }
+
+                }
+
+
+                alert(
+                    "Thêm sản phẩm thành công!"
+                );
+
+
+            } else {
+
+                /* =================================================
+                   5. CẬP NHẬT PRODUCT
+                ================================================= */
 
                 await updateProduct(
                     editingId,
                     productData
                 );
 
+
+                /* =================================================
+                   6. THÊM ẢNH MỚI
+                ================================================= */
+
+                if (
+                    uploadedImageUrls.length > 0
+                ) {
+
+                    await addProductImages(
+                        editingId,
+                        uploadedImageUrls
+                    );
+
+
+                    /* =============================================
+                       Nếu ảnh mới được chọn làm ảnh chính
+                    ============================================= */
+
+                    if (
+                        primaryImage?.startsWith(
+                            "new-"
+                        )
+                    ) {
+
+                        const newIndex =
+                            Number(
+                                primaryImage.replace(
+                                    "new-",
+                                    ""
+                                )
+                            );
+
+
+                        const mainUrl =
+                            uploadedImageUrls[
+                                newIndex
+                                ];
+
+
+                        const savedImages =
+                            await getProductImages(
+                                editingId
+                            );
+
+
+                        const mainImage =
+                            savedImages.find(
+                                image =>
+                                    image.imageUrl ===
+                                    mainUrl
+                            );
+
+
+                        if (mainImage) {
+
+                            await setPrimaryProductImage(
+                                editingId,
+                                mainImage.id
+                            );
+
+                        }
+
+                    }
+
+                }
+
+
+                /* =================================================
+                   7. NẾU ẢNH CHÍNH LÀ ẢNH CŨ
+                   đảm bảo Backend cũng đồng bộ
+                ================================================= */
+
+                if (
+                    primaryImage?.startsWith(
+                        "old-"
+                    )
+                ) {
+
+                    const oldId =
+                        primaryImage.replace(
+                            "old-",
+                            ""
+                        );
+
+
+                    if (
+                        !oldId.startsWith(
+                            "legacy-"
+                        )
+                    ) {
+
+                        await setPrimaryProductImage(
+                            editingId,
+                            Number(oldId)
+                        );
+
+                    }
+
+                }
+
+
                 alert(
                     "Cập nhật sản phẩm thành công!"
-                );
-
-            } else {
-
-                await createProduct(
-                    productData
-                );
-
-                alert(
-                    "Thêm sản phẩm thành công!"
                 );
 
             }
 
 
+            /* =================================================
+               LOAD LẠI DANH SÁCH
+            ================================================= */
+
             await loadData();
+
+
+            /* =================================================
+               ĐÓNG MODAL
+            ================================================= */
 
             handleCloseModal();
 
@@ -448,8 +2026,11 @@ function AdminProducts({ employeeMode = false }) {
                 err
             );
 
+
             alert(
                 err?.response?.data?.message ||
+                err?.response?.data ||
+                err?.message ||
                 "Không thể lưu sản phẩm."
             );
 
@@ -463,7 +2044,7 @@ function AdminProducts({ employeeMode = false }) {
 
 
     /* =====================================================
-       DELETE
+       DELETE PRODUCT
     ===================================================== */
 
     const handleDelete = async (product) => {
@@ -505,6 +2086,7 @@ function AdminProducts({ employeeMode = false }) {
                 "Xóa sản phẩm thất bại:",
                 err
             );
+
 
             alert(
                 err?.response?.data?.message ||
@@ -587,7 +2169,6 @@ function AdminProducts({ employeeMode = false }) {
             </div>
 
 
-
             {/* =================================================
                 ERROR
             ================================================= */}
@@ -601,7 +2182,6 @@ function AdminProducts({ employeeMode = false }) {
                 </div>
 
             )}
-
 
 
             {/* =================================================
@@ -661,7 +2241,6 @@ function AdminProducts({ employeeMode = false }) {
                 </select>
 
             </div>
-
 
 
             {/* =================================================
@@ -741,14 +2320,13 @@ function AdminProducts({ employeeMode = false }) {
 
                                     <td>
 
-                                            <span className="admin-product-id">
+                                        <span className="admin-product-id">
 
-                                                #{product.id}
+                                            #{product.id}
 
-                                            </span>
+                                        </span>
 
                                     </td>
-
 
 
                                     {/* PRODUCT */}
@@ -763,7 +2341,9 @@ function AdminProducts({ employeeMode = false }) {
 
                                                     <img
                                                         src={
-                                                            product.imageUrl
+                                                            getImageUrl(
+                                                                product.imageUrl
+                                                            )
                                                         }
                                                         alt={
                                                             product.name
@@ -773,8 +2353,8 @@ function AdminProducts({ employeeMode = false }) {
                                                 ) : (
 
                                                     <span>
-                                                            📦
-                                                        </span>
+                                                        📦
+                                                    </span>
 
                                                 )}
 
@@ -791,11 +2371,12 @@ function AdminProducts({ employeeMode = false }) {
 
                                                 <span>
 
-                                                        {product.description ||
-                                                            "Không có mô tả"
-                                                        }
+                                                    {
+                                                        product.description ||
+                                                        "Không có mô tả"
+                                                    }
 
-                                                    </span>
+                                                </span>
 
                                             </div>
 
@@ -804,25 +2385,23 @@ function AdminProducts({ employeeMode = false }) {
                                     </td>
 
 
-
                                     {/* CATEGORY */}
 
                                     <td>
 
-                                            <span className="admin-category-badge">
+                                        <span className="admin-category-badge">
 
-                                                {
-                                                    product
-                                                        .category
-                                                        ?.name
-                                                    ||
-                                                    "Chưa phân loại"
-                                                }
+                                            {
+                                                product
+                                                    .category
+                                                    ?.name
+                                                ||
+                                                "Chưa phân loại"
+                                            }
 
-                                            </span>
+                                        </span>
 
                                     </td>
-
 
 
                                     {/* PRICE */}
@@ -840,58 +2419,58 @@ function AdminProducts({ employeeMode = false }) {
                                     </td>
 
 
-
                                     {/* QUANTITY */}
 
                                     <td>
 
-                                            <span
-                                                className={
-                                                    Number(
+                                        <span
+                                            className={
+                                                Number(
+                                                    product.quantity
+                                                ) <= 0
+                                                    ? "admin-stock out"
+                                                    : Number(
                                                         product.quantity
-                                                    ) <= 0
-                                                        ? "admin-stock out"
-                                                        : Number(
-                                                            product.quantity
-                                                        ) <= 5
-                                                            ? "admin-stock low"
-                                                            : "admin-stock"
-                                                }
-                                            >
+                                                    ) <= 5
+                                                        ? "admin-stock low"
+                                                        : "admin-stock"
+                                            }
+                                        >
 
-                                                {product.quantity ?? 0}
+                                            {
+                                                product.quantity ??
+                                                0
+                                            }
 
-                                            </span>
+                                        </span>
 
                                     </td>
-
 
 
                                     {/* STATUS */}
 
                                     <td>
 
-                                            <span
-                                                className={
-                                                    `admin-status ${
-                                                        product.status ===
-                                                        "ACTIVE"
-                                                            ? "active"
-                                                            : "inactive"
-                                                    }`
-                                                }
-                                            >
+                                        <span
+                                            className={
+                                                `admin-status ${
+                                                    product.status ===
+                                                    "ACTIVE"
+                                                        ? "active"
+                                                        : "inactive"
+                                                }`
+                                            }
+                                        >
 
-                                                {product.status ===
-                                                "ACTIVE"
-                                                    ? "Đang bán"
-                                                    : "Ngừng bán"
-                                                }
+                                            {product.status ===
+                                            "ACTIVE"
+                                                ? "Đang bán"
+                                                : "Ngừng bán"
+                                            }
 
-                                            </span>
+                                        </span>
 
                                     </td>
-
 
 
                                     {/* ACTION */}
@@ -918,12 +2497,23 @@ function AdminProducts({ employeeMode = false }) {
 
 
                                             {!employeeMode && (
+
                                                 <button
                                                     className="admin-action-delete"
-                                                    onClick={() => handleDelete(product)}
+                                                    title="Xóa"
+                                                    onClick={() =>
+                                                        handleDelete(
+                                                            product
+                                                        )
+                                                    }
                                                 >
-                                                    <Trash2 size={17} />
+
+                                                    <Trash2
+                                                        size={17}
+                                                    />
+
                                                 </button>
+
                                             )}
 
                                         </div>
@@ -933,6 +2523,7 @@ function AdminProducts({ employeeMode = false }) {
                                 </tr>
 
                             )
+
                         )
 
                     )}
@@ -944,7 +2535,6 @@ function AdminProducts({ employeeMode = false }) {
             </div>
 
 
-
             {/* =================================================
                 COUNT
             ================================================= */}
@@ -952,17 +2542,20 @@ function AdminProducts({ employeeMode = false }) {
             <div className="admin-products-count">
 
                 Hiển thị{" "}
+
                 <strong>
                     {filteredProducts.length}
-                </strong>{" "}
-                /{" "}
+                </strong>
+
+                {" "} / {" "}
+
                 <strong>
                     {products.length}
-                </strong>{" "}
-                sản phẩm
+                </strong>
+
+                {" "} sản phẩm
 
             </div>
-
 
 
             {/* =================================================
@@ -973,6 +2566,7 @@ function AdminProducts({ employeeMode = false }) {
 
                 <div
                     className="admin-modal-overlay"
+
                     onMouseDown={event => {
 
                         if (
@@ -990,17 +2584,21 @@ function AdminProducts({ employeeMode = false }) {
                     <div className="admin-product-modal">
 
 
-                        {/* MODAL HEADER */}
+                        {/* =================================================
+                            MODAL HEADER
+                        ================================================= */}
 
                         <div className="admin-modal-header">
 
                             <div>
 
                                 <span>
+
                                     {editingId
                                         ? "CẬP NHẬT"
                                         : "THÊM MỚI"
                                     }
+
                                 </span>
 
                                 <h2>
@@ -1029,8 +2627,9 @@ function AdminProducts({ employeeMode = false }) {
                         </div>
 
 
-
-                        {/* FORM */}
+                        {/* =================================================
+                            FORM
+                        ================================================= */}
 
                         <form
                             className="admin-product-form"
@@ -1040,13 +2639,20 @@ function AdminProducts({ employeeMode = false }) {
                         >
 
 
-                            {/* NAME */}
+                            {/* =================================================
+                                NAME
+                            ================================================= */}
 
                             <div className="admin-form-group">
 
                                 <label>
+
                                     Tên sản phẩm
-                                    <span>*</span>
+
+                                    <span>
+                                        *
+                                    </span>
+
                                 </label>
 
                                 <input
@@ -1063,16 +2669,22 @@ function AdminProducts({ employeeMode = false }) {
                             </div>
 
 
-
-                            {/* CATEGORY */}
+                            {/* =================================================
+                                CATEGORY + STATUS
+                            ================================================= */}
 
                             <div className="admin-form-row">
 
                                 <div className="admin-form-group">
 
                                     <label>
+
                                         Danh mục
-                                        <span>*</span>
+
+                                        <span>
+                                            *
+                                        </span>
+
                                     </label>
 
                                     <select
@@ -1086,7 +2698,9 @@ function AdminProducts({ employeeMode = false }) {
                                     >
 
                                         <option value="">
+
                                             -- Chọn danh mục --
+
                                         </option>
 
 
@@ -1115,9 +2729,6 @@ function AdminProducts({ employeeMode = false }) {
 
                                 </div>
 
-
-
-                                {/* STATUS */}
 
                                 <div className="admin-form-group">
 
@@ -1150,16 +2761,22 @@ function AdminProducts({ employeeMode = false }) {
                             </div>
 
 
-
-                            {/* PRICE + QUANTITY */}
+                            {/* =================================================
+                                PRICE + QUANTITY
+                            ================================================= */}
 
                             <div className="admin-form-row">
 
                                 <div className="admin-form-group">
 
                                     <label>
+
                                         Giá bán
-                                        <span>*</span>
+
+                                        <span>
+                                            *
+                                        </span>
+
                                     </label>
 
                                     <input
@@ -1182,8 +2799,13 @@ function AdminProducts({ employeeMode = false }) {
                                 <div className="admin-form-group">
 
                                     <label>
+
                                         Số lượng
-                                        <span>*</span>
+
+                                        <span>
+                                            *
+                                        </span>
+
                                     </label>
 
                                     <input
@@ -1205,32 +2827,943 @@ function AdminProducts({ employeeMode = false }) {
                             </div>
 
 
-
-                            {/* IMAGE */}
+                            {/* =================================================
+                                NHIỀU ẢNH
+                            ================================================= */}
 
                             <div className="admin-form-group">
 
                                 <label>
-                                    URL hình ảnh
+
+                                    Hình ảnh sản phẩm
+
                                 </label>
 
-                                <input
-                                    type="url"
-                                    name="imageUrl"
-                                    value={
-                                        form.imageUrl
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="https://..."
-                                />
+
+                                <div
+                                    style={{
+                                        border:
+                                            "1px dashed #cbd5e1",
+                                        borderRadius:
+                                            "10px",
+                                        padding:
+                                            "16px",
+                                        background:
+                                            "#f8fafc"
+                                    }}
+                                >
+
+                                    {/* =================================================
+                                        INPUT CHỌN NHIỀU FILE
+                                    ================================================= */}
+
+                                    <label
+                                        htmlFor="product-images"
+                                        style={{
+                                            display:
+                                                "inline-flex",
+                                            alignItems:
+                                                "center",
+                                            gap:
+                                                "8px",
+                                            padding:
+                                                "10px 16px",
+                                            borderRadius:
+                                                "8px",
+                                            background:
+                                                "#2563eb",
+                                            color:
+                                                "#fff",
+                                            cursor:
+                                                "pointer",
+                                            fontWeight:
+                                                "600"
+                                        }}
+                                    >
+
+                                        <ImagePlus
+                                            size={18}
+                                        />
+
+                                        Chọn nhiều ảnh
+
+                                    </label>
+
+
+                                    <input
+                                        id="product-images"
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={
+                                            handleImageChange
+                                        }
+                                        style={{
+                                            display:
+                                                "none"
+                                        }}
+                                    />
+
+
+                                    <p
+                                        style={{
+                                            margin:
+                                                "10px 0 0",
+                                            fontSize:
+                                                "13px",
+                                            color:
+                                                "#64748b"
+                                        }}
+                                    >
+
+                                        Có thể chọn nhiều ảnh.
+                                        Mỗi ảnh tối đa 5MB.
+
+                                    </p>
+
+
+                                    {/* =================================================
+                                        ẢNH CŨ
+                                    ================================================= */}
+
+                                    {existingImages.length >
+                                        0 && (
+
+                                            <div
+                                                style={{
+                                                    marginTop:
+                                                        "18px"
+                                                }}
+                                            >
+
+                                                <h4
+                                                    style={{
+                                                        margin:
+                                                            "0 0 10px",
+                                                        fontSize:
+                                                            "14px"
+                                                    }}
+                                                >
+
+                                                    Ảnh hiện tại
+
+                                                </h4>
+
+
+                                                <div
+                                                    style={{
+                                                        display:
+                                                            "grid",
+                                                        gridTemplateColumns:
+                                                            "repeat(auto-fill, minmax(125px, 1fr))",
+                                                        gap:
+                                                            "12px"
+                                                    }}
+                                                >
+
+                                                    {existingImages.map(
+                                                        (
+                                                            image,
+                                                            index
+                                                        ) => {
+
+                                                            const imageKey =
+                                                                `old-${image.id}`;
+
+                                                            const isPrimary =
+                                                                primaryImage ===
+                                                                imageKey;
+
+                                                            const isLegacy =
+                                                                String(
+                                                                    image.id
+                                                                ).startsWith(
+                                                                    "legacy-"
+                                                                );
+
+
+                                                            return (
+
+                                                                <div
+                                                                    key={
+                                                                        imageKey
+                                                                    }
+                                                                    style={{
+                                                                        position:
+                                                                            "relative",
+                                                                        border:
+                                                                            isPrimary
+                                                                                ? "2px solid #2563eb"
+                                                                                : "1px solid #e2e8f0",
+                                                                        borderRadius:
+                                                                            "8px",
+                                                                        padding:
+                                                                            "5px",
+                                                                        background:
+                                                                            "#fff"
+                                                                    }}
+                                                                >
+
+                                                                    {/* =====================================
+                                                                        IMAGE
+                                                                    ===================================== */}
+
+                                                                    <img
+                                                                        src={
+                                                                            getImageUrl(
+                                                                                image.imageUrl
+                                                                            )
+                                                                        }
+                                                                        alt="Ảnh sản phẩm"
+                                                                        style={{
+                                                                            width:
+                                                                                "100%",
+                                                                            height:
+                                                                                "100px",
+                                                                            objectFit:
+                                                                                "cover",
+                                                                            borderRadius:
+                                                                                "5px",
+                                                                            display:
+                                                                                "block"
+                                                                        }}
+                                                                    />
+
+
+                                                                    {/* =====================================
+                                                                        BADGE ẢNH CHÍNH
+                                                                    ===================================== */}
+
+                                                                    {isPrimary && (
+
+                                                                        <span
+                                                                            style={{
+                                                                                position:
+                                                                                    "absolute",
+                                                                                top:
+                                                                                    "8px",
+                                                                                left:
+                                                                                    "8px",
+                                                                                background:
+                                                                                    "#2563eb",
+                                                                                color:
+                                                                                    "#fff",
+                                                                                padding:
+                                                                                    "3px 7px",
+                                                                                borderRadius:
+                                                                                    "5px",
+                                                                                fontSize:
+                                                                                    "11px",
+                                                                                fontWeight:
+                                                                                    "600"
+                                                                            }}
+                                                                        >
+
+                                                                            Ảnh chính
+
+                                                                        </span>
+
+                                                                    )}
+
+
+                                                                    {/* =====================================
+                                                                        NÚT XÓA ẢNH
+                                                                    ===================================== */}
+
+                                                                    {!isLegacy && (
+
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                handleDeleteOldImage(
+                                                                                    image
+                                                                                )
+                                                                            }
+                                                                            disabled={
+                                                                                saving
+                                                                            }
+                                                                            style={{
+                                                                                position:
+                                                                                    "absolute",
+                                                                                top:
+                                                                                    "5px",
+                                                                                right:
+                                                                                    "5px",
+                                                                                width:
+                                                                                    "26px",
+                                                                                height:
+                                                                                    "26px",
+                                                                                border:
+                                                                                    "none",
+                                                                                borderRadius:
+                                                                                    "50%",
+                                                                                background:
+                                                                                    "#ef4444",
+                                                                                color:
+                                                                                    "#fff",
+                                                                                display:
+                                                                                    "flex",
+                                                                                alignItems:
+                                                                                    "center",
+                                                                                justifyContent:
+                                                                                    "center",
+                                                                                cursor:
+                                                                                    saving
+                                                                                        ? "not-allowed"
+                                                                                        : "pointer",
+                                                                                zIndex:
+                                                                                    2
+                                                                            }}
+                                                                            title="Xóa ảnh"
+                                                                        >
+
+                                                                            <Trash
+                                                                                size={
+                                                                                    13
+                                                                                }
+                                                                            />
+
+                                                                        </button>
+
+                                                                    )}
+
+
+                                                                    {/* =====================================
+                                                                        NÚT ĐỔI VỊ TRÍ
+                                                                    ===================================== */}
+
+                                                                    {!isLegacy && (
+
+                                                                        <div
+                                                                            style={{
+                                                                                display:
+                                                                                    "flex",
+                                                                                gap:
+                                                                                    "4px",
+                                                                                marginTop:
+                                                                                    "6px"
+                                                                            }}
+                                                                        >
+
+                                                                            <button
+                                                                                type="button"
+                                                                                disabled={
+                                                                                    saving ||
+                                                                                    index === 0
+                                                                                }
+                                                                                onClick={() =>
+                                                                                    handleMoveOldImage(
+                                                                                        index,
+                                                                                        -1
+                                                                                    )
+                                                                                }
+                                                                                style={{
+                                                                                    flex:
+                                                                                        1,
+                                                                                    border:
+                                                                                        "1px solid #e2e8f0",
+                                                                                    background:
+                                                                                        index === 0
+                                                                                            ? "#f8fafc"
+                                                                                            : "#fff",
+                                                                                    color:
+                                                                                        index === 0
+                                                                                            ? "#cbd5e1"
+                                                                                            : "#334155",
+                                                                                    borderRadius:
+                                                                                        "5px",
+                                                                                    padding:
+                                                                                        "4px",
+                                                                                    cursor:
+                                                                                        index === 0 ||
+                                                                                        saving
+                                                                                            ? "not-allowed"
+                                                                                            : "pointer"
+                                                                                }}
+                                                                                title="Đưa ảnh lên"
+                                                                            >
+
+                                                                                <ChevronUp
+                                                                                    size={
+                                                                                        15
+                                                                                    }
+                                                                                />
+
+                                                                            </button>
+
+
+                                                                            <button
+                                                                                type="button"
+                                                                                disabled={
+                                                                                    saving ||
+                                                                                    index ===
+                                                                                    existingImages.length -
+                                                                                    1
+                                                                                }
+                                                                                onClick={() =>
+                                                                                    handleMoveOldImage(
+                                                                                        index,
+                                                                                        1
+                                                                                    )
+                                                                                }
+                                                                                style={{
+                                                                                    flex:
+                                                                                        1,
+                                                                                    border:
+                                                                                        "1px solid #e2e8f0",
+                                                                                    background:
+                                                                                        index ===
+                                                                                        existingImages.length -
+                                                                                        1
+                                                                                            ? "#f8fafc"
+                                                                                            : "#fff",
+                                                                                    color:
+                                                                                        index ===
+                                                                                        existingImages.length -
+                                                                                        1
+                                                                                            ? "#cbd5e1"
+                                                                                            : "#334155",
+                                                                                    borderRadius:
+                                                                                        "5px",
+                                                                                    padding:
+                                                                                        "4px",
+                                                                                    cursor:
+                                                                                        index ===
+                                                                                        existingImages.length -
+                                                                                        1 ||
+                                                                                        saving
+                                                                                            ? "not-allowed"
+                                                                                            : "pointer"
+                                                                                }}
+                                                                                title="Đưa ảnh xuống"
+                                                                            >
+
+                                                                                <ChevronDown
+                                                                                    size={
+                                                                                        15
+                                                                                    }
+                                                                                />
+
+                                                                            </button>
+
+                                                                        </div>
+
+                                                                    )}
+
+
+                                                                    {/* =====================================
+                                                                        CHỌN ẢNH CHÍNH
+                                                                    ===================================== */}
+
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            handleSetOldImagePrimary(
+                                                                                image
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            saving
+                                                                        }
+                                                                        style={{
+                                                                            width:
+                                                                                "100%",
+                                                                            marginTop:
+                                                                                "5px",
+                                                                            border:
+                                                                                "none",
+                                                                            background:
+                                                                                isPrimary
+                                                                                    ? "#eff6ff"
+                                                                                    : "#f1f5f9",
+                                                                            color:
+                                                                                "#334155",
+                                                                            borderRadius:
+                                                                                "5px",
+                                                                            padding:
+                                                                                "6px 3px",
+                                                                            cursor:
+                                                                                saving
+                                                                                    ? "not-allowed"
+                                                                                    : "pointer",
+                                                                            fontSize:
+                                                                                "11px",
+                                                                            display:
+                                                                                "flex",
+                                                                            alignItems:
+                                                                                "center",
+                                                                            justifyContent:
+                                                                                "center",
+                                                                            gap:
+                                                                                "3px"
+                                                                        }}
+                                                                    >
+
+                                                                        <Star
+                                                                            size={
+                                                                                13
+                                                                            }
+                                                                            fill={
+                                                                                isPrimary
+                                                                                    ? "currentColor"
+                                                                                    : "none"
+                                                                            }
+                                                                        />
+
+                                                                        {isPrimary
+                                                                            ? "Ảnh chính"
+                                                                            : "Chọn ảnh chính"
+                                                                        }
+
+                                                                    </button>
+
+                                                                </div>
+
+                                                            );
+
+                                                        }
+                                                    )}
+
+                                                </div>
+
+                                            </div>
+
+                                        )}
+
+
+                                    {/* =================================================
+                                        ẢNH MỚI
+                                    ================================================= */}
+
+                                    {newImagePreviews.length >
+                                        0 && (
+
+                                            <div
+                                                style={{
+                                                    marginTop:
+                                                        "18px"
+                                                }}
+                                            >
+
+                                                <h4
+                                                    style={{
+                                                        margin:
+                                                            "0 0 10px",
+                                                        fontSize:
+                                                            "14px"
+                                                    }}
+                                                >
+
+                                                    Ảnh mới đã chọn
+
+                                                </h4>
+
+
+                                                <div
+                                                    style={{
+                                                        display:
+                                                            "grid",
+                                                        gridTemplateColumns:
+                                                            "repeat(auto-fill, minmax(125px, 1fr))",
+                                                        gap:
+                                                            "12px"
+                                                    }}
+                                                >
+
+                                                    {newImagePreviews.map(
+                                                        (
+                                                            image,
+                                                            index
+                                                        ) => {
+
+                                                            const imageKey =
+                                                                `new-${index}`;
+
+                                                            const isPrimary =
+                                                                primaryImage ===
+                                                                imageKey;
+
+
+                                                            return (
+
+                                                                <div
+                                                                    key={
+                                                                        `${image.url}-${index}`
+                                                                    }
+                                                                    style={{
+                                                                        position:
+                                                                            "relative",
+                                                                        border:
+                                                                            isPrimary
+                                                                                ? "2px solid #2563eb"
+                                                                                : "1px solid #e2e8f0",
+                                                                        borderRadius:
+                                                                            "8px",
+                                                                        padding:
+                                                                            "5px",
+                                                                        background:
+                                                                            "#fff"
+                                                                    }}
+                                                                >
+
+                                                                    {/* =====================================
+                                                                        IMAGE PREVIEW
+                                                                    ===================================== */}
+
+                                                                    <img
+                                                                        src={
+                                                                            image.url
+                                                                        }
+                                                                        alt={
+                                                                            image.file?.name ||
+                                                                            `Ảnh mới ${index + 1}`
+                                                                        }
+                                                                        style={{
+                                                                            width:
+                                                                                "100%",
+                                                                            height:
+                                                                                "100px",
+                                                                            objectFit:
+                                                                                "cover",
+                                                                            borderRadius:
+                                                                                "5px",
+                                                                            display:
+                                                                                "block"
+                                                                        }}
+                                                                    />
+
+
+                                                                    {/* =====================================
+                                                                        BADGE ẢNH CHÍNH
+                                                                    ===================================== */}
+
+                                                                    {isPrimary && (
+
+                                                                        <span
+                                                                            style={{
+                                                                                position:
+                                                                                    "absolute",
+                                                                                top:
+                                                                                    "8px",
+                                                                                left:
+                                                                                    "8px",
+                                                                                background:
+                                                                                    "#2563eb",
+                                                                                color:
+                                                                                    "#fff",
+                                                                                padding:
+                                                                                    "3px 7px",
+                                                                                borderRadius:
+                                                                                    "5px",
+                                                                                fontSize:
+                                                                                    "11px",
+                                                                                fontWeight:
+                                                                                    "600"
+                                                                            }}
+                                                                        >
+
+                                                                            Ảnh chính
+
+                                                                        </span>
+
+                                                                    )}
+
+
+                                                                    {/* =====================================
+                                                                        XÓA ẢNH
+                                                                    ===================================== */}
+
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            handleRemoveNewImage(
+                                                                                index
+                                                                            )
+                                                                        }
+                                                                        style={{
+                                                                            position:
+                                                                                "absolute",
+                                                                            top:
+                                                                                "5px",
+                                                                            right:
+                                                                                "5px",
+                                                                            width:
+                                                                                "26px",
+                                                                            height:
+                                                                                "26px",
+                                                                            border:
+                                                                                "none",
+                                                                            borderRadius:
+                                                                                "50%",
+                                                                            background:
+                                                                                "#ef4444",
+                                                                            color:
+                                                                                "#fff",
+                                                                            display:
+                                                                                "flex",
+                                                                            alignItems:
+                                                                                "center",
+                                                                            justifyContent:
+                                                                                "center",
+                                                                            cursor:
+                                                                                "pointer",
+                                                                            zIndex:
+                                                                                2
+                                                                        }}
+                                                                        title="Xóa ảnh"
+                                                                    >
+
+                                                                        <Trash
+                                                                            size={
+                                                                                13
+                                                                            }
+                                                                        />
+
+                                                                    </button>
+
+
+                                                                    {/* =====================================
+                                                                        ĐỔI VỊ TRÍ ẢNH MỚI
+                                                                    ===================================== */}
+
+                                                                    <div
+                                                                        style={{
+                                                                            display:
+                                                                                "flex",
+                                                                            gap:
+                                                                                "4px",
+                                                                            marginTop:
+                                                                                "6px"
+                                                                        }}
+                                                                    >
+
+                                                                        <button
+                                                                            type="button"
+                                                                            disabled={
+                                                                                index ===
+                                                                                0
+                                                                            }
+                                                                            onClick={() =>
+                                                                                handleMoveNewImage(
+                                                                                    index,
+                                                                                    -1
+                                                                                )
+                                                                            }
+                                                                            style={{
+                                                                                flex:
+                                                                                    1,
+                                                                                border:
+                                                                                    "1px solid #e2e8f0",
+                                                                                background:
+                                                                                    index ===
+                                                                                    0
+                                                                                        ? "#f8fafc"
+                                                                                        : "#fff",
+                                                                                color:
+                                                                                    index ===
+                                                                                    0
+                                                                                        ? "#cbd5e1"
+                                                                                        : "#334155",
+                                                                                borderRadius:
+                                                                                    "5px",
+                                                                                padding:
+                                                                                    "4px",
+                                                                                cursor:
+                                                                                    index ===
+                                                                                    0
+                                                                                        ? "not-allowed"
+                                                                                        : "pointer"
+                                                                            }}
+                                                                            title="Đưa ảnh lên"
+                                                                        >
+
+                                                                            <ChevronUp
+                                                                                size={
+                                                                                    15
+                                                                                }
+                                                                            />
+
+                                                                        </button>
+
+
+                                                                        <button
+                                                                            type="button"
+                                                                            disabled={
+                                                                                index ===
+                                                                                newImagePreviews.length -
+                                                                                1
+                                                                            }
+                                                                            onClick={() =>
+                                                                                handleMoveNewImage(
+                                                                                    index,
+                                                                                    1
+                                                                                )
+                                                                            }
+                                                                            style={{
+                                                                                flex:
+                                                                                    1,
+                                                                                border:
+                                                                                    "1px solid #e2e8f0",
+                                                                                background:
+                                                                                    index ===
+                                                                                    newImagePreviews.length -
+                                                                                    1
+                                                                                        ? "#f8fafc"
+                                                                                        : "#fff",
+                                                                                color:
+                                                                                    index ===
+                                                                                    newImagePreviews.length -
+                                                                                    1
+                                                                                        ? "#cbd5e1"
+                                                                                        : "#334155",
+                                                                                borderRadius:
+                                                                                    "5px",
+                                                                                padding:
+                                                                                    "4px",
+                                                                                cursor:
+                                                                                    index ===
+                                                                                    newImagePreviews.length -
+                                                                                    1
+                                                                                        ? "not-allowed"
+                                                                                        : "pointer"
+                                                                            }}
+                                                                            title="Đưa ảnh xuống"
+                                                                        >
+
+                                                                            <ChevronDown
+                                                                                size={
+                                                                                    15
+                                                                                }
+                                                                            />
+
+                                                                        </button>
+
+                                                                    </div>
+
+
+                                                                    {/* =====================================
+                                                                        CHỌN ẢNH CHÍNH
+                                                                    ===================================== */}
+
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            handleSetPrimary(
+                                                                                imageKey
+                                                                            )
+                                                                        }
+                                                                        style={{
+                                                                            width:
+                                                                                "100%",
+                                                                            marginTop:
+                                                                                "5px",
+                                                                            border:
+                                                                                "none",
+                                                                            background:
+                                                                                isPrimary
+                                                                                    ? "#eff6ff"
+                                                                                    : "#f1f5f9",
+                                                                            color:
+                                                                                "#334155",
+                                                                            borderRadius:
+                                                                                "5px",
+                                                                            padding:
+                                                                                "6px 3px",
+                                                                            cursor:
+                                                                                "pointer",
+                                                                            fontSize:
+                                                                                "11px",
+                                                                            display:
+                                                                                "flex",
+                                                                            alignItems:
+                                                                                "center",
+                                                                            justifyContent:
+                                                                                "center",
+                                                                            gap:
+                                                                                "3px"
+                                                                        }}
+                                                                    >
+
+                                                                        <Star
+                                                                            size={
+                                                                                13
+                                                                            }
+                                                                            fill={
+                                                                                isPrimary
+                                                                                    ? "currentColor"
+                                                                                    : "none"
+                                                                            }
+                                                                        />
+
+                                                                        {isPrimary
+                                                                            ? "Ảnh chính"
+                                                                            : "Chọn ảnh chính"
+                                                                        }
+
+                                                                    </button>
+
+                                                                </div>
+
+                                                            );
+
+                                                        }
+                                                    )}
+
+                                                </div>
+
+                                            </div>
+
+                                        )}
+
+
+                                    {/* =================================================
+                                        CHƯA CÓ ẢNH
+                                    ================================================= */}
+
+                                    {existingImages.length === 0 &&
+                                        newImagePreviews.length === 0 && (
+
+                                            <div
+                                                style={{
+                                                    marginTop:
+                                                        "15px",
+                                                    textAlign:
+                                                        "center",
+                                                    color:
+                                                        "#94a3b8",
+                                                    padding:
+                                                        "15px"
+                                                }}
+                                            >
+
+                                                <ImagePlus
+                                                    size={35}
+                                                />
+
+                                                <p
+                                                    style={{
+                                                        margin:
+                                                            "8px 0 0"
+                                                    }}
+                                                >
+
+                                                    Chưa có ảnh.
+                                                    Hãy chọn ảnh sản phẩm.
+
+                                                </p>
+
+                                            </div>
+
+                                        )}
+
+                                </div>
 
                             </div>
 
 
-
-                            {/* DESCRIPTION */}
+                            {/* =================================================
+                                DESCRIPTION
+                            ================================================= */}
 
                             <div className="admin-form-group">
 
@@ -1253,8 +3786,9 @@ function AdminProducts({ employeeMode = false }) {
                             </div>
 
 
-
-                            {/* FOOTER */}
+                            {/* =================================================
+                                FOOTER
+                            ================================================= */}
 
                             <div className="admin-modal-footer">
 
@@ -1285,6 +3819,7 @@ function AdminProducts({ employeeMode = false }) {
                                     {saving ? (
 
                                         <>
+
                                             <LoaderCircle
                                                 size={17}
                                                 className="admin-products-spinner"
@@ -1297,10 +3832,12 @@ function AdminProducts({ employeeMode = false }) {
                                     ) : (
 
                                         <>
+
                                             {editingId
                                                 ? "Lưu thay đổi"
                                                 : "Thêm sản phẩm"
                                             }
+
                                         </>
 
                                     )}
@@ -1325,3 +3862,4 @@ function AdminProducts({ employeeMode = false }) {
 
 
 export default AdminProducts;
+

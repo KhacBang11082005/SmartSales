@@ -422,7 +422,7 @@ function App() {
                     path="/staff"
                     element={
                         <ProtectedRoute
-                            allowedRoles={["EMPLOYEE"]}
+                            allowedRoles={["EMPLOYEE", "STAFF"]}
                         >
                             <StaffLayout />
                         </ProtectedRoute>

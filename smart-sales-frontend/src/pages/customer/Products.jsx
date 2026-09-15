@@ -9,7 +9,27 @@ function formatPrice(price) {
     return new Intl.NumberFormat("vi-VN").format(price) + " ₫";
 }
 
+// =========================================================
+// XỬ LÝ URL ẢNH SẢN PHẨM
+// =========================================================
 
+function getImageUrl(imageUrl) {
+
+    if (!imageUrl) {
+        return "";
+    }
+
+    // Nếu đã là link đầy đủ
+    if (
+        imageUrl.startsWith("http://") ||
+        imageUrl.startsWith("https://")
+    ) {
+        return imageUrl;
+    }
+
+    // Ảnh được lưu trong Backend
+    return `http://localhost:8080${imageUrl}`;
+}
 function Products() {
 
     const [products, setProducts] = useState([]);
@@ -334,7 +354,7 @@ function Products() {
                                 {product.imageUrl ? (
 
                                     <img
-                                        src={product.imageUrl}
+                                        src={getImageUrl(product.imageUrl)}
                                         alt={product.name}
                                     />
 

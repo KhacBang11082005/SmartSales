@@ -1,4 +1,9 @@
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useRef,
+    useState
+} from "react";
+
 import {
     Link,
     useNavigate,
@@ -11,31 +16,60 @@ import {
     ShoppingCart,
     Minus,
     Plus,
-    ArrowLeft
+    ArrowLeft,
+    ChevronLeft,
+    ChevronRight
 } from "lucide-react";
 
 import { useCart } from "../../context/CartContext";
 
-import { getProductById } from "../../services/productApi";
+import {
+    getProductById,
+    getProductImages
+} from "../../services/productApi";
 
 import "./ProductDetail.css";
 
 
-/* ==========================================
-   FORMAT GIÁ TIỀN
-========================================== */
+// =========================================================
+// FORMAT GIÁ
+// =========================================================
 
 function formatPrice(price) {
 
     return new Intl.NumberFormat("vi-VN")
         .format(price) + " ₫";
-
 }
 
 
-/* ==========================================
-   PRODUCT DETAIL
-========================================== */
+// =========================================================
+// XỬ LÝ URL ẢNH
+// =========================================================
+
+function getImageUrl(imageUrl) {
+
+    if (!imageUrl) {
+        return "";
+    }
+
+
+    // Nếu đã là URL đầy đủ
+    if (
+        imageUrl.startsWith("http://") ||
+        imageUrl.startsWith("https://")
+    ) {
+        return imageUrl;
+    }
+
+
+    // Nếu là ảnh upload từ Backend
+    return `http://localhost:8080${imageUrl}`;
+}
+
+
+// =========================================================
+// PRODUCT DETAIL
+// =========================================================
 
 function ProductDetail() {
 
@@ -45,81 +79,204 @@ function ProductDetail() {
 
     const { addToCart } = useCart();
 
-    const {
-        isLoggedIn
-    } = useAuth();
+    const { isLoggedIn } = useAuth();
 
 
-    /* ==========================================
-       STATE
-    ========================================== */
+    // =====================================================
+    // STATE SẢN PHẨM
+    // =====================================================
 
-    const [showSuccess, setShowSuccess] = useState(false);
-
-    const [product, setProduct] = useState(null);
-
-    const [quantity, setQuantity] = useState(1);
-
-    /*
-     * Giá trị tạm thời đang nhập trong ô số lượng.
-     *
-     * Cho phép người dùng xóa hết số thành ô trống.
-     */
-    const [editingQuantity, setEditingQuantity] = useState(null);
-
-    /*
-     * Lưu số lượng trước khi bắt đầu chỉnh sửa.
-     *
-     * Ví dụ đang là 14 → lưu 14.
-     *
-     * Nếu xóa hết rồi click ra ngoài
-     * mà không nhập gì → quay lại 14.
-     */
-    const [originalQuantity, setOriginalQuantity] = useState(1);
-
-    const [loading, setLoading] = useState(true);
-
-    const [error, setError] = useState("");
+    const [product, setProduct] =
+        useState(null);
 
 
-    /* =========================
-       GET PRODUCT
-    ========================= */
+    // =====================================================
+    // STATE ẢNH
+    // =====================================================
+
+    const [productImages, setProductImages] =
+        useState([]);
+
+
+    // Ảnh đang chọn
+    const [selectedImageIndex, setSelectedImageIndex] =
+        useState(0);
+
+
+    // =====================================================
+    // STATE CHUNG
+    // =====================================================
+
+    const [loading, setLoading] =
+        useState(true);
+
+    const [error, setError] =
+        useState("");
+
+
+    const [showSuccess, setShowSuccess] =
+        useState(false);
+
+
+    // =====================================================
+    // STATE SỐ LƯỢNG
+    // =====================================================
+
+    const [quantity, setQuantity] =
+        useState(1);
+
+    const [editingQuantity, setEditingQuantity] =
+        useState(null);
+
+    const [originalQuantity, setOriginalQuantity] =
+        useState(1);
+
+
+    // =====================================================
+    // SWIPE
+    // =====================================================
+
+    const touchStartX =
+        useRef(null);
+
+
+    // =========================================================
+    // LẤY SẢN PHẨM + ẢNH
+    // =========================================================
 
     useEffect(() => {
 
-        const fetchProduct = async () => {
+        const fetchData = async () => {
 
             try {
 
                 setLoading(true);
 
-                const data =
+                setError("");
+
+
+                // =================================================
+                // Lấy thông tin sản phẩm
+                // =================================================
+
+                const productData =
                     await getProductById(id);
 
+
                 console.log(
-                    "📦 PRODUCT DETAIL:",
-                    data
+                    "📦 PRODUCT:",
+                    productData
                 );
 
-                setProduct(data);
 
-                /*
-                 * Khi tải sản phẩm:
-                 * số lượng mặc định là 1.
-                 */
+                if (!productData) {
+
+                    setError(
+                        "Không tìm thấy sản phẩm."
+                    );
+
+                    return;
+                }
+
+
+                setProduct(productData);
+
+
+                // =================================================
+                // Lấy danh sách ảnh riêng
+                // =================================================
+
+                try {
+
+                    const images =
+                        await getProductImages(id);
+
+
+                    console.log(
+                        "🖼️ PRODUCT IMAGES:",
+                        images
+                    );
+
+
+                    if (
+                        Array.isArray(images) &&
+                        images.length > 0
+                    ) {
+
+                        setProductImages(images);
+
+                    } else {
+
+                        // =========================================
+                        // Sản phẩm cũ chỉ có imageUrl
+                        // =========================================
+
+                        if (productData.imageUrl) {
+
+                            setProductImages([
+                                {
+                                    imageUrl:
+                                    productData.imageUrl
+                                }
+                            ]);
+
+                        } else {
+
+                            setProductImages([]);
+
+                        }
+                    }
+
+                } catch (imageError) {
+
+                    console.warn(
+                        "⚠️ Không lấy được danh sách ảnh:",
+                        imageError
+                    );
+
+
+                    // =============================================
+                    // Nếu API nhiều ảnh lỗi
+                    // vẫn hiển thị ảnh cũ.
+                    // =============================================
+
+                    if (productData.imageUrl) {
+
+                        setProductImages([
+                            {
+                                imageUrl:
+                                productData.imageUrl
+                            }
+                        ]);
+
+                    } else {
+
+                        setProductImages([]);
+
+                    }
+                }
+
+
+                // =================================================
+                // RESET
+                // =================================================
+
+                setSelectedImageIndex(0);
+
                 setQuantity(1);
 
                 setEditingQuantity(null);
 
                 setOriginalQuantity(1);
 
-            } catch (error) {
+
+            } catch (productError) {
 
                 console.error(
                     "❌ Không thể lấy sản phẩm:",
-                    error
+                    productError
                 );
+
 
                 setError(
                     "Không thể tải thông tin sản phẩm."
@@ -130,40 +287,139 @@ function ProductDetail() {
                 setLoading(false);
 
             }
-
         };
 
 
-        fetchProduct();
+        fetchData();
 
     }, [id]);
 
 
-    /* =========================
-       LOADING
-    ========================= */
+    // =========================================================
+    // ẢNH TRƯỚC
+    // =========================================================
+
+    const handlePreviousImage = () => {
+
+        if (productImages.length <= 1) {
+            return;
+        }
+
+
+        setSelectedImageIndex((prev) => {
+
+            if (prev === 0) {
+
+                return productImages.length - 1;
+
+            }
+
+            return prev - 1;
+        });
+    };
+
+
+    // =========================================================
+    // ẢNH SAU
+    // =========================================================
+
+    const handleNextImage = () => {
+
+        if (productImages.length <= 1) {
+            return;
+        }
+
+
+        setSelectedImageIndex((prev) => {
+
+            if (
+                prev ===
+                productImages.length - 1
+            ) {
+
+                return 0;
+
+            }
+
+            return prev + 1;
+        });
+    };
+
+
+    // =========================================================
+    // BẮT ĐẦU SWIPE
+    // =========================================================
+
+    const handleTouchStart = (event) => {
+
+        touchStartX.current =
+            event.touches[0].clientX;
+    };
+
+
+    // =========================================================
+    // KẾT THÚC SWIPE
+    // =========================================================
+
+    const handleTouchEnd = (event) => {
+
+        if (
+            touchStartX.current === null
+        ) {
+            return;
+        }
+
+
+        const touchEndX =
+            event.changedTouches[0].clientX;
+
+
+        const difference =
+            touchStartX.current -
+            touchEndX;
+
+
+        // Vuốt sang trái
+        if (difference > 50) {
+
+            handleNextImage();
+
+        }
+
+
+        // Vuốt sang phải
+        if (difference < -50) {
+
+            handlePreviousImage();
+
+        }
+
+
+        touchStartX.current = null;
+    };
+
+
+    // =========================================================
+    // LOADING
+    // =========================================================
 
     if (loading) {
 
         return (
             <div className="product-loading">
-
                 Đang tải sản phẩm...
-
             </div>
         );
-
     }
 
 
-    /* =========================
-       ERROR
-    ========================= */
+    // =========================================================
+    // ERROR
+    // =========================================================
 
     if (error || !product) {
 
         return (
-
             <div className="product-not-found">
 
                 <h2>
@@ -180,90 +436,55 @@ function ProductDetail() {
                 </Link>
 
             </div>
-
         );
-
     }
 
 
-    /* ==========================================
-       BẮT ĐẦU CHỈNH SỬA SỐ LƯỢNG
-    ========================================== */
+    // =========================================================
+    // BẮT ĐẦU CHỈNH SỐ LƯỢNG
+    // =========================================================
 
     const handleQuantityFocus = () => {
 
-        /*
-         * Lưu số lượng hiện tại trước khi
-         * người dùng bắt đầu sửa.
-         */
         setOriginalQuantity(quantity);
 
-        /*
-         * Chuyển quantity sang dạng chuỗi
-         * để input có thể nhận giá trị rỗng.
-         */
         setEditingQuantity(
             String(quantity)
         );
-
     };
 
 
-    /* ==========================================
-       NHẬP TRỰC TIẾP SỐ LƯỢNG
-    ========================================== */
+    // =========================================================
+    // THAY ĐỔI SỐ LƯỢNG
+    // =========================================================
 
     const handleQuantityChange = (value) => {
 
-        /*
-         * Chỉ cho phép nhập số.
-         */
         if (!/^\d*$/.test(value)) {
             return;
         }
 
-        /*
-         * Lưu giá trị đang nhập.
-         *
-         * Có thể là:
-         *
-         * ""
-         * "1"
-         * "15"
-         * "100"
-         */
+
         setEditingQuantity(value);
 
 
-        /*
-         * Nếu xóa hết số:
-         *
-         * Không cập nhật quantity.
-         *
-         * Cho phép ô input thực sự trống.
-         */
+        // Cho phép ô tạm thời rỗng
         if (value === "") {
             return;
         }
 
 
-        let newQuantity = Number(value);
+        let newQuantity =
+            Number(value);
 
 
-        /*
-         * Không cho nhập 0.
-         *
-         * Nhưng vẫn cho phép ô tạm thời
-         * hiển thị 0 trong lúc nhập.
-         */
+        // Không cho nhập 0
         if (newQuantity === 0) {
             return;
         }
 
 
-        /*
-         * Không cho vượt quá tồn kho.
-         */
+        // Không vượt tồn kho
         if (
             newQuantity >
             Number(product.quantity || 0)
@@ -272,33 +493,23 @@ function ProductDetail() {
             newQuantity =
                 Number(product.quantity || 0);
 
+
             setEditingQuantity(
                 String(newQuantity)
             );
-
         }
 
 
-        /*
-         * Cập nhật số lượng.
-         */
         setQuantity(newQuantity);
-
     };
 
 
-    /* ==========================================
-       RỜI KHỎI INPUT
-    ========================================== */
+    // =========================================================
+    // RỜI INPUT
+    // =========================================================
 
     const handleQuantityBlur = (value) => {
 
-        /*
-         * Nếu người dùng xóa hết số
-         * nhưng không nhập gì
-         *
-         * → quay lại số lượng trước đó.
-         */
         if (value === "") {
 
             setQuantity(
@@ -308,19 +519,13 @@ function ProductDetail() {
             setEditingQuantity(null);
 
             return;
-
         }
 
 
-        let newQuantity = Number(value);
+        let newQuantity =
+            Number(value);
 
 
-        /*
-         * Nếu nhập không hợp lệ
-         * hoặc nhỏ hơn 1
-         *
-         * → quay lại số lượng trước đó.
-         */
         if (
             !Number.isInteger(newQuantity) ||
             newQuantity < 1
@@ -328,13 +533,9 @@ function ProductDetail() {
 
             newQuantity =
                 originalQuantity;
-
         }
 
 
-        /*
-         * Không vượt quá tồn kho.
-         */
         if (
             newQuantity >
             Number(product.quantity || 0)
@@ -342,95 +543,73 @@ function ProductDetail() {
 
             newQuantity =
                 Number(product.quantity || 0);
-
         }
 
 
         setQuantity(newQuantity);
 
         setEditingQuantity(null);
-
     };
 
 
-    /* ==========================================
-       GIẢM SỐ LƯỢNG
-    ========================================== */
+    // =========================================================
+    // GIẢM
+    // =========================================================
 
     const handleDecrease = () => {
 
-        /*
-         * Xóa trạng thái nhập tạm.
-         */
         setEditingQuantity(null);
 
-        setQuantity(prev =>
-            Math.max(
-                1,
-                prev - 1
-            )
+        setQuantity((prev) =>
+            Math.max(1, prev - 1)
         );
-
     };
 
 
-    /* ==========================================
-       TĂNG SỐ LƯỢNG
-    ========================================== */
+    // =========================================================
+    // TĂNG
+    // =========================================================
 
     const handleIncrease = () => {
 
-        /*
-         * Xóa trạng thái nhập tạm.
-         */
         setEditingQuantity(null);
 
-        setQuantity(prev =>
+        setQuantity((prev) =>
             Math.min(
                 Number(product.quantity || 0),
                 prev + 1
             )
         );
-
     };
 
 
-    /* =========================
-       ADD CART
-    ========================= */
+    // =========================================================
+    // THÊM VÀO GIỎ
+    // =========================================================
 
     const handleAddToCart = () => {
 
-        // =========================
-        // CHƯA ĐĂNG NHẬP
-        // =========================
-
+        // Chưa đăng nhập
         if (!isLoggedIn) {
 
             navigate("/login", {
                 state: {
-                    from: `/products/${product.id}`
+                    from:
+                        `/products/${product.id}`
                 }
             });
 
             return;
-
         }
 
 
-        // =========================
-        // HẾT HÀNG
-        // =========================
-
+        // Hết hàng
         if (product.quantity <= 0) {
             return;
         }
 
 
-        // =========================
-        // KIỂM TRA SỐ LƯỢNG
-        // =========================
-
+        // Kiểm tra số lượng
         if (
             quantity < 1 ||
             quantity > product.quantity
@@ -439,45 +618,28 @@ function ProductDetail() {
         }
 
 
-        // =========================
-        // THÊM VÀO GIỎ
-        // =========================
-
+        // Thêm vào giỏ
         addToCart(
             product,
             quantity
         );
 
 
-        console.log(
-            "✅ Đã thêm vào giỏ:",
-            product.name,
-            "x",
-            quantity
-        );
-
-
-        // =========================
-        // HIỆN THÔNG BÁO
-        // =========================
-
+        // Hiện thông báo
         setShowSuccess(true);
 
-
-        // Tự động ẩn sau 2.5 giây
 
         setTimeout(() => {
 
             setShowSuccess(false);
 
         }, 2500);
-
     };
 
 
-    /* =========================
-       BUY NOW
-    ========================= */
+    // =========================================================
+    // MUA NGAY
+    // =========================================================
 
     const handleBuyNow = () => {
 
@@ -485,12 +647,12 @@ function ProductDetail() {
 
             navigate("/login", {
                 state: {
-                    from: `/products/${product.id}`
+                    from:
+                        `/products/${product.id}`
                 }
             });
 
             return;
-
         }
 
 
@@ -507,23 +669,22 @@ function ProductDetail() {
             quantity
         );
 
-        navigate("/cart");
 
+        navigate("/cart");
     };
 
 
-    /* ==========================================
-       RENDER
-    ========================================== */
+    // =========================================================
+    // RENDER
+    // =========================================================
 
     return (
-
         <div className="product-detail-page">
 
 
-            {/* =========================
-                SUCCESS TOAST
-            ========================= */}
+            {/* =================================================
+                THÔNG BÁO THÊM GIỎ
+            ================================================= */}
 
             {showSuccess && (
 
@@ -540,19 +701,19 @@ function ProductDetail() {
                         </strong>
 
                         <p>
-                            Đã thêm {quantity} sản phẩm vào giỏ hàng.
+                            Đã thêm {quantity} sản phẩm
+                            vào giỏ hàng.
                         </p>
 
                     </div>
 
                 </div>
-
             )}
 
 
-            {/* =========================
+            {/* =================================================
                 BREADCRUMB
-            ========================= */}
+            ================================================= */}
 
             <div className="breadcrumb">
 
@@ -575,42 +736,184 @@ function ProductDetail() {
             </div>
 
 
-            {/* =========================
-                DETAIL
-            ========================= */}
+            {/* =================================================
+                CHI TIẾT SẢN PHẨM
+            ================================================= */}
 
             <section className="product-detail">
 
 
-                {/* =========================
-                    IMAGE
-                ========================= */}
+                {/* =================================================
+                    GALLERY
+                ================================================= */}
 
-                <div className="detail-image">
+                <div className="product-gallery">
 
-                    {product.imageUrl ? (
 
-                        <img
-                            src={product.imageUrl}
-                            alt={product.name}
-                        />
+                    {/* =================================================
+                        ẢNH LỚN
+                    ================================================= */}
 
-                    ) : (
+                    <div
+                        className="gallery-main"
 
-                        <ShoppingCart
-                            size={100}
-                        />
+                        onTouchStart={
+                            handleTouchStart
+                        }
 
+                        onTouchEnd={
+                            handleTouchEnd
+                        }
+                    >
+
+                        {productImages.length > 0 ? (
+
+                            <>
+
+                                <img
+                                    src={getImageUrl(
+                                        productImages[
+                                            selectedImageIndex
+                                            ]?.imageUrl
+                                    )}
+
+                                    alt={product.name}
+
+                                    className="gallery-main-image"
+                                />
+
+
+                                {/* =================================
+                                    NÚT TRÁI
+                                ================================= */}
+
+                                {productImages.length > 1 && (
+
+                                    <button
+                                        type="button"
+
+                                        className={
+                                            "gallery-arrow " +
+                                            "gallery-arrow-left"
+                                        }
+
+                                        onClick={
+                                            handlePreviousImage
+                                        }
+
+                                        aria-label="Ảnh trước"
+                                    >
+
+                                        <ChevronLeft
+                                            size={24}
+                                        />
+
+                                    </button>
+                                )}
+
+
+                                {/* =================================
+                                    NÚT PHẢI
+                                ================================= */}
+
+                                {productImages.length > 1 && (
+
+                                    <button
+                                        type="button"
+
+                                        className={
+                                            "gallery-arrow " +
+                                            "gallery-arrow-right"
+                                        }
+
+                                        onClick={
+                                            handleNextImage
+                                        }
+
+                                        aria-label="Ảnh sau"
+                                    >
+
+                                        <ChevronRight
+                                            size={24}
+                                        />
+
+                                    </button>
+                                )}
+
+                            </>
+
+                        ) : (
+
+                            <ShoppingCart
+                                size={100}
+                            />
+
+                        )}
+
+                    </div>
+
+
+                    {/* =================================================
+                        THUMBNAIL
+                    ================================================= */}
+
+                    {productImages.length > 1 && (
+
+                        <div className="gallery-thumbnails">
+
+                            {productImages.map(
+                                (image, index) => (
+
+                                    <button
+                                        type="button"
+
+                                        key={
+                                            image.id ||
+                                            `${image.imageUrl}-${index}`
+                                        }
+
+                                        className={
+                                            `gallery-thumbnail ` +
+                                            (
+                                                selectedImageIndex === index
+                                                    ? "active"
+                                                    : ""
+                                            )
+                                        }
+
+                                        onClick={() =>
+                                            setSelectedImageIndex(
+                                                index
+                                            )
+                                        }
+                                    >
+
+                                        <img
+                                            src={getImageUrl(
+                                                image.imageUrl
+                                            )}
+
+                                            alt={
+                                                `Ảnh ${index + 1}`
+                                            }
+                                        />
+
+                                    </button>
+                                )
+                            )}
+
+                        </div>
                     )}
 
                 </div>
 
 
-                {/* =========================
-                    INFORMATION
-                ========================= */}
+                {/* =================================================
+                    THÔNG TIN
+                ================================================= */}
 
                 <div className="detail-info">
+
 
                     <span className="detail-category">
 
@@ -651,9 +954,9 @@ function ProductDetail() {
                     </p>
 
 
-                    {/* =========================
-                        STOCK
-                    ========================= */}
+                    {/* =================================================
+                        TỒN KHO
+                    ================================================= */}
 
                     <div className="product-stock">
 
@@ -661,9 +964,7 @@ function ProductDetail() {
 
                             <span className="in-stock">
 
-                                ✓ Còn hàng
-                                {" "}
-                                ({product.quantity})
+                                ✓ Còn hàng ({product.quantity})
 
                             </span>
 
@@ -674,15 +975,14 @@ function ProductDetail() {
                                 Hết hàng
 
                             </span>
-
                         )}
 
                     </div>
 
 
-                    {/* =========================
-                        QUANTITY
-                    ========================= */}
+                    {/* =================================================
+                        SỐ LƯỢNG
+                    ================================================= */}
 
                     <div className="quantity-section">
 
@@ -707,8 +1007,6 @@ function ProductDetail() {
                                     product.quantity <= 0 ||
                                     quantity <= 1
                                 }
-
-                                title="Giảm số lượng"
                             >
 
                                 <Minus size={17} />
@@ -716,10 +1014,11 @@ function ProductDetail() {
                             </button>
 
 
-                            {/* INPUT SỐ LƯỢNG */}
+                            {/* INPUT */}
 
                             <input
                                 type="text"
+
                                 inputMode="numeric"
 
                                 value={
@@ -728,8 +1027,6 @@ function ProductDetail() {
                                         : quantity
                                 }
 
-                                min="1"
-                                max={product.quantity}
                                 maxLength={6}
 
                                 onFocus={
@@ -749,17 +1046,6 @@ function ProductDetail() {
                                 }
 
                                 onKeyDown={(e) => {
-
-                                    /*
-                                     * Chỉ cho phép:
-                                     *
-                                     * 0 → 9
-                                     * Backspace
-                                     * Delete
-                                     * Arrow
-                                     * Tab
-                                     * Enter
-                                     */
 
                                     const allowedKeys = [
                                         "Backspace",
@@ -783,26 +1069,18 @@ function ProductDetail() {
                                     ) {
 
                                         e.preventDefault();
-
                                     }
 
-
-                                    /*
-                                     * Enter → kết thúc nhập.
-                                     */
 
                                     if (
                                         e.key === "Enter"
                                     ) {
 
                                         e.currentTarget.blur();
-
                                     }
-
                                 }}
 
                                 aria-label="Số lượng sản phẩm"
-
                             />
 
 
@@ -819,14 +1097,6 @@ function ProductDetail() {
                                     product.quantity <= 0 ||
                                     quantity >= product.quantity
                                 }
-
-                                title={
-                                    product.quantity <= 0
-                                        ? "Sản phẩm hết hàng"
-                                        : quantity >= product.quantity
-                                            ? "Đã đạt số lượng tồn kho"
-                                            : "Tăng số lượng"
-                                }
                             >
 
                                 <Plus size={17} />
@@ -838,12 +1108,13 @@ function ProductDetail() {
                     </div>
 
 
-                    {/* =========================
-                        ADD CART
-                    ========================= */}
+                    {/* =================================================
+                        THÊM GIỎ
+                    ================================================= */}
 
                     <button
                         type="button"
+
                         className="add-cart-button"
 
                         disabled={
@@ -865,12 +1136,13 @@ function ProductDetail() {
                     </button>
 
 
-                    {/* =========================
-                        BUY NOW
-                    ========================= */}
+                    {/* =================================================
+                        MUA NGAY
+                    ================================================= */}
 
                     <button
                         type="button"
+
                         className="buy-now-button"
 
                         disabled={
@@ -891,9 +1163,9 @@ function ProductDetail() {
             </section>
 
 
-            {/* =========================
-                DESCRIPTION
-            ========================= */}
+            {/* =================================================
+                MÔ TẢ
+            ================================================= */}
 
             <section className="product-description">
 
@@ -901,11 +1173,9 @@ function ProductDetail() {
                     Mô tả sản phẩm
                 </h2>
 
-
                 <p>
                     {product.description}
                 </p>
-
 
                 <p>
                     Sản phẩm được cung cấp bởi
@@ -917,9 +1187,7 @@ function ProductDetail() {
             </section>
 
         </div>
-
     );
-
 }
 
 
