@@ -31,7 +31,26 @@ function formatPrice(price) {
     return new Intl.NumberFormat("vi-VN")
         .format(Number(price || 0)) + " ₫";
 }
+/* ==========================================
+   XỬ LÝ ĐƯỜNG DẪN ẢNH SẢN PHẨM
+   ========================================== */
+function getImageUrl(imageUrl) {
 
+    if (!imageUrl) {
+        return "";
+    }
+
+    // Nếu ảnh đã là URL đầy đủ thì giữ nguyên
+    if (
+        imageUrl.startsWith("http://") ||
+        imageUrl.startsWith("https://")
+    ) {
+        return imageUrl;
+    }
+
+    // Nếu backend trả về /uploads/...
+    return `http://localhost:8080${imageUrl}`;
+}
 
 function extractData(response) {
 
@@ -1236,12 +1255,8 @@ function Checkout() {
                                                 {item.image_url ? (
 
                                                     <img
-                                                        src={
-                                                            item.image_url
-                                                        }
-                                                        alt={
-                                                            item.name
-                                                        }
+                                                        src={getImageUrl(item.image_url)}
+                                                        alt={item.name}
                                                     />
 
                                                 ) : (

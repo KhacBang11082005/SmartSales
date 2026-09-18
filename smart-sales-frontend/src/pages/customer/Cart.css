@@ -446,16 +446,18 @@
 
 .summary-row {
     display: flex;
-
     justify-content: space-between;
-
+    align-items: center;
     margin-bottom: 16px;
-
     color: var(--text-secondary);
+    font-size: 18px !important;
+    font-weight: 600;
 }
 
 .summary-row strong {
     color: var(--text);
+    font-size: 18px !important;
+    font-weight: 700
 }
 
 

@@ -27,6 +27,39 @@ function formatPrice(price) {
         .format(Number(price) || 0) + " ₫";
 }
 
+/* ==========================================
+   XỬ LÝ ĐƯỜNG DẪN ẢNH SẢN PHẨM
+
+   Backend lưu:
+   /uploads/abc.jpg
+
+   Nhưng ảnh nằm trên:
+   http://localhost:8080/uploads/abc.jpg
+
+   Nếu ảnh đã là URL đầy đủ:
+   http://...
+   https://...
+
+   thì giữ nguyên.
+========================================== */
+
+function getImageUrl(imageUrl) {
+
+    if (!imageUrl) {
+        return "";
+    }
+
+    // Nếu đã là URL đầy đủ
+    if (
+        imageUrl.startsWith("http://") ||
+        imageUrl.startsWith("https://")
+    ) {
+        return imageUrl;
+    }
+
+    // Nếu là đường dẫn /uploads/...
+    return `http://localhost:8080${imageUrl}`;
+}
 
 /* ==========================================
    CART
@@ -661,14 +694,14 @@ function Cart() {
                                         {item.image_url ? (
 
                                             <img
-                                                src={item.image_url}
+                                                src={getImageUrl(item.image_url)}
                                                 alt={item.name}
                                             />
 
                                         ) : item.imageUrl ? (
 
                                             <img
-                                                src={item.imageUrl}
+                                                src={getImageUrl(item.imageUrl)}
                                                 alt={item.name}
                                             />
 

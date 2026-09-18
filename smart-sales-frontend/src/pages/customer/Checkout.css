@@ -131,8 +131,9 @@
 
 .checkout-sidebar {
     position: sticky;
-
-    top: 24px;
+    top: 90px;
+    align-self: start;
+    height: fit-content;
 }
 
 
@@ -619,7 +620,7 @@
 
     color: #64748b;
 
-    font-size: 13px;
+    font-size: 14px;
 }
 
 
