@@ -5,6 +5,7 @@ import com.smartsales.entity.Order;
 import com.smartsales.entity.OrderDetail;
 import com.smartsales.entity.Product;
 import com.smartsales.entity.User;
+import com.smartsales.entity.Promotion;
 import com.smartsales.repository.CustomerRepository;
 import com.smartsales.repository.OrderDetailRepository;
 import com.smartsales.repository.OrderRepository;
@@ -13,8 +14,11 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import com.smartsales.dto.UpdateShippingRequest;
-
 import com.smartsales.dto.CreateOrderRequest;
+
+import com.smartsales.entity.PromotionUsage;
+import com.smartsales.repository.PromotionUsageRepository;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,16 +31,46 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
 
+    // =====================================================
+    // PROMOTION SERVICE
+    // =====================================================
+    // Dùng để kiểm tra và tính tiền khuyến mại
+    // =====================================================
+
+    private final PromotionService promotionService;
+
+    // =====================================================
+    // PROMOTION USAGE REPOSITORY
+    // =====================================================
+    // Dùng để lưu lịch sử khách hàng đã sử dụng
+    // mã khuyến mại nào
+    // =====================================================
+
+    private final PromotionUsageRepository promotionUsageRepository;
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
     public OrderService(
             OrderRepository orderRepository,
             OrderDetailRepository orderDetailRepository,
             ProductRepository productRepository,
-            CustomerRepository customerRepository) {
+            CustomerRepository customerRepository,
+            PromotionService promotionService,
+            PromotionUsageRepository promotionUsageRepository) {
 
         this.orderRepository = orderRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.productRepository = productRepository;
         this.customerRepository = customerRepository;
+
+        // Promotion Service
+        this.promotionService = promotionService;
+
+        // Promotion Usage Repository
+        this.promotionUsageRepository =
+                promotionUsageRepository;
     }
 
 
@@ -81,7 +115,10 @@ public class OrderService {
         Customer customer;
 
 
+        // =====================================================
         // CUSTOMER
+        // =====================================================
+
         if ("CUSTOMER".equals(role)) {
 
             customer =
@@ -95,7 +132,10 @@ public class OrderService {
         }
 
 
+        // =====================================================
         // ADMIN / EMPLOYEE
+        // =====================================================
+
         else if ("ADMIN".equals(role) ||
                 "EMPLOYEE".equals(role)) {
 
@@ -121,9 +161,9 @@ public class OrderService {
         order.setCustomer(customer);
 
 
-// =====================================================
-// SHIPPING INFORMATION
-// =====================================================
+        // =====================================================
+        // SHIPPING INFORMATION
+        // =====================================================
 
         order.setShippingName(
                 request.getShippingName()
@@ -142,6 +182,10 @@ public class OrderService {
         );
 
 
+        // =====================================================
+        // TRẠNG THÁI ĐƠN HÀNG
+        // =====================================================
+
         order.setStatus(
                 Order.Status.PENDING
         );
@@ -150,14 +194,33 @@ public class OrderService {
                 LocalDateTime.now()
         );
 
+
+        // =====================================================
+        // KHỞI TẠO TIỀN
+        // =====================================================
+
         order.setTotalAmount(
                 BigDecimal.ZERO
         );
 
 
+        // =====================================================
+        // KHỞI TẠO KHUYẾN MẠI
+        // =====================================================
+
+        order.setDiscountAmount(
+                BigDecimal.ZERO
+        );
+
+        order.setPromotionCode(
+                null
+        );
 
 
-        // Lưu Order trước
+        // =====================================================
+        // LƯU ORDER TRƯỚC
+        // =====================================================
+
         order = orderRepository.save(order);
 
 
@@ -316,17 +379,156 @@ public class OrderService {
 
 
         // =====================================================
+        // PROMOTION ĐƯỢC ÁP DỤNG
+        // =====================================================
+
+        Promotion appliedPromotion = null;
+
+
+        // =====================================================
+        // TÍNH KHUYẾN MẠI
+        // =====================================================
+
+        BigDecimal discountAmount =
+                BigDecimal.ZERO;
+
+        String promotionCode =
+                request.getPromotionCode();
+
+
+        // =====================================================
+        // NẾU KHÁCH CÓ NHẬP MÃ KHUYẾN MẠI
+        // =====================================================
+
+        if (promotionCode != null
+                && !promotionCode.trim().isEmpty()) {
+
+            // -------------------------------------------------
+            // KIỂM TRA MÃ KHUYẾN MẠI
+            // -------------------------------------------------
+
+            appliedPromotion =
+                    promotionService.validatePromotion(
+                            promotionCode,
+                            totalAmount,
+                            customer.getId()
+                    );
+
+
+            // -------------------------------------------------
+            // TÍNH SỐ TIỀN ĐƯỢC GIẢM
+            // -------------------------------------------------
+
+            discountAmount =
+                    promotionService.calculateDiscount(
+                            appliedPromotion,
+                            totalAmount
+                    );
+
+
+            // -------------------------------------------------
+            // LƯU MÃ KHUYẾN MẠI VÀO ORDER
+            // -------------------------------------------------
+
+            order.setPromotionCode(
+                    appliedPromotion.getCode()
+            );
+        }
+
+
+        // =====================================================
+        // LƯU SỐ TIỀN GIẢM
+        // =====================================================
+
+        order.setDiscountAmount(
+                discountAmount
+        );
+
+
+        // =====================================================
+        // TÍNH TỔNG TIỀN CUỐI CÙNG
+        // =====================================================
+
+        BigDecimal finalAmount =
+                promotionService.calculateFinalAmount(
+                        totalAmount,
+                        discountAmount
+                );
+
+
+        // =====================================================
         // CẬP NHẬT TOTAL AMOUNT
         // =====================================================
 
         order.setTotalAmount(
-                totalAmount
+                finalAmount
         );
 
 
-        return orderRepository.save(
-                order
-        );
+        // =====================================================
+        // LƯU ORDER
+        // =====================================================
+
+        Order savedOrder =
+                orderRepository.save(order);
+
+
+        // =====================================================
+        // GHI NHẬN SỬ DỤNG KHUYẾN MẠI
+        // =====================================================
+        // Chỉ thực hiện khi khách thực sự sử dụng mã
+        // và đơn hàng được tạo thành công.
+        // =====================================================
+
+        if (appliedPromotion != null) {
+
+            // -------------------------------------------------
+            // TẠO LỊCH SỬ SỬ DỤNG KHUYẾN MẠI
+            // -------------------------------------------------
+
+            PromotionUsage usage =
+                    new PromotionUsage();
+
+            // Mã khuyến mại
+            usage.setPromotion(
+                    appliedPromotion
+            );
+
+            // Khách hàng sử dụng
+            usage.setCustomer(
+                    customer
+            );
+
+            // Đơn hàng sử dụng
+            usage.setOrder(
+                    savedOrder
+            );
+
+
+            // -------------------------------------------------
+            // LƯU LỊCH SỬ
+            // -------------------------------------------------
+
+            promotionUsageRepository.save(
+                    usage
+            );
+
+
+            // -------------------------------------------------
+            // TĂNG SỐ LƯỢT ĐÃ SỬ DỤNG
+            // -------------------------------------------------
+
+            appliedPromotion.setUsedCount(
+                    appliedPromotion.getUsedCount() + 1
+            );
+        }
+
+
+        // =====================================================
+        // TRẢ VỀ ORDER
+        // =====================================================
+
+        return savedOrder;
     }
 
 
@@ -664,9 +866,11 @@ public class OrderService {
                 order
         );
     }
+
+
     // =====================================================
-// CUSTOMER CANCEL ORDER
-// =====================================================
+    // CUSTOMER CANCEL ORDER
+    // =====================================================
 
     @Transactional
     public Order cancelOrder(
@@ -777,6 +981,7 @@ public class OrderService {
         );
     }
 
+
     // =====================================================
     // RESTORE PRODUCT STOCK
     // =====================================================
@@ -842,8 +1047,8 @@ public class OrderService {
 
 
     // =====================================================
-// UPDATE SHIPPING INFORMATION
-// =====================================================
+    // UPDATE SHIPPING INFORMATION
+    // =====================================================
 
     @Transactional
     public Order updateShippingInformation(

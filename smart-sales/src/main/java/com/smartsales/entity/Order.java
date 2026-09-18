@@ -52,7 +52,15 @@ public class Order {
             scale = 2
     )
     private BigDecimal totalAmount = BigDecimal.ZERO;
+// =====================================================
+// KHUYẾN MẠI
+// =====================================================
 
+    // Mã khuyến mại mà khách hàng sử dụng
+    private String promotionCode;
+
+    // Số tiền được giảm từ mã khuyến mại
+    private BigDecimal discountAmount = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
     private Status status = Status.PENDING;
@@ -198,5 +206,26 @@ public class Order {
             List<OrderDetail> orderDetails) {
 
         this.orderDetails = orderDetails;
+    }
+
+    // =====================================================
+// GETTER / SETTER - KHUYẾN MẠI
+// =====================================================
+
+    public String getPromotionCode() {
+        return promotionCode;
+    }
+
+    public void setPromotionCode(String promotionCode) {
+        this.promotionCode = promotionCode;
+    }
+
+
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
     }
 }

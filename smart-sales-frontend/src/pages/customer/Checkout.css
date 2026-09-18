@@ -1092,3 +1092,263 @@
     }
 
 }
+
+
+       /* =========================================================
+          SMART SALES - Ô KHUYẾN MẠI
+          Chỉ thêm phần này vào CUỐI Checkout.css
+       ========================================================= */
+
+       /* Khung mã khuyến mại */
+   .promotion-box {
+       margin: 18px 0 4px;
+       padding: 14px;
+       border: 1px solid #e5e7eb;
+       border-radius: 12px;
+       background: #f8fafc;
+   }
+
+/* Tiêu đề */
+.promotion-title {
+    margin-bottom: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* Hàng input + button */
+.promotion-input-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+}
+
+/* Ô nhập mã */
+.promotion-input-row input {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    padding: 0 12px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #111827;
+
+    font-size: 14px;
+    outline: none;
+
+    transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.promotion-input-row input::placeholder {
+    color: #9ca3af;
+}
+
+.promotion-input-row input:focus {
+    border-color: #2563eb;
+
+    box-shadow:
+            0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Khi input bị disabled */
+.promotion-input-row input:disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   NÚT ÁP DỤNG
+========================================================= */
+
+.promotion-apply-button {
+    flex-shrink: 0;
+
+    height: 42px;
+    padding: 0 15px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #2563eb;
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+            background 0.2s ease,
+            transform 0.15s ease,
+            opacity 0.2s ease;
+}
+
+.promotion-apply-button:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+
+.promotion-apply-button:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.promotion-apply-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   THÔNG BÁO LỖI MÃ
+========================================================= */
+
+.promotion-error {
+    margin-top: 8px;
+
+    font-size: 13px;
+    line-height: 1.45;
+
+    color: #dc2626;
+}
+
+
+/* =========================================================
+   THÔNG BÁO ÁP DỤNG THÀNH CÔNG
+========================================================= */
+
+.promotion-success {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-top: 10px;
+    padding: 10px 11px;
+
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+
+    background: #f0fdf4;
+}
+
+/* Nội dung mã đã áp dụng */
+.promotion-success > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    min-width: 0;
+}
+
+/* Tên chương trình */
+.promotion-success strong {
+    overflow: hidden;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    color: #15803d;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Mã */
+.promotion-success span {
+    font-size: 12px;
+    color: #4b5563;
+}
+
+
+/* =========================================================
+   NÚT XÓA MÃ
+========================================================= */
+
+.promotion-remove-button {
+    flex-shrink: 0;
+
+    padding: 5px 9px;
+
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+
+    background: #ffffff;
+    color: #dc2626;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+            background 0.2s ease,
+            border-color 0.2s ease;
+}
+
+.promotion-remove-button:hover:not(:disabled) {
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
+
+.promotion-remove-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   DÒNG GIẢM KHUYẾN MẠI
+========================================================= */
+
+.promotion-discount-row strong {
+    color: #16a34a;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 620px) {
+
+    .promotion-box {
+        padding: 12px;
+    }
+
+    .promotion-input-row {
+        gap: 6px;
+    }
+
+    .promotion-apply-button {
+        padding: 0 12px;
+    }
+
+}
+
+
+@media (max-width: 420px) {
+
+    .promotion-input-row {
+        flex-direction: column;
+    }
+
+    .promotion-input-row input {
+        width: 100%;
+    }
+
+    .promotion-apply-button {
+        width: 100%;
+    }
+
+    .promotion-success {
+        align-items: flex-start;
+    }
+
+}
+

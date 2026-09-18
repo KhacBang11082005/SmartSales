@@ -1283,6 +1283,9 @@ function OrderDetail() {
 
                                 </div>
 
+                                {/* =================================================
+                                       TẠM TÍNH
+                                    ================================================= */}
 
                                 <div className="summary-row">
 
@@ -1298,6 +1301,55 @@ function OrderDetail() {
 
                                 </div>
 
+
+                                {/* =================================================
+                                       KHUYẾN MẠI
+                                       Chỉ hiển thị khi đơn hàng có giảm giá
+                                    ================================================= */}
+
+                                {Number(order.discountAmount || 0) > 0 && (
+
+                                    <div className="summary-row promotion-discount-row">
+
+                                        <span>
+                                            Giảm khuyến mại
+                                        </span>
+
+                                        <strong>
+                                            - {formatPrice(
+                                            order.discountAmount
+                                        )}
+                                        </strong>
+
+                                    </div>
+
+                                )}
+
+
+                                {/* =================================================
+                                       MÃ KHUYẾN MẠI
+                                    ================================================= */}
+
+                                {order.promotionCode && (
+
+                                    <div className="summary-row promotion-code-row">
+
+                                        <span>
+                                            Mã khuyến mại
+                                        </span>
+
+                                        <strong>
+                                            {order.promotionCode}
+                                        </strong>
+
+                                    </div>
+
+                                )}
+
+
+                                {/* =================================================
+                                       PHÍ GIAO HÀNG
+                                    ================================================= */}
 
                                 <div className="summary-row">
 
@@ -1315,6 +1367,10 @@ function OrderDetail() {
                                 <div className="summary-divider" />
 
 
+                                {/* =================================================
+                                       TỔNG THANH TOÁN
+                                    ================================================= */}
+
                                 <div className="summary-total">
 
                                     <div>
@@ -1324,7 +1380,7 @@ function OrderDetail() {
                                         </span>
 
                                         <small>
-                                            Đã bao gồm giá sản phẩm
+                                            Đã áp dụng khuyến mại nếu có
                                         </small>
 
                                     </div>
@@ -1337,6 +1393,7 @@ function OrderDetail() {
                                     </strong>
 
                                 </div>
+
 
                             </div>
 

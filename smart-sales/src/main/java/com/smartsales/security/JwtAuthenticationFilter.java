@@ -18,18 +18,32 @@ import java.util.Collections;
 import java.util.Locale;
 
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter
+        extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+
     private final UserRepository userRepository;
+
+
+    // =========================================================
+    // CONSTRUCTOR
+    // =========================================================
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
             UserRepository userRepository
     ) {
+
         this.jwtService = jwtService;
+
         this.userRepository = userRepository;
     }
+
+
+    // =========================================================
+    // JWT FILTER
+    // =========================================================
 
     @Override
     protected void doFilterInternal(
@@ -38,96 +52,155 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // =========================================================
-        // 1. Lấy JWT từ header Authorization
-        // =========================================================
 
-        String authHeader = request.getHeader("Authorization");
+        // =====================================================
+        // 1. LẤY AUTHORIZATION HEADER
+        // =====================================================
 
-        // Nếu request không có JWT thì cho đi tiếp.
-        // Spring Security sẽ tự quyết định request đó có được phép
-        // truy cập hay không.
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+        String authHeader =
+                request.getHeader("Authorization");
+
+
+        // =====================================================
+        // 2. KHÔNG CÓ TOKEN
+        // =====================================================
+
+        if (
+                authHeader == null ||
+                        !authHeader.startsWith("Bearer ")
+        ) {
+
+            filterChain.doFilter(
+                    request,
+                    response
+            );
+
             return;
         }
 
-        // Bỏ phần "Bearer " để lấy token thật.
-        String token = authHeader.substring(7);
+
+        // =====================================================
+        // 3. LẤY TOKEN
+        // =====================================================
+
+        String token =
+                authHeader.substring(7);
+
 
         try {
 
-            // =========================================================
-            // 2. Kiểm tra JWT
-            // =========================================================
 
-            if (!jwtService.isTokenValid(token)) {
+            // =================================================
+            // 4. KIỂM TRA TOKEN
+            // =================================================
 
-                // Token hết hạn hoặc không hợp lệ.
+            if (
+                    !jwtService.isTokenValid(token)
+            ) {
+
                 SecurityContextHolder.clearContext();
 
-                filterChain.doFilter(request, response);
+                filterChain.doFilter(
+                        request,
+                        response
+                );
+
                 return;
             }
 
-            // =========================================================
-            // 3. Lấy thông tin định danh từ JWT
-            // =========================================================
+
+            // =================================================
+            // 5. LẤY EMAIL / USERNAME TỪ JWT
+            // =================================================
 
             String usernameOrEmail =
                     jwtService.extractUsername(token);
 
-            // Nếu SecurityContext chưa có user thì mới xác thực.
-            if (usernameOrEmail != null
-                    && SecurityContextHolder
-                    .getContext()
-                    .getAuthentication() == null) {
 
-                // =====================================================
-                // 4. TÌM USER
-                //
-                // Hệ thống mới đăng nhập bằng EMAIL.
-                //
-                // Tuy nhiên dữ liệu cũ có thể vẫn dùng username.
-                // Vì vậy thử:
-                //
-                //    username → email
-                //
-                // để đảm bảo cả dữ liệu cũ và mới đều hoạt động.
-                // =====================================================
+            // =================================================
+            // 6. CHỈ XÁC THỰC KHI CHƯA CÓ AUTHENTICATION
+            // =================================================
 
-                User user = userRepository
-                        .findByUsername(usernameOrEmail)
-                        .orElseGet(() ->
-                                userRepository
-                                        .findByEmail(usernameOrEmail)
-                                        .orElse(null)
-                        );
-                // =========================================================
-                // KIỂM TRA TÀI KHOẢN BỊ KHÓA
-                //
-                // Trường hợp:
-                //
-                // CUSTOMER đã đăng nhập
-                // -> có JWT
-                // -> ADMIN khóa tài khoản
-                // -> JWT cũ vẫn còn hạn
-                //
-                // Nếu không kiểm tra ở đây thì CUSTOMER vẫn có thể
-                // tiếp tục gọi API.
-                //
-                // Vì vậy phải kiểm tra trạng thái user ở mỗi request.
-                // =========================================================
+            if (
+                    usernameOrEmail != null
+                            &&
+                            SecurityContextHolder
+                                    .getContext()
+                                    .getAuthentication()
+                                    == null
+            ) {
 
-                if (
-                        user != null &&
-                                user.getStatus() == User.Status.LOCKED
-                ) {
 
-                    // Xóa authentication hiện tại
+                // =================================================
+                // 7. TÌM USER
+                //
+                // JWT hiện tại dùng EMAIL làm subject.
+                //
+                // Nhưng vẫn hỗ trợ username cũ.
+                // =================================================
+
+                User user =
+                        userRepository
+                                .findByEmail(
+                                        usernameOrEmail
+                                )
+                                .orElseGet(() ->
+                                        userRepository
+                                                .findByUsername(
+                                                        usernameOrEmail
+                                                )
+                                                .orElse(null)
+                                );
+
+
+                // =================================================
+                // 8. KHÔNG TÌM THẤY USER
+                // =================================================
+
+                if (user == null) {
+
+                    System.err.println(
+                            "========== JWT ERROR =========="
+                    );
+
+                    System.err.println(
+                            "Không tìm thấy User với email/username: "
+                                    + usernameOrEmail
+                    );
+
+                    System.err.println(
+                            "Request: "
+                                    + request.getMethod()
+                                    + " "
+                                    + request.getRequestURI()
+                    );
+
+                    System.err.println(
+                            "================================"
+                    );
+
                     SecurityContextHolder.clearContext();
 
-                    // Trả HTTP 401
+                    filterChain.doFilter(
+                            request,
+                            response
+                    );
+
+                    return;
+                }
+
+
+                // =================================================
+                // 9. KIỂM TRA TÀI KHOẢN BỊ KHÓA
+                // =================================================
+
+                if (
+                        user.getStatus()
+                                == User.Status.LOCKED
+                ) {
+
+                    SecurityContextHolder.clearContext();
+
                     response.setStatus(
                             HttpServletResponse.SC_UNAUTHORIZED
                     );
@@ -150,74 +223,197 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     return;
                 }
-                // =====================================================
-                // 5. Kiểm tra user và role
-                // =====================================================
 
-                if (user != null
-                        && user.getRole() != null
-                        && user.getRole().getName() != null) {
 
-                    // Chuẩn hóa role về chữ hoa.
-                    //
-                    // Ví dụ:
-                    // admin    → ADMIN
-                    // Admin    → ADMIN
-                    // ADMIN    → ADMIN
-                    //
-                    // Điều này rất quan trọng vì SecurityConfig
-                    // đang sử dụng hasRole("ADMIN").
-                    String roleName = user.getRole()
-                            .getName()
-                            .trim()
-                            .toUpperCase(Locale.ROOT);
+                // =================================================
+                // 10. KIỂM TRA ROLE
+                // =================================================
 
-                    // Spring Security:
-                    //
-                    // hasRole("ADMIN")
-                    //
-                    // tương đương yêu cầu:
-                    //
-                    // ROLE_ADMIN
-                    SimpleGrantedAuthority authority =
-                            new SimpleGrantedAuthority(
-                                    "ROLE_" + roleName
-                            );
+                if (
+                        user.getRole() == null
+                                ||
+                                user.getRole().getName() == null
+                ) {
 
-                    // =================================================
-                    // 6. Tạo Authentication
-                    // =================================================
+                    System.err.println(
+                            "========== JWT ROLE ERROR =========="
+                    );
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    user,
-                                    null,
-                                    Collections.singletonList(authority)
-                            );
+                    System.err.println(
+                            "User ID: "
+                                    + user.getId()
+                    );
 
-                    // Đưa user + quyền vào SecurityContext.
-                    SecurityContextHolder
-                            .getContext()
-                            .setAuthentication(authentication);
+                    System.err.println(
+                            "Email: "
+                                    + user.getEmail()
+                    );
+
+                    System.err.println(
+                            "User không có Role."
+                    );
+
+                    System.err.println(
+                            "===================================="
+                    );
+
+                    SecurityContextHolder.clearContext();
+
+                    filterChain.doFilter(
+                            request,
+                            response
+                    );
+
+                    return;
                 }
+
+
+                // =================================================
+                // 11. CHUẨN HÓA ROLE
+                // =================================================
+
+                String roleName =
+                        user.getRole()
+                                .getName()
+                                .trim()
+                                .toUpperCase(
+                                        Locale.ROOT
+                                );
+
+
+                // =================================================
+                // 12. TẠO AUTHORITY
+                //
+                // hasRole("CUSTOMER")
+                //
+                // yêu cầu:
+                //
+                // ROLE_CUSTOMER
+                // =================================================
+
+                SimpleGrantedAuthority authority =
+                        new SimpleGrantedAuthority(
+                                "ROLE_" + roleName
+                        );
+
+
+                // =================================================
+                // 13. TẠO AUTHENTICATION
+                // =================================================
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                user,
+                                null,
+                                Collections.singletonList(
+                                        authority
+                                )
+                        );
+
+
+                // =================================================
+                // 14. LƯU AUTHENTICATION
+                // =================================================
+
+                SecurityContextHolder
+                        .getContext()
+                        .setAuthentication(
+                                authentication
+                        );
+
+
+                // =================================================
+                // 15. DEBUG
+                //
+                // Có thể nhìn Console Backend để xác nhận:
+                //
+                // CUSTOMER
+                // ROLE_CUSTOMER
+                // =================================================
+
+                System.out.println(
+                        "========== JWT AUTH =========="
+                );
+
+                System.out.println(
+                        "User ID: "
+                                + user.getId()
+                );
+
+                System.out.println(
+                        "Email: "
+                                + user.getEmail()
+                );
+
+                System.out.println(
+                        "Role: "
+                                + roleName
+                );
+
+                System.out.println(
+                        "Authority: ROLE_"
+                                + roleName
+                );
+
+                System.out.println(
+                        "Request: "
+                                + request.getMethod()
+                                + " "
+                                + request.getRequestURI()
+                );
+
+                System.out.println(
+                        "=============================="
+                );
             }
+
 
         } catch (Exception e) {
 
-            // =========================================================
-            // JWT lỗi → xóa authentication
-            // =========================================================
+
+            // =====================================================
+            // JWT CÓ LỖI
+            // =====================================================
 
             SecurityContextHolder.clearContext();
 
-            // Không throw lỗi ở đây.
-            // Cho request tiếp tục để Spring Security xử lý.
+
+            System.err.println(
+                    "========== JWT AUTHENTICATION ERROR =========="
+            );
+
+            System.err.println(
+                    "Request: "
+                            + request.getMethod()
+                            + " "
+                            + request.getRequestURI()
+            );
+
+            System.err.println(
+                    "Error type: "
+                            + e.getClass().getName()
+            );
+
+            System.err.println(
+                    "Message: "
+                            + e.getMessage()
+            );
+
+            e.printStackTrace();
+
+            System.err.println(
+                    "==============================================="
+            );
         }
 
-        // =========================================================
-        // 7. Cho request đi tiếp
-        // =========================================================
 
-        filterChain.doFilter(request, response);
+        // =====================================================
+        // 16. CHO REQUEST ĐI TIẾP
+        // =====================================================
+
+        filterChain.doFilter(
+                request,
+                response
+        );
     }
 }

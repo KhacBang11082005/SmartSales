@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import {
     Link,
@@ -19,6 +20,7 @@ import {
 import { useCart } from "../../context/CartContext";
 import { createOrder } from "../../services/orderApi";
 import { getMyProfile } from "../../services/accountApi";
+import { validatePromotion } from "../../services/promotionApi";
 
 import "./Checkout.css";
 
@@ -31,9 +33,11 @@ function formatPrice(price) {
     return new Intl.NumberFormat("vi-VN")
         .format(Number(price || 0)) + " ₫";
 }
+
+
 /* ==========================================
    XỬ LÝ ĐƯỜNG DẪN ẢNH SẢN PHẨM
-   ========================================== */
+========================================== */
 function getImageUrl(imageUrl) {
 
     if (!imageUrl) {
@@ -50,7 +54,8 @@ function getImageUrl(imageUrl) {
 
     // Nếu backend trả về /uploads/...
     return `http://localhost:8080${imageUrl}`;
-}
+    }
+
 
 function extractData(response) {
 
@@ -224,6 +229,27 @@ function Checkout() {
 
 
     /* =====================================================
+       KHUYẾN MẠI
+    ===================================================== */
+
+    // Mã khuyến mại người dùng nhập
+    const [promotionCode, setPromotionCode] =
+        useState("");
+
+    // Thông tin mã khuyến mại sau khi áp dụng thành công
+    const [promotion, setPromotion] =
+        useState(null);
+
+    // Trạng thái đang kiểm tra mã
+    const [isApplyingPromotion, setIsApplyingPromotion] =
+        useState(false);
+
+    // Lỗi liên quan đến mã khuyến mại
+    const [promotionError, setPromotionError] =
+        useState("");
+
+
+    /* =====================================================
        TỔNG SỐ LƯỢNG
     ===================================================== */
 
@@ -237,7 +263,7 @@ function Checkout() {
 
 
     /* =====================================================
-       TỔNG TIỀN
+       TỔNG TIỀN SẢN PHẨM
     ===================================================== */
 
     const selectedTotal =
@@ -248,6 +274,192 @@ function Checkout() {
                 Number(item.quantity || 0),
             0
         );
+
+
+    /* =====================================================
+       XỬ LÝ MÃ KHUYẾN MẠI
+    ===================================================== */
+
+    const handleApplyPromotion = async () => {
+
+        setPromotionError("");
+        setError("");
+
+        const code =
+            promotionCode.trim();
+
+        if (!code) {
+
+            setPromotionError(
+                "Vui lòng nhập mã khuyến mại."
+            );
+
+            return;
+        }
+
+        if (selectedTotal <= 0) {
+
+            setPromotionError(
+                "Giá trị đơn hàng không hợp lệ."
+            );
+
+            return;
+        }
+
+        /*
+         * Lấy thông tin user đang đăng nhập.
+         *
+         * Backend cần customerId để kiểm tra:
+         * - Khách hàng đã dùng mã chưa
+         * - Mã còn lượt sử dụng không
+         */
+        /* =====================================================
+           LẤY CUSTOMER ID CỦA TÀI KHOẢN ĐANG ĐĂNG NHẬP
+        ===================================================== */
+
+        let customerId = null;
+
+        try {
+
+            /*
+             * SmartSales lưu thông tin tài khoản
+             * ở localStorage với key "smart_sales_user"
+             */
+            const userData =
+                localStorage.getItem("smart_sales_user");
+
+            if (userData) {
+
+                const user =
+                    JSON.parse(userData);
+
+                /*
+                 * Tùy cấu trúc dữ liệu đăng nhập,
+                 * thử lần lượt các vị trí có thể chứa customerId.
+                 */
+                customerId =
+                    user.customerId ||
+                    user.customer?.id ||
+                    user.id;
+            }
+
+        } catch (err) {
+
+            console.error(
+                "Không thể đọc thông tin user:",
+                err
+            );
+
+        }
+
+
+        if (!customerId) {
+
+            setPromotionError(
+                "Không xác định được thông tin khách hàng."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            setIsApplyingPromotion(true);
+
+            const result =
+                await validatePromotion(
+                    code,
+                    selectedTotal,
+                    customerId
+                );
+
+
+            if (!result?.valid) {
+
+                setPromotionError(
+                    result?.message ||
+                    "Mã khuyến mại không hợp lệ."
+                );
+
+                setPromotion(null);
+
+                return;
+            }
+
+
+            // Áp dụng mã thành công
+            setPromotion(result);
+
+            setPromotionCode(
+                result.code || code
+            );
+
+            setPromotionError("");
+
+        } catch (err) {
+
+            console.error(
+                "Lỗi áp dụng mã khuyến mại:",
+                err
+            );
+
+
+            const backendMessage =
+                err.response?.data?.message;
+
+
+            setPromotion(null);
+
+            setPromotionError(
+                backendMessage ||
+                "Không thể kiểm tra mã khuyến mại. Vui lòng thử lại."
+            );
+
+        } finally {
+
+            setIsApplyingPromotion(false);
+
+        }
+
+    };
+
+
+    /* =====================================================
+       XÓA MÃ KHUYẾN MẠI
+    ===================================================== */
+
+    const handleRemovePromotion = () => {
+
+        setPromotion(null);
+        setPromotionCode("");
+        setPromotionError("");
+
+    };
+
+
+    /* =====================================================
+       NẾU TỔNG TIỀN THAY ĐỔI
+       THÌ XÓA MÃ ĐÃ ÁP DỤNG
+    ===================================================== */
+
+    useEffect(() => {
+
+        if (!promotion) {
+            return;
+        }
+
+        /*
+         * Không giữ lại mã cũ khi giỏ hàng thay đổi.
+         * Người dùng cần kiểm tra lại mã với tổng tiền mới.
+         */
+        setPromotion(null);
+        setPromotionCode("");
+        setPromotionError(
+            "Giỏ hàng đã thay đổi. Vui lòng áp dụng lại mã khuyến mại."
+        );
+
+    }, [selectedTotal]);
 
 
     /* =====================================================
@@ -333,7 +545,6 @@ function Checkout() {
             setSelectedWard("");
 
             return;
-
         }
 
         let cancelled = false;
@@ -597,6 +808,10 @@ function Checkout() {
         }
 
 
+        /* =================================================
+           DỮ LIỆU ĐẶT HÀNG
+        ================================================= */
+
         const orderData = {
 
             items: selectedProducts.map(item => ({
@@ -621,6 +836,23 @@ function Checkout() {
                 formData.note.trim()
 
         };
+
+
+        /*
+         * Nếu người dùng đã áp dụng mã khuyến mại
+         * thì gửi promotionCode lên backend.
+         *
+         * Không gửi discountAmount từ frontend.
+         *
+         * Backend sẽ tự tính lại số tiền giảm
+         * để đảm bảo an toàn dữ liệu.
+         */
+        if (promotion?.valid) {
+
+            orderData.promotionCode =
+                promotion.code;
+
+        }
 
 
         try {
@@ -743,6 +975,10 @@ function Checkout() {
     }
 
 
+    /* =====================================================
+       HIỂN THỊ CHECKOUT
+    ===================================================== */
+
     return (
 
         <div className="checkout-page">
@@ -763,7 +999,6 @@ function Checkout() {
                         Quay lại giỏ hàng
 
                     </Link>
-
 
 
                     <h1>
@@ -1045,7 +1280,9 @@ function Checkout() {
                                 <div className="form-group form-group-full">
 
                                     <label htmlFor="note">
+
                                         Ghi chú
+
                                     </label>
 
                                     <textarea
@@ -1197,7 +1434,7 @@ function Checkout() {
 
 
                     {/* =================================================
-                       RIGHT - BẢN CŨ
+                       RIGHT - ĐƠN HÀNG
                     ================================================= */}
 
                     <aside className="checkout-sidebar">
@@ -1305,6 +1542,118 @@ function Checkout() {
                             <div className="summary-line" />
 
 
+                            {/* =================================================
+                               MÃ KHUYẾN MẠI
+                            ================================================= */}
+
+                            <div className="promotion-box">
+
+                                <div className="promotion-title">
+                                    Mã khuyến mại
+                                </div>
+
+                                <div className="promotion-input-row">
+
+                                    <input
+                                        type="text"
+                                        value={promotionCode}
+                                        onChange={event => {
+
+                                            setPromotionCode(
+                                                event.target.value
+                                            );
+
+                                            /*
+                                             * Khi người dùng sửa mã,
+                                             * mã cũ không còn được xem
+                                             * là mã đang áp dụng.
+                                             */
+                                            if (promotion) {
+                                                setPromotion(null);
+                                            }
+
+                                            setPromotionError("");
+
+                                        }}
+                                        placeholder="Nhập mã khuyến mại"
+                                        disabled={
+                                            isApplyingPromotion ||
+                                            isSubmitting
+                                        }
+                                    />
+
+                                    <button
+                                        type="button"
+                                        className="promotion-apply-button"
+                                        onClick={
+                                            handleApplyPromotion
+                                        }
+                                        disabled={
+                                            isApplyingPromotion ||
+                                            isSubmitting
+                                        }
+                                    >
+
+                                        {isApplyingPromotion
+                                            ? "Đang kiểm tra..."
+                                            : "Áp dụng"
+                                        }
+
+                                    </button>
+
+                                </div>
+
+
+                                {promotionError && (
+
+                                    <div className="promotion-error">
+
+                                        {promotionError}
+
+                                    </div>
+
+                                )}
+
+
+                                {promotion?.valid && (
+
+                                    <div className="promotion-success">
+
+                                        <div>
+                                            <strong>
+                                                {promotion.name}
+                                            </strong>
+
+                                            <span>
+                                                Mã: {promotion.code}
+                                            </span>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            className="promotion-remove-button"
+                                            onClick={
+                                                handleRemovePromotion
+                                            }
+                                            disabled={
+                                                isSubmitting
+                                            }
+                                        >
+                                            Xóa
+                                        </button>
+
+                                    </div>
+
+                                )}
+
+                            </div>
+
+
+                            {/* LINE */}
+
+                            <div className="summary-line" />
+
+
                             {/* TẠM TÍNH */}
 
                             <div className="checkout-summary-row">
@@ -1318,6 +1667,27 @@ function Checkout() {
                                 </strong>
 
                             </div>
+
+
+                            {/* GIẢM KHUYẾN MẠI */}
+
+                            {promotion?.valid && (
+
+                                <div className="checkout-summary-row promotion-discount-row">
+
+                                    <span>
+                                        Giảm khuyến mại
+                                    </span>
+
+                                    <strong>
+                                        - {formatPrice(
+                                        promotion.discountAmount
+                                    )}
+                                    </strong>
+
+                                </div>
+
+                            )}
 
 
                             {/* VẬN CHUYỂN */}
@@ -1353,7 +1723,13 @@ function Checkout() {
                                 </div>
 
                                 <strong>
-                                    {formatPrice(selectedTotal)}
+
+                                    {formatPrice(
+                                        promotion?.valid
+                                            ? promotion.finalAmount
+                                            : selectedTotal
+                                    )}
+
                                 </strong>
 
                             </div>
@@ -1417,3 +1793,4 @@ function Checkout() {
 
 
 export default Checkout;
+

@@ -14,7 +14,10 @@ public class CreateOrderRequest {
 
     private String shippingNote;
 
-
+// =====================================================
+// MÃ KHUYẾN MẠI
+// =====================================================
+    private String promotionCode;
     public CreateOrderRequest() {
     }
 
@@ -103,5 +106,17 @@ public class CreateOrderRequest {
         public void setQuantity(Integer quantity) {
             this.quantity = quantity;
         }
+    }
+
+    // =====================================================
+// GETTER / SETTER - PROMOTION CODE
+// =====================================================
+
+    public String getPromotionCode() {
+        return promotionCode;
+    }
+
+    public void setPromotionCode(String promotionCode) {
+        this.promotionCode = promotionCode;
     }
 }
