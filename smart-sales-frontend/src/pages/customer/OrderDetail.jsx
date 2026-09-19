@@ -32,6 +32,35 @@ import {
 import "./OrderDetail.css";
 
 
+// ======================================================
+// XỬ LÝ URL ẢNH SẢN PHẨM
+// ======================================================
+// Backend trả về:
+// /uploads/abc.jpg
+//
+// Frontend cần:
+// http://localhost:8080/uploads/abc.jpg
+// ======================================================
+
+function getImageUrl(imageUrl) {
+
+    if (!imageUrl) {
+        return "";
+    }
+
+    // Nếu đã là URL đầy đủ
+    if (
+        imageUrl.startsWith("http://") ||
+        imageUrl.startsWith("https://")
+    ) {
+        return imageUrl;
+    }
+
+    // Nếu backend trả về /uploads/...
+    return `http://localhost:8080${imageUrl}`;
+    }
+
+
 function formatPrice(price) {
     return (
         new Intl.NumberFormat("vi-VN").format(Number(price || 0)) +
@@ -860,12 +889,11 @@ function OrderDetail() {
 
                                                     <div className="order-product-image">
 
+
                                                         {product?.imageUrl ? (
 
                                                             <img
-                                                                src={
-                                                                    product.imageUrl
-                                                                }
+                                                                src={getImageUrl(product.imageUrl)}
                                                                 alt={
                                                                     product?.name ||
                                                                     "Sản phẩm"
@@ -873,12 +901,12 @@ function OrderDetail() {
                                                             />
 
                                                         ) : (
-
                                                             <ShoppingBag
                                                                 size={25}
                                                             />
-
                                                         )}
+
+
 
                                                     </div>
 

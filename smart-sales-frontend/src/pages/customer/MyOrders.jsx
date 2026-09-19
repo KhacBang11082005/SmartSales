@@ -20,6 +20,41 @@ import {
 
 import "./MyOrders.css";
 
+
+// ======================================================
+// XỬ LÝ URL ẢNH SẢN PHẨM
+// ======================================================
+// Backend trả về:
+// /uploads/abc.jpg
+//
+// Frontend cần:
+// http://localhost:8080/uploads/abc.jpg
+//
+// Nếu backend đã trả về URL đầy đủ:
+// https://...
+// thì giữ nguyên.
+// ======================================================
+
+function getImageUrl(imageUrl) {
+
+    if (!imageUrl) {
+        return "";
+    }
+
+    // Nếu đã là URL đầy đủ
+    if (
+        imageUrl.startsWith("http://") ||
+        imageUrl.startsWith("https://")
+    ) {
+        return imageUrl;
+    }
+
+    // Nếu backend trả về /uploads/...
+    return `http://localhost:8080${imageUrl}`;
+    }
+
+
+
 // ======================================================
 // FORMAT PRICE
 // ======================================================
@@ -444,14 +479,13 @@ function OrderCard({
                                 >
                                     <div className="order-product-image">
                                         {product.image ? (
+
                                             <img
-                                                src={
-                                                    product.image
-                                                }
-                                                alt={
-                                                    product.name
-                                                }
+                                                src={getImageUrl(product.image)}
+                                                alt={product.name}
                                             />
+
+
                                         ) : (
                                             <Package
                                                 size={25}
