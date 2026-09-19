@@ -33,40 +33,26 @@ function AdminLayout() {
     // =====================================================
     // MENU ADMIN
     // =====================================================
-
     const menuItems = [
+        { to: "/admin", label: "Dashboard", end: true },
 
+        { to: "/admin/products", label: "Quản lý sản phẩm" },
+
+        { to: "/admin/categories", label: "Quản lý danh mục" },
+
+        { to: "/admin/customers", label: "Quản lý khách hàng" },
+
+        { to: "/admin/orders", label: "Quản lý đơn hàng" },
+
+        // =====================================================
+        // KHUYẾN MẠI
+        // =====================================================
         {
-            to: "/admin",
-            label: "Dashboard",
-            end: true
+            to: "/admin/promotions",
+            label: "Quản lý khuyến mại"
         },
 
-        {
-            to: "/admin/products",
-            label: "Quản lý sản phẩm"
-        },
-
-        {
-            to: "/admin/categories",
-            label: "Quản lý danh mục"
-        },
-
-        {
-            to: "/admin/customers",
-            label: "Quản lý khách hàng"
-        },
-
-        {
-            to: "/admin/orders",
-            label: "Quản lý đơn hàng"
-        },
-
-        {
-            to: "/admin/users",
-            label: "Quản lý nhân viên"
-        }
-
+        { to: "/admin/users", label: "Quản lý nhân viên" }
     ];
 
 

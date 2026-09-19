@@ -9,20 +9,26 @@ public interface PromotionUsageRepository
         extends JpaRepository<PromotionUsage, Long> {
 
     // =====================================================
-    // KIỂM TRA KHÁCH HÀNG ĐÃ DÙNG MÃ NÀY CHƯA
+    // KIỂM TRA KHÁCH HÀNG ĐÃ SỬ DỤNG PROMOTION CHƯA
     // =====================================================
-    //
-    // Ví dụ:
-    //
-    // Khách hàng A đã dùng SMART9
-    // → trả về true
-    //
-    // Khách hàng B chưa dùng SMART9
-    // → trả về false
-    //
+
     boolean existsByPromotionIdAndCustomerId(
             Long promotionId,
             Long customerId
     );
-}
 
+
+    // =====================================================
+    // KIỂM TRA PROMOTION ĐÃ TỪNG ĐƯỢC SỬ DỤNG CHƯA
+    // =====================================================
+    //
+    // Dùng khi Admin muốn xóa promotion.
+    //
+    // Nếu đã có lịch sử sử dụng thì không được xóa.
+    //
+    // =====================================================
+
+    boolean existsByPromotionId(
+            Long promotionId
+    );
+}

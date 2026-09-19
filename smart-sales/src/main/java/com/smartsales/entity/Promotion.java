@@ -121,7 +121,15 @@ public class Promotion {
     // INACTIVE = đã tắt
     @Column(nullable = false, length = 20)
     private String status = "ACTIVE";
+// =====================================================
+// PHẠM VI ÁP DỤNG KHUYẾN MẠI
+// ALL      = Tất cả sản phẩm
+// CATEGORY = Một hoặc nhiều danh mục
+// PRODUCT  = Một hoặc nhiều sản phẩm
+// =====================================================
 
+    @Column(name = "scope_type", nullable = false, length = 20)
+    private String scopeType = "ALL";
 
     // =====================================================
     // THỜI GIAN TẠO / CẬP NHẬT
@@ -272,7 +280,13 @@ public class Promotion {
         this.updatedAt = updatedAt;
     }
 
+    public String getScopeType() {
+        return scopeType;
+    }
 
+    public void setScopeType(String scopeType) {
+        this.scopeType = scopeType;
+    }
     // =====================================================
     // TỰ ĐỘNG GÁN THỜI GIAN
     // =====================================================
@@ -295,6 +309,9 @@ public class Promotion {
 
         if (status == null || status.isBlank()) {
             status = "ACTIVE";
+        }
+        if (scopeType == null || scopeType.isBlank()) {
+            scopeType = "ALL";
         }
     }
 

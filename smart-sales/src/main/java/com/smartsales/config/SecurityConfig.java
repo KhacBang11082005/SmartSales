@@ -123,33 +123,57 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
 
-                                // =========================================================
-                                // PRODUCT
-                                // =========================================================
+                        // =========================================================
+                        // PRODUCT
+                        // =========================================================
 
-                                // ADMIN + EMPLOYEE
-                                // Trang quản lý sản phẩm được xem cả ACTIVE và INACTIVE
-                                .requestMatchers(HttpMethod.GET, "/api/products/manage/**")
-                                .hasAnyRole("ADMIN", "EMPLOYEE")
+                        // ADMIN + EMPLOYEE
+                        // Trang quản lý sản phẩm được xem cả ACTIVE và INACTIVE
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/products/manage/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "EMPLOYEE"
+                        )
 
-                                // Khách hàng được xem sản phẩm đang bán
-                                .requestMatchers(HttpMethod.GET, "/api/products/**")
-                                .permitAll()
+                        // Khách hàng được xem sản phẩm đang bán
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/products/**"
+                        )
+                        .permitAll()
 
-                                // ADMIN + EMPLOYEE
-                                // Thêm sản phẩm
-                                .requestMatchers(HttpMethod.POST, "/api/products/**")
-                                .hasAnyRole("ADMIN", "EMPLOYEE")
+                        // ADMIN + EMPLOYEE
+                        // Thêm sản phẩm
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/products/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "EMPLOYEE"
+                        )
 
-                                // ADMIN + EMPLOYEE
-                                // Sửa sản phẩm
-                                .requestMatchers(HttpMethod.PUT, "/api/products/**")
-                                .hasAnyRole("ADMIN", "EMPLOYEE")
+                        // ADMIN + EMPLOYEE
+                        // Sửa sản phẩm
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/products/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "EMPLOYEE"
+                        )
 
-                                // Chỉ ADMIN
-                                // Xóa sản phẩm
-                                .requestMatchers(HttpMethod.DELETE, "/api/products/**")
-                                .hasRole("ADMIN")
+                        // Chỉ ADMIN
+                        // Xóa sản phẩm
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/products/**"
+                        )
+                        .hasRole("ADMIN")
 
 
                         // =================================================
@@ -181,78 +205,131 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
 
-                            // =================================================
-                            // CUSTOMERS - CUSTOMER XEM THÔNG TIN CÁ NHÂN
-                            // =================================================
+                        // =========================================================
+                        // KHUYẾN MẠI / PROMOTIONS
+                        // =========================================================
 
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/customers/me"
-                                )
-                                .hasRole("CUSTOMER")
-
-
-                            // =================================================
-                            // CUSTOMERS - CUSTOMER CẬP NHẬT THÔNG TIN CÁ NHÂN
-                            // =================================================
-
-                                .requestMatchers(
-                                        HttpMethod.PUT,
-                                        "/api/customers/me"
-                                )
-                                .hasRole("CUSTOMER")
+                        // CUSTOMER:
+                        // Kiểm tra và áp dụng mã khuyến mại khi Checkout
+                        //
+                        // Ví dụ:
+                        // POST /api/promotions/validate
+                        //
+                        // Phải đặt rule này TRƯỚC /api/promotions/**
+                        // để CUSTOMER không bị chặn bởi quyền ADMIN.
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/promotions/validate"
+                        )
+                        .hasRole("CUSTOMER")
 
 
-                            // =================================================
-                            // CUSTOMERS - ADMIN / EMPLOYEE
-                            // =================================================
-
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/customers/**"
-                                )
-                                .hasAnyRole(
-                                        "ADMIN",
-                                        "EMPLOYEE"
-                                )
-
-                                .requestMatchers(
-                                        HttpMethod.POST,
-                                        "/api/customers/**"
-                                )
-                                .hasAnyRole(
-                                        "ADMIN",
-                                        "EMPLOYEE"
-                                )
-
-                                // =================================================
-                                // CUSTOMER - ĐỔI MẬT KHẨU
-                                // =================================================
-
-                                .requestMatchers(
-                                        HttpMethod.PUT,
-                                        "/api/customers/me/password"
-                                )
-                                .hasRole("CUSTOMER")
+                        // ADMIN:
+                        // Xem danh sách khuyến mại
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/promotions"
+                        )
+                        .hasRole("ADMIN")
 
 
-                                .requestMatchers(
-                                        HttpMethod.PUT,
-                                        "/api/customers/**"
-                                )
-                                .hasAnyRole(
-                                        "ADMIN",
-                                        "EMPLOYEE"
-                                )
-
-                                .requestMatchers(
-                                        HttpMethod.DELETE,
-                                        "/api/customers/**"
-                                )
-                                .hasRole("ADMIN")
+                        // ADMIN:
+                        // Thêm khuyến mại
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/promotions"
+                        )
+                        .hasRole("ADMIN")
 
 
+                        // ADMIN:
+                        // Sửa khuyến mại
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/promotions/**"
+                        )
+                        .hasRole("ADMIN")
 
+
+                        // ADMIN:
+                        // Xóa khuyến mại
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/promotions/**"
+                        )
+                        .hasRole("ADMIN")
+
+
+                        // =================================================
+                        // CUSTOMERS - CUSTOMER XEM THÔNG TIN CÁ NHÂN
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/customers/me"
+                        )
+                        .hasRole("CUSTOMER")
+
+
+                        // =================================================
+                        // CUSTOMERS - CUSTOMER CẬP NHẬT THÔNG TIN CÁ NHÂN
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/customers/me"
+                        )
+                        .hasRole("CUSTOMER")
+
+
+                        // =================================================
+                        // CUSTOMERS - ADMIN / EMPLOYEE
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/customers/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "EMPLOYEE"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/customers/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "EMPLOYEE"
+                        )
+
+
+                        // =================================================
+                        // CUSTOMER - ĐỔI MẬT KHẨU
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/customers/me/password"
+                        )
+                        .hasRole("CUSTOMER")
+
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/customers/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "EMPLOYEE"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/customers/**"
+                        )
+                        .hasRole("ADMIN")
 
 
                         // =================================================
@@ -397,45 +474,50 @@ public class SecurityConfig {
                                 "EMPLOYEE"
                         )
 
-                            // =================================================
-                            // ẢNH SẢN PHẨM
-                            //
-                            // Cho phép trình duyệt lấy ảnh đã upload.
-                            // =================================================
 
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/uploads/**"
-                                )
-                                .permitAll()
+                        // =================================================
+                        // ẢNH SẢN PHẨM
+                        //
+                        // Cho phép trình duyệt lấy ảnh đã upload.
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/uploads/**"
+                        )
+                        .permitAll()
 
 
-                            // =================================================
-                            // UPLOAD ẢNH SẢN PHẨM
-                            //
-                            // ADMIN + EMPLOYEE
-                            // =================================================
+                        // =================================================
+                        // UPLOAD ẢNH SẢN PHẨM
+                        //
+                        // ADMIN + EMPLOYEE
+                        // =================================================
 
-                                .requestMatchers(
-                                        HttpMethod.POST,
-                                        "/api/upload/product-image"
-                                )
-                                .hasAnyRole(
-                                        "ADMIN",
-                                        "EMPLOYEE"
-                                )
-                                // =========================================================
-                                // UPLOAD NHIỀU ẢNH SẢN PHẨM
-                                // =========================================================
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/upload/product-image"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "EMPLOYEE"
+                        )
 
-                                .requestMatchers(
-                                        HttpMethod.POST,
-                                        "/api/upload/product-images"
-                                )
-                                .hasAnyRole(
-                                        "ADMIN",
-                                        "EMPLOYEE"
-                                )
+
+                        // =================================================
+                        // UPLOAD NHIỀU ẢNH SẢN PHẨM
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/upload/product-images"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "EMPLOYEE"
+                        )
+
+
                         // =================================================
                         // OTHER
                         // =================================================

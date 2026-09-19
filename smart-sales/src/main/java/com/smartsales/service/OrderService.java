@@ -6,13 +6,17 @@ import com.smartsales.entity.OrderDetail;
 import com.smartsales.entity.Product;
 import com.smartsales.entity.User;
 import com.smartsales.entity.Promotion;
+
 import com.smartsales.repository.CustomerRepository;
 import com.smartsales.repository.OrderDetailRepository;
 import com.smartsales.repository.OrderRepository;
 import com.smartsales.repository.ProductRepository;
+
 import jakarta.transaction.Transactional;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+
 import com.smartsales.dto.UpdateShippingRequest;
 import com.smartsales.dto.CreateOrderRequest;
 
@@ -232,6 +236,64 @@ public class OrderService {
                 BigDecimal.ZERO;
 
 
+        // =====================================================
+        // TỔNG TIỀN SẢN PHẨM ĐƯỢC ÁP DỤNG KHUYẾN MẠI
+        // =====================================================
+        //
+        // Ví dụ:
+        //
+        // iPhone       20tr  -> được giảm
+        // Laptop       30tr  -> được giảm
+        // Tai nghe      5tr  -> không được giảm
+        //
+        // eligiblePromotionAmount = 50tr
+        //
+        // =====================================================
+
+        BigDecimal eligiblePromotionAmount =
+                BigDecimal.ZERO;
+
+
+        // =====================================================
+        // TÌM PROMOTION TRƯỚC KHI DUYỆT SẢN PHẨM
+        // =====================================================
+        //
+        // Việc này giúp chúng ta biết promotion nào đang
+        // được áp dụng để kiểm tra từng sản phẩm.
+        //
+        // =====================================================
+
+        Promotion promotionCandidate = null;
+
+        String promotionCode =
+                request.getPromotionCode();
+
+
+        if (promotionCode != null
+                && !promotionCode.trim().isEmpty()) {
+
+            promotionCandidate =
+                    promotionService.findByCode(
+                            promotionCode
+                    );
+
+            // -------------------------------------------------
+            // KHÔNG TÌM THẤY MÃ
+            // -------------------------------------------------
+
+            if (promotionCandidate == null) {
+
+                throw new RuntimeException(
+                        "Mã khuyến mại không tồn tại"
+                );
+            }
+        }
+
+
+        // =====================================================
+        // DUYỆT TỪNG SẢN PHẨM TRONG ĐƠN
+        // =====================================================
+
         for (CreateOrderRequest.OrderItemRequest item :
                 request.getItems()) {
 
@@ -370,11 +432,69 @@ public class OrderService {
 
 
             // -------------------------------------------------
-            // CỘNG TỔNG TIỀN
+            // CỘNG TỔNG TIỀN ĐƠN HÀNG
             // -------------------------------------------------
 
             totalAmount =
                     totalAmount.add(subtotal);
+
+
+            // =================================================
+            // KIỂM TRA SẢN PHẨM CÓ ĐƯỢC GIẢM KHÔNG
+            // =================================================
+            //
+            // ALL:
+            //      Tất cả sản phẩm
+            //
+            // CATEGORY:
+            //      Sản phẩm thuộc danh mục được chọn
+            //
+            // PRODUCT:
+            //      Sản phẩm nằm trong danh sách được chọn
+            //
+            // =================================================
+
+            if (promotionCandidate != null) {
+
+                Long categoryId = null;
+
+
+                // -------------------------------------------------
+                // LẤY CATEGORY ID CỦA SẢN PHẨM
+                // -------------------------------------------------
+
+                if (product.getCategory() != null) {
+
+                    categoryId =
+                            product.getCategory().getId();
+                }
+
+
+                // -------------------------------------------------
+                // KIỂM TRA ĐỦ ĐIỀU KIỆN
+                // -------------------------------------------------
+
+                boolean eligible =
+                        promotionService
+                                .isPromotionApplicableToProduct(
+                                        promotionCandidate,
+                                        product.getId(),
+                                        categoryId
+                                );
+
+
+                // -------------------------------------------------
+                // NẾU ĐƯỢC ÁP DỤNG
+                // -------------------------------------------------
+
+                if (eligible) {
+
+                    eligiblePromotionAmount =
+                            eligiblePromotionAmount.add(
+                                    subtotal
+                            );
+                }
+            }
         }
 
 
@@ -386,43 +506,53 @@ public class OrderService {
 
 
         // =====================================================
-        // TÍNH KHUYẾN MẠI
+        // TÍNH SỐ TIỀN GIẢM
         // =====================================================
 
         BigDecimal discountAmount =
                 BigDecimal.ZERO;
-
-        String promotionCode =
-                request.getPromotionCode();
 
 
         // =====================================================
         // NẾU KHÁCH CÓ NHẬP MÃ KHUYẾN MẠI
         // =====================================================
 
-        if (promotionCode != null
-                && !promotionCode.trim().isEmpty()) {
+        if (promotionCandidate != null) {
 
             // -------------------------------------------------
-            // KIỂM TRA MÃ KHUYẾN MẠI
+            // VALIDATE PROMOTION
+            // -------------------------------------------------
+            //
+            // QUAN TRỌNG:
+            //
+            // Dùng eligiblePromotionAmount thay vì
+            // totalAmount.
+            //
+            // Ví dụ:
+            //
+            // Tổng đơn = 55tr
+            // Đủ điều kiện = 50tr
+            //
+            // Promotion sẽ được kiểm tra trên 50tr.
+            //
             // -------------------------------------------------
 
             appliedPromotion =
                     promotionService.validatePromotion(
-                            promotionCode,
-                            totalAmount,
+                            promotionCandidate.getCode(),
+                            eligiblePromotionAmount,
                             customer.getId()
                     );
 
 
             // -------------------------------------------------
-            // TÍNH SỐ TIỀN ĐƯỢC GIẢM
+            // TÍNH GIẢM TRÊN PHẦN ĐỦ ĐIỀU KIỆN
             // -------------------------------------------------
 
             discountAmount =
                     promotionService.calculateDiscount(
                             appliedPromotion,
-                            totalAmount
+                            eligiblePromotionAmount
                     );
 
 

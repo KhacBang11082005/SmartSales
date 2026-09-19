@@ -48,6 +48,7 @@ import AdminCategories from "./pages/admin/AdminCategories";
 import AdminCustomers from "./pages/admin/AdminCustomers";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminEmployees from "./pages/admin/AdminEmployees";
+import AdminPromotions from "./pages/admin/AdminPromotions";
 
 
 // =====================================================
@@ -402,8 +403,11 @@ function App() {
                         path="orders"
                         element={<AdminOrders />}
                     />
-
-
+                    {/* Promotions */}
+                    <Route
+                        path="promotions"
+                        element={<AdminPromotions />}
+                    />
                     {/* Users / Employees */}
 
                     <Route

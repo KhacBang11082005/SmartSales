@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from "react";
 import {
     Link,
@@ -54,7 +53,7 @@ function getImageUrl(imageUrl) {
 
     // Nếu backend trả về /uploads/...
     return `http://localhost:8080${imageUrl}`;
-    }
+}
 
 
 function extractData(response) {
@@ -285,8 +284,14 @@ function Checkout() {
         setPromotionError("");
         setError("");
 
+
+        // =================================================
+        // 1. LẤY MÃ KHUYẾN MẠI
+        // =================================================
+
         const code =
             promotionCode.trim();
+
 
         if (!code) {
 
@@ -297,6 +302,24 @@ function Checkout() {
             return;
         }
 
+
+        // =================================================
+        // 2. KIỂM TRA SẢN PHẨM THANH TOÁN
+        // =================================================
+
+        if (
+            !selectedProducts ||
+            selectedProducts.length === 0
+        ) {
+
+            setPromotionError(
+                "Không có sản phẩm nào được chọn."
+            );
+
+            return;
+        }
+
+
         if (selectedTotal <= 0) {
 
             setPromotionError(
@@ -306,16 +329,10 @@ function Checkout() {
             return;
         }
 
-        /*
-         * Lấy thông tin user đang đăng nhập.
-         *
-         * Backend cần customerId để kiểm tra:
-         * - Khách hàng đã dùng mã chưa
-         * - Mã còn lượt sử dụng không
-         */
-        /* =====================================================
-           LẤY CUSTOMER ID CỦA TÀI KHOẢN ĐANG ĐĂNG NHẬP
-        ===================================================== */
+
+        // =================================================
+        // 3. LẤY CUSTOMER ID
+        // =================================================
 
         let customerId = null;
 
@@ -323,20 +340,28 @@ function Checkout() {
 
             /*
              * SmartSales lưu thông tin tài khoản
-             * ở localStorage với key "smart_sales_user"
+             * ở localStorage với key:
+             *
+             * smart_sales_user
              */
+
             const userData =
-                localStorage.getItem("smart_sales_user");
+                localStorage.getItem(
+                    "smart_sales_user"
+                );
+
 
             if (userData) {
 
                 const user =
                     JSON.parse(userData);
 
+
                 /*
-                 * Tùy cấu trúc dữ liệu đăng nhập,
-                 * thử lần lượt các vị trí có thể chứa customerId.
+                 * Thử lần lượt các vị trí có thể
+                 * chứa customerId.
                  */
+
                 customerId =
                     user.customerId ||
                     user.customer?.id ||
@@ -353,6 +378,10 @@ function Checkout() {
         }
 
 
+        // =================================================
+        // 4. KIỂM TRA CUSTOMER
+        // =================================================
+
         if (!customerId) {
 
             setPromotionError(
@@ -363,17 +392,89 @@ function Checkout() {
         }
 
 
+        // =================================================
+        // 5. TẠO DANH SÁCH SẢN PHẨM
+        // =================================================
+        //
+        // Chỉ gửi:
+        //
+        // - productId
+        // - quantity
+        //
+        // Không gửi giá sản phẩm.
+        //
+        // Backend sẽ tự lấy:
+        //
+        // Product
+        // Category
+        // Price
+        //
+        // từ Database để kiểm tra.
+        //
+        // =================================================
+
+        const promotionItems =
+            selectedProducts.map(item => ({
+
+                productId:
+                item.id,
+
+                quantity:
+                    Number(item.quantity || 0)
+
+            }));
+
+
+        // =================================================
+        // 6. KIỂM TRA DANH SÁCH SẢN PHẨM
+        // =================================================
+
+        if (promotionItems.length === 0) {
+
+            setPromotionError(
+                "Không có sản phẩm nào để áp dụng mã."
+            );
+
+            return;
+        }
+
+
+        // =================================================
+        // 7. GỌI API
+        // =================================================
+
         try {
 
             setIsApplyingPromotion(true);
+
+
+            /*
+             * Gửi:
+             *
+             * code
+             * selectedTotal
+             * customerId
+             * promotionItems
+             *
+             * Backend sẽ dùng promotionItems để xác định:
+             *
+             * ALL
+             * CATEGORY
+             * PRODUCT
+             */
 
             const result =
                 await validatePromotion(
                     code,
                     selectedTotal,
-                    customerId
+                    customerId,
+                    promotionItems
                 );
 
+
+            // =================================================
+            // 8. KIỂM TRA KẾT QUẢ
+            // =================================================
 
             if (!result?.valid) {
 
@@ -388,7 +489,10 @@ function Checkout() {
             }
 
 
-            // Áp dụng mã thành công
+            // =================================================
+            // 9. ÁP DỤNG MÃ THÀNH CÔNG
+            // =================================================
+
             setPromotion(result);
 
             setPromotionCode(
@@ -396,6 +500,7 @@ function Checkout() {
             );
 
             setPromotionError("");
+
 
         } catch (err) {
 
@@ -405,16 +510,22 @@ function Checkout() {
             );
 
 
+            // =================================================
+            // LẤY MESSAGE BACKEND
+            // =================================================
+
             const backendMessage =
                 err.response?.data?.message;
 
 
             setPromotion(null);
 
+
             setPromotionError(
                 backendMessage ||
                 "Không thể kiểm tra mã khuyến mại. Vui lòng thử lại."
             );
+
 
         } finally {
 
@@ -453,6 +564,7 @@ function Checkout() {
          * Không giữ lại mã cũ khi giỏ hàng thay đổi.
          * Người dùng cần kiểm tra lại mã với tổng tiền mới.
          */
+
         setPromotion(null);
         setPromotionCode("");
         setPromotionError(
@@ -847,6 +959,7 @@ function Checkout() {
          * Backend sẽ tự tính lại số tiền giảm
          * để đảm bảo an toàn dữ liệu.
          */
+
         if (promotion?.valid) {
 
             orderData.promotionCode =
@@ -1568,6 +1681,7 @@ function Checkout() {
                                              * mã cũ không còn được xem
                                              * là mã đang áp dụng.
                                              */
+
                                             if (promotion) {
                                                 setPromotion(null);
                                             }
@@ -1620,6 +1734,7 @@ function Checkout() {
                                     <div className="promotion-success">
 
                                         <div>
+
                                             <strong>
                                                 {promotion.name}
                                             </strong>
@@ -1627,6 +1742,7 @@ function Checkout() {
                                             <span>
                                                 Mã: {promotion.code}
                                             </span>
+
                                         </div>
 
                                         <button
@@ -1770,6 +1886,7 @@ function Checkout() {
                                         <CheckCircle2 size={18} />
 
                                         Xác nhận đặt hàng
+
                                     </>
 
                                 )}
@@ -1793,4 +1910,3 @@ function Checkout() {
 
 
 export default Checkout;
-
