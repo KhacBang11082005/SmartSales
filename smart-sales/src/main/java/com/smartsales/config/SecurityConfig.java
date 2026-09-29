@@ -460,7 +460,22 @@ public class SecurityConfig {
                         )
                         .hasRole("ADMIN")
 
+                                // =================================================
+                                // STATISTICS - TOP SẢN PHẨM BÁN CHẠY
+                                // =================================================
+                                //
+                                //
+                                // =================================================
 
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/statistics/top-products"
+                                )
+                                .hasAnyRole(
+                                        "CUSTOMER",
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
                         // =================================================
                         // STATISTICS
                         // =================================================

@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 
@@ -18,6 +19,7 @@ import "./Home.css";
 
 import { getProducts } from "../../services/productApi";
 import { getCategories } from "../../services/categoryApi";
+import { getTopSellingProducts } from "../../services/statisticsApi";
 
 
 /* =========================================================
@@ -29,15 +31,21 @@ import { getCategories } from "../../services/categoryApi";
  * Các danh mục mới thêm từ Admin sẽ tự động được
  * chọn icon phù hợp theo tên.
  */
-// =========================================================
-// XỬ LÝ URL ẢNH SẢN PHẨM
-// =========================================================
-// Backend lưu:
-// /uploads/abc.jpg
-//
-// Frontend cần chuyển thành:
-// http://localhost:8080/uploads/abc.jpg
-// =========================================================
+
+
+/* =========================================================
+   XỬ LÝ URL ẢNH SẢN PHẨM
+========================================================= */
+
+/*
+ * Backend lưu:
+ *
+ * /uploads/abc.jpg
+ *
+ * Frontend cần chuyển thành:
+ *
+ * http://localhost:8080/uploads/abc.jpg
+ */
 
 function getImageUrl(imageUrl) {
 
@@ -55,7 +63,13 @@ function getImageUrl(imageUrl) {
 
     // Nếu là ảnh upload từ Backend
     return `http://localhost:8080${imageUrl}`;
-}
+    }
+
+
+/* =========================================================
+   TỰ ĐỘNG CHỌN ICON DANH MỤC
+========================================================= */
+
 const getCategoryIcon = (name) => {
 
     if (!name) {
@@ -63,6 +77,7 @@ const getCategoryIcon = (name) => {
     }
 
     const categoryName = name.toLowerCase();
+
 
     /* Điện thoại */
     if (
@@ -73,6 +88,7 @@ const getCategoryIcon = (name) => {
         return Smartphone;
     }
 
+
     /* Laptop */
     if (
         categoryName.includes("laptop") ||
@@ -80,6 +96,7 @@ const getCategoryIcon = (name) => {
     ) {
         return Laptop;
     }
+
 
     /* Tai nghe */
     if (
@@ -91,6 +108,7 @@ const getCategoryIcon = (name) => {
         return Headphones;
     }
 
+
     /* Phụ kiện */
     if (
         categoryName.includes("phụ kiện") ||
@@ -99,14 +117,15 @@ const getCategoryIcon = (name) => {
         return ShoppingBag;
     }
 
+
     /* Tivi */
     if (
         categoryName.includes("tivi") ||
-        categoryName.includes("tv") ||
-        categoryName.includes("tivi")
+        categoryName.includes("tv")
     ) {
         return Tv;
     }
+
 
     /* Camera */
     if (
@@ -116,6 +135,7 @@ const getCategoryIcon = (name) => {
         return Camera;
     }
 
+
     /* Máy tính bảng */
     if (
         categoryName.includes("tablet") ||
@@ -124,6 +144,7 @@ const getCategoryIcon = (name) => {
         return Tablet;
     }
 
+
     /* Đồng hồ */
     if (
         categoryName.includes("đồng hồ") ||
@@ -131,6 +152,7 @@ const getCategoryIcon = (name) => {
     ) {
         return Watch;
     }
+
 
     /* Không xác định */
     return Package;
@@ -168,6 +190,14 @@ function Home() {
 
 
     /* =====================================================
+       SẢN PHẨM BÁN CHẠY
+    ===================================================== */
+
+    const [topSellingProducts, setTopSellingProducts] =
+        useState([]);
+
+
+    /* =====================================================
        ĐIỀU KHIỂN KÉO DANH MỤC
     ===================================================== */
 
@@ -183,7 +213,7 @@ function Home() {
 
 
     /* =====================================================
-       LẤY TẤT CẢ SẢN PHẨM VÀ DANH MỤC
+       LẤY DỮ LIỆU TRANG CHỦ
     ===================================================== */
 
     useEffect(() => {
@@ -201,7 +231,8 @@ function Home() {
                    LẤY SẢN PHẨM
                 ========================= */
 
-                const productData = await getProducts();
+                const productData =
+                    await getProducts();
 
                 console.log(
                     "📦 Sản phẩm trang chủ:",
@@ -209,49 +240,38 @@ function Home() {
                 );
 
 
+                let loadedProducts = [];
+
+
                 if (Array.isArray(productData)) {
 
-                    setProducts(productData);
+                    loadedProducts = productData;
 
                 } else if (
                     Array.isArray(productData?.content)
                 ) {
 
-                    setProducts(productData.content);
-
-                } else {
-
-                    setProducts([]);
+                    loadedProducts =
+                        productData.content;
 
                 }
+
+
+                setProducts(loadedProducts);
 
 
                 /* =========================
                    LẤY DANH MỤC
                 ========================= */
 
-                const categoryData = await getCategories();
+                const categoryData =
+                    await getCategories();
 
                 console.log(
                     "📂 Danh mục trang chủ:",
                     categoryData
                 );
 
-
-                /*
-                 * API có thể trả về:
-                 *
-                 * [
-                 *   {...},
-                 *   {...}
-                 * ]
-                 *
-                 * hoặc:
-                 *
-                 * {
-                 *   content: [...]
-                 * }
-                 */
 
                 if (Array.isArray(categoryData)) {
 
@@ -261,11 +281,70 @@ function Home() {
                     Array.isArray(categoryData?.content)
                 ) {
 
-                    setCategories(categoryData.content);
+                    setCategories(
+                        categoryData.content
+                    );
 
                 } else {
 
                     setCategories([]);
+
+                }
+
+
+                /* =================================================
+                   LẤY SẢN PHẨM BÁN CHẠY
+                ================================================= */
+
+                try {
+
+                    const topSellingData =
+                        await getTopSellingProducts();
+
+                    console.log(
+                        "🔥 Sản phẩm bán chạy:",
+                        topSellingData
+                    );
+
+
+                    if (Array.isArray(topSellingData)) {
+
+                        setTopSellingProducts(
+                            topSellingData
+                        );
+
+                    } else if (
+                        Array.isArray(
+                            topSellingData?.content
+                        )
+                    ) {
+
+                        setTopSellingProducts(
+                            topSellingData.content
+                        );
+
+                    } else {
+
+                        setTopSellingProducts([]);
+
+                    }
+
+                } catch (topSellingError) {
+
+                    /*
+                     * Nếu API bán chạy lỗi thì KHÔNG
+                     * làm ảnh hưởng đến trang Home.
+                     *
+                     * Các sản phẩm bình thường vẫn
+                     * hiển thị như cũ.
+                     */
+
+                    console.error(
+                        "❌ Không lấy được sản phẩm bán chạy:",
+                        topSellingError
+                    );
+
+                    setTopSellingProducts([]);
 
                 }
 
@@ -296,6 +375,71 @@ function Home() {
 
 
     /* =====================================================
+       GHÉP THÔNG TIN SẢN PHẨM BÁN CHẠY
+    ===================================================== */
+
+    /*
+     * API thống kê chỉ trả:
+     *
+     * productId
+     * productName
+     * totalQuantitySold
+     *
+     * Trong khi giao diện cần:
+     *
+     * imageUrl
+     * price
+     * category
+     * description
+     *
+     * Vì vậy lấy productId từ thống kê rồi
+     * tìm sản phẩm tương ứng trong products.
+     */
+
+    const bestSellingProducts =
+        topSellingProducts
+            .map((item) => {
+
+                const product =
+                    products.find(
+                        (p) =>
+                            Number(p.id) ===
+                            Number(item.productId)
+                    );
+
+
+                /*
+                 * Nếu sản phẩm trong thống kê
+                 * không còn tồn tại trong danh sách
+                 * sản phẩm hiện tại thì bỏ qua.
+                 */
+
+                if (!product) {
+                    return null;
+                }
+
+
+                return {
+
+                    ...product,
+
+                    /*
+                     * Số lượng thực tế đã bán
+                     */
+
+                    totalQuantitySold:
+                        item.totalQuantitySold ??
+                        item.quantitySold ??
+                        item.totalSold ??
+                        0
+
+                };
+
+            })
+            .filter(Boolean);
+
+
+    /* =====================================================
        BẮT ĐẦU KÉO DANH MỤC
     ===================================================== */
 
@@ -316,7 +460,9 @@ function Home() {
         scrollLeft.current =
             categoryGridRef.current.scrollLeft;
 
-        categoryGridRef.current.classList.add("dragging");
+        categoryGridRef.current.classList.add(
+            "dragging"
+        );
 
     };
 
@@ -469,7 +615,6 @@ function Home() {
             </section>
 
 
-
             {/* =================================================
                 CATEGORY
             ================================================= */}
@@ -509,26 +654,16 @@ function Home() {
 
                     {categories.map((category) => {
 
-                        /*
-                         * Lấy tên danh mục.
-                         *
-                         * Hỗ trợ cả trường hợp API trả:
-                         * category.name
-                         * hoặc category.categoryName
-                         */
-
                         const categoryName =
                             category.name ||
                             category.categoryName ||
                             "Danh mục";
 
 
-                        /*
-                         * Tự động chọn icon.
-                         */
-
                         const Icon =
-                            getCategoryIcon(categoryName);
+                            getCategoryIcon(
+                                categoryName
+                            );
 
 
                         return (
@@ -573,6 +708,252 @@ function Home() {
             </section>
 
 
+            {/* =================================================
+                BEST SELLING PRODUCTS
+            ================================================= */}
+
+            {!loading &&
+                bestSellingProducts.length > 0 && (
+
+                    <section className="product-section">
+
+                        <div className="section-header">
+
+                            <div>
+
+                                <span className="section-label">
+                                    BÁN CHẠY
+                                </span>
+
+
+                                <h2>
+                                    Sản phẩm bán chạy nhất
+                                </h2>
+
+                            </div>
+
+
+                            <Link to="/products?sort=top-selling">
+
+                                Xem tất cả
+
+                                <ArrowRight size={18} />
+
+                            </Link>
+
+                        </div>
+
+
+                        {/* =================================================
+                            BEST SELLING PRODUCT GRID
+                        ================================================= */}
+
+                        <div className="product-grid">
+
+                            {bestSellingProducts.map(
+                                (product, index) => (
+
+                                    <Link
+                                        to={`/products/${product.id}`}
+                                        className="product-card best-selling-card"
+                                        key={product.id}
+                                    >
+
+
+                                        {/* =========================
+                                            THỨ HẠNG
+                                        ========================= */}
+
+                                        <div className="best-selling-rank">
+
+                                            #{index + 1}
+
+                                        </div>
+
+
+                                        {/* =========================
+                                            IMAGE
+                                        ========================= */}
+
+                                        <div className="product-image">
+
+                                            {product.imageUrl ? (
+
+                                                <img
+                                                    src={getImageUrl(
+                                                        product.imageUrl
+                                                    )}
+                                                    alt={product.name}
+                                                    style={{
+                                                        width: "100%",
+                                                        height: "100%",
+                                                        objectFit:
+                                                            "contain"
+                                                    }}
+                                                />
+
+                                            ) : product.image_url ? (
+
+                                                <img
+                                                    src={getImageUrl(
+                                                        product.image_url
+                                                    )}
+                                                    alt={product.name}
+                                                    style={{
+                                                        width: "100%",
+                                                        height: "100%",
+                                                        objectFit:
+                                                            "contain"
+                                                    }}
+                                                />
+
+                                            ) : (
+
+                                                <ShoppingBag
+                                                    size={55}
+                                                />
+
+                                            )}
+
+                                        </div>
+
+
+                                        {/* =========================
+                                            PRODUCT INFO
+                                        ========================= */}
+
+                                        <div
+                                            className="product-info"
+                                            style={{
+                                                padding: "20px"
+                                            }}
+                                        >
+
+
+                                            {/* CATEGORY */}
+
+                                            <span className="product-category">
+
+                                                {product.category?.name
+                                                    ||
+                                                    product.categoryName
+                                                    ||
+                                                    (
+                                                        product.category_id
+                                                            ? `Danh mục #${product.category_id}`
+                                                            : "Sản phẩm"
+                                                    )
+                                                }
+
+                                            </span>
+
+
+                                            {/* NAME */}
+
+                                            <h3>
+
+                                                {product.name}
+
+                                            </h3>
+
+
+                                            {/* DESCRIPTION */}
+
+                                            <p className="product-description">
+
+                                                {product.description
+                                                    ||
+                                                    "Sản phẩm chất lượng cao tại Smart Sales."
+                                                }
+
+                                            </p>
+
+
+                                            {/* SOLD */}
+
+                                            <div className="best-selling-sold">
+
+                                                <ShoppingBag
+                                                    size={15}
+                                                />
+
+                                                <span>
+
+                                                    Đã bán{" "}
+
+                                                    {
+                                                        product.totalQuantitySold
+                                                    }
+
+                                                    {" "}sản phẩm
+
+                                                </span>
+
+                                            </div>
+
+
+                                            {/* PRICE */}
+
+                                            <div
+                                                className="product-bottom"
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems:
+                                                        "center",
+                                                    justifyContent:
+                                                        "space-between",
+                                                    marginTop: "15px"
+                                                }}
+                                            >
+
+                                                <strong>
+
+                                                    {formatPrice(
+                                                        product.price
+                                                    )}
+
+                                                </strong>
+
+
+                                                <span
+                                                    style={{
+                                                        width: "40px",
+                                                        height: "40px",
+                                                        display: "flex",
+                                                        alignItems:
+                                                            "center",
+                                                        justifyContent:
+                                                            "center",
+                                                        borderRadius:
+                                                            "10px",
+                                                        background:
+                                                            "linear-gradient(135deg, #005BFF, #008AF5)",
+                                                        color:
+                                                            "white"
+                                                    }}
+                                                >
+
+                                                    <ShoppingBag
+                                                        size={18}
+                                                    />
+
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </Link>
+
+                                )
+                            )}
+
+                        </div>
+
+                    </section>
+
+                )}
+
 
             {/* =================================================
                 PRODUCTS
@@ -607,7 +988,6 @@ function Home() {
                 </div>
 
 
-
                 {/* =================================================
                     LOADING
                 ================================================= */}
@@ -627,7 +1007,6 @@ function Home() {
                     </div>
 
                 )}
-
 
 
                 {/* =================================================
@@ -651,7 +1030,6 @@ function Home() {
                 )}
 
 
-
                 {/* =================================================
                     KHÔNG CÓ SẢN PHẨM
                 ================================================= */}
@@ -673,7 +1051,6 @@ function Home() {
                         </div>
 
                     )}
-
 
 
                 {/* =================================================
@@ -704,35 +1081,42 @@ function Home() {
                                         {product.imageUrl ? (
 
                                             <img
-                                                src={getImageUrl(product.imageUrl)}
+                                                src={getImageUrl(
+                                                    product.imageUrl
+                                                )}
                                                 alt={product.name}
                                                 style={{
                                                     width: "100%",
                                                     height: "100%",
-                                                    objectFit: "contain"
+                                                    objectFit:
+                                                        "contain"
                                                 }}
                                             />
 
                                         ) : product.image_url ? (
 
                                             <img
-                                                src={getImageUrl(product.image_url)}
+                                                src={getImageUrl(
+                                                    product.image_url
+                                                )}
                                                 alt={product.name}
                                                 style={{
                                                     width: "100%",
                                                     height: "100%",
-                                                    objectFit: "contain"
+                                                    objectFit:
+                                                        "contain"
                                                 }}
                                             />
 
                                         ) : (
 
-                                            <ShoppingBag size={55} />
+                                            <ShoppingBag
+                                                size={55}
+                                            />
 
                                         )}
 
                                     </div>
-
 
 
                                     {/* =========================
@@ -765,7 +1149,6 @@ function Home() {
                                         </span>
 
 
-
                                         {/* NAME */}
 
                                         <h3>
@@ -773,7 +1156,6 @@ function Home() {
                                             {product.name}
 
                                         </h3>
-
 
 
                                         {/* DESCRIPTION */}
@@ -788,15 +1170,16 @@ function Home() {
                                         </p>
 
 
-
                                         {/* PRICE */}
 
                                         <div
                                             className="product-bottom"
                                             style={{
                                                 display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
+                                                alignItems:
+                                                    "center",
+                                                justifyContent:
+                                                    "space-between",
                                                 marginTop: "20px"
                                             }}
                                         >
@@ -815,16 +1198,22 @@ function Home() {
                                                     width: "40px",
                                                     height: "40px",
                                                     display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    borderRadius: "10px",
+                                                    alignItems:
+                                                        "center",
+                                                    justifyContent:
+                                                        "center",
+                                                    borderRadius:
+                                                        "10px",
                                                     background:
                                                         "linear-gradient(135deg, #005BFF, #008AF5)",
-                                                    color: "white"
+                                                    color:
+                                                        "white"
                                                 }}
                                             >
 
-                                                <ShoppingBag size={18} />
+                                                <ShoppingBag
+                                                    size={18}
+                                                />
 
                                             </span>
 
@@ -850,3 +1239,4 @@ function Home() {
 
 
 export default Home;
+

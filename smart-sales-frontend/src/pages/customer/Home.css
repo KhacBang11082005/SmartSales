@@ -525,3 +525,141 @@
             0 9px 20px
             rgba(0, 91, 255, 0.30);
 }
+
+
+       /* =========================================================
+          SMART SALES
+          SẢN PHẨM BÁN CHẠY NHẤT
+       ========================================================= */
+
+   .best-selling-card {
+       position: relative;
+   }
+
+
+/* =========================================================
+   BADGE THỨ HẠNG
+========================================================= */
+
+.best-selling-rank {
+
+    position: absolute;
+
+    top: 14px;
+    left: 14px;
+
+    z-index: 5;
+
+    min-width: 42px;
+    height: 32px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 10px;
+
+    border-radius: 20px;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    #005BFF,
+                    #008AF5
+            );
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    box-shadow:
+            0 6px 15px
+            rgba(0, 91, 255, 0.25);
+
+}
+
+
+/* =========================================================
+   SỐ LƯỢNG ĐÃ BÁN
+========================================================= */
+
+.best-selling-sold {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    margin-top: 12px;
+
+    padding: 6px 10px;
+
+    border-radius: 8px;
+
+    background: #F0FDF4;
+
+    color: #16A34A;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+}
+
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.best-selling-card:hover {
+
+    border-color: #BBD7FF;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1024px) {
+
+    .best-selling-sold {
+
+        font-size: 12px;
+
+    }
+
+}
+
+
+@media (max-width: 768px) {
+
+    .best-selling-sold {
+
+        font-size: 12px;
+
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .best-selling-rank {
+
+        top: 10px;
+        left: 10px;
+
+        min-width: 38px;
+        height: 29px;
+
+        font-size: 12px;
+
+    }
+
+}

@@ -1,6 +1,8 @@
+
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getProducts } from "../../services/productApi";
+import { getTopSellingProducts } from "../../services/statisticsApi";
 
 import "./Products.css";
 
@@ -8,6 +10,7 @@ import "./Products.css";
 function formatPrice(price) {
     return new Intl.NumberFormat("vi-VN").format(price) + " ₫";
 }
+
 
 // =========================================================
 // XỬ LÝ URL ẢNH SẢN PHẨM
@@ -29,7 +32,9 @@ function getImageUrl(imageUrl) {
 
     // Ảnh được lưu trong Backend
     return `http://localhost:8080${imageUrl}`;
-}
+    }
+
+
 function Products() {
 
     const [products, setProducts] = useState([]);
@@ -38,10 +43,27 @@ function Products() {
 
     const [error, setError] = useState("");
 
-    // Lấy category trên URL
+    // =====================================================
+    // DANH SÁCH SẢN PHẨM BÁN CHẠY
+    // =====================================================
+
+    const [topSellingProducts, setTopSellingProducts] =
+        useState([]);
+
+
+    // =====================================================
+    // LẤY THAM SỐ TRÊN URL
+    // =====================================================
+
     const [searchParams] = useSearchParams();
 
+    // Ví dụ:
+    // /products?category=Điện thoại
     const categoryName = searchParams.get("category");
+
+    // Ví dụ:
+    // /products?sort=top-selling
+    const sortType = searchParams.get("sort");
 
 
     /* =====================================================
@@ -58,11 +80,79 @@ function Products() {
 
                 setError("");
 
+
+                /* =========================================
+                   LẤY TẤT CẢ SẢN PHẨM
+                ========================================= */
+
                 const data = await getProducts();
 
-                console.log("📦 PRODUCTS FROM API:", data);
+                console.log(
+                    "📦 PRODUCTS FROM API:",
+                    data
+                );
 
-                setProducts(Array.isArray(data) ? data : []);
+
+                setProducts(
+                    Array.isArray(data)
+                        ? data
+                        : []
+                );
+
+
+                /* =========================================
+                   NẾU ĐANG XEM SẢN PHẨM BÁN CHẠY
+                ========================================= */
+
+                if (sortType === "top-selling") {
+
+                    try {
+
+                        const topSellingData =
+                            await getTopSellingProducts();
+
+                        console.log(
+                            "🏆 TOP SELLING PRODUCTS:",
+                            topSellingData
+                        );
+
+
+                        setTopSellingProducts(
+                            Array.isArray(topSellingData)
+                                ? topSellingData
+                                : []
+                        );
+
+                    } catch (topSellingError) {
+
+                        console.error(
+                            "❌ Không thể lấy sản phẩm bán chạy:",
+                            topSellingError
+                        );
+
+
+                        /*
+                         * Không fallback về toàn bộ sản phẩm.
+                         *
+                         * Nếu API bán chạy lỗi thì
+                         * danh sách bán chạy phải rỗng.
+                         */
+
+                        setTopSellingProducts([]);
+
+                    }
+
+                } else {
+
+                    /*
+                     * Nếu không phải trang bán chạy
+                     * thì xóa dữ liệu bán chạy.
+                     */
+
+                    setTopSellingProducts([]);
+
+                }
+
 
             } catch (error) {
 
@@ -86,11 +176,12 @@ function Products() {
 
         fetchProducts();
 
-    }, []);
+    }, [sortType]);
 
 
     /* =====================================================
-       MỖI KHI ĐỔI DANH MỤC → CUỘN LÊN ĐẦU TRANG
+       MỖI KHI ĐỔI DANH MỤC / KIỂU HIỂN THỊ
+       → CUỘN LÊN ĐẦU TRANG
     ===================================================== */
 
     useEffect(() => {
@@ -100,7 +191,7 @@ function Products() {
             behavior: "smooth"
         });
 
-    }, [categoryName]);
+    }, [categoryName, sortType]);
 
 
     /* =====================================================
@@ -109,13 +200,76 @@ function Products() {
 
     const displayedProducts = useMemo(() => {
 
-        let result = [...products];
+        let result = [];
 
 
-        // =================================================
-        // NẾU CÓ CATEGORY
-        // CHỈ HIỂN THỊ SẢN PHẨM THUỘC CATEGORY ĐÓ
-        // =================================================
+        /* =================================================
+           SẢN PHẨM BÁN CHẠY
+        ================================================= */
+
+        if (sortType === "top-selling") {
+
+            /*
+             * API thống kê trả về:
+             *
+             * {
+             *     productId,
+             *     productName,
+             *     totalQuantitySold,
+             *     totalRevenue
+             * }
+             *
+             * Tìm sản phẩm tương ứng
+             * trong danh sách products.
+             */
+
+            result = topSellingProducts
+                .map((item) => {
+
+                    const product = products.find(
+                        (p) =>
+                            Number(p.id) ===
+                            Number(item.productId)
+                    );
+
+
+                    if (!product) {
+                        return null;
+                    }
+
+
+                    return {
+                        ...product,
+
+                        /*
+                         * Lưu lại số lượng đã bán.
+                         * Có thể sử dụng sau này nếu muốn
+                         * hiển thị "Đã bán X sản phẩm".
+                         */
+
+                        totalQuantitySold:
+                            item.totalQuantitySold ?? 0
+                    };
+
+                })
+                .filter(Boolean);
+
+
+        } else {
+
+            /*
+             * Nếu không phải trang bán chạy
+             * thì giữ nguyên toàn bộ sản phẩm.
+             */
+
+            result = [...products];
+
+        }
+
+
+        /* =================================================
+           LỌC THEO CATEGORY
+        ================================================= */
 
         if (categoryName) {
 
@@ -124,9 +278,15 @@ function Products() {
                 const productCategory =
                     product.category?.name || "";
 
+
                 return (
-                    productCategory.trim().toLowerCase()
-                    === categoryName.trim().toLowerCase()
+                    productCategory
+                        .trim()
+                        .toLowerCase()
+                    ===
+                    categoryName
+                        .trim()
+                        .toLowerCase()
                 );
 
             });
@@ -134,24 +294,32 @@ function Products() {
         }
 
 
-        // =================================================
-        // SẮP XẾP THEO DANH MỤC
-        // =================================================
-        //
-        // Ví dụ:
-        //
-        // Laptop
-        //   - ASUS
-        //   - Dell
-        //
-        // Điện thoại
-        //   - iPhone
-        //   - Samsung
-        //
-        // Phụ kiện
-        //   - ...
-        //
-        // =================================================
+        /* =================================================
+           NẾU LÀ SẢN PHẨM BÁN CHẠY
+        ================================================= */
+
+        if (sortType === "top-selling") {
+
+            /*
+             * Không sort lại.
+             *
+             * Backend đã sắp xếp:
+             *
+             * ORDER BY SUM(od.quantity) DESC
+             *
+             * nên sản phẩm bán nhiều nhất
+             * sẽ đứng đầu danh sách.
+             */
+
+            return result;
+
+        }
+
+
+        /* =================================================
+           SẢN PHẨM THÔNG THƯỜNG
+           SẮP XẾP THEO CATEGORY
+        ================================================= */
 
         result.sort((a, b) => {
 
@@ -163,6 +331,7 @@ function Products() {
 
 
             // Ưu tiên category ID
+
             if (categoryA !== categoryB) {
 
                 return categoryA - categoryB;
@@ -183,7 +352,12 @@ function Products() {
 
         return result;
 
-    }, [products, categoryName]);
+    }, [
+        products,
+        categoryName,
+        sortType,
+        topSellingProducts
+    ]);
 
 
     /* =====================================================
@@ -228,6 +402,7 @@ function Products() {
 
         <div className="products-page">
 
+
             {/* =================================================
                 HEADER
             ================================================= */}
@@ -250,21 +425,33 @@ function Products() {
                     </span>
 
 
+                    {/* =================================================
+                        TIÊU ĐỀ
+                    ================================================= */}
+
                     <h1>
 
-                        {categoryName
-                            ? categoryName
-                            : "Tất cả sản phẩm"
+                        {sortType === "top-selling"
+                            ? "Sản phẩm bán chạy nhất"
+                            : categoryName
+                                ? categoryName
+                                : "Tất cả sản phẩm"
                         }
 
                     </h1>
 
 
+                    {/* =================================================
+                        MÔ TẢ
+                    ================================================= */}
+
                     <p>
 
-                        {categoryName
-                            ? `Các sản phẩm thuộc danh mục ${categoryName}`
-                            : "Khám phá các sản phẩm tại Smart Sales"
+                        {sortType === "top-selling"
+                            ? "Các sản phẩm được mua nhiều nhất tại Smart Sales"
+                            : categoryName
+                                ? `Các sản phẩm thuộc danh mục ${categoryName}`
+                                : "Khám phá các sản phẩm tại Smart Sales"
                         }
 
                     </p>
@@ -272,7 +459,9 @@ function Products() {
                 </div>
 
 
-                {/* SỐ LƯỢNG SẢN PHẨM */}
+                {/* =================================================
+                    SỐ LƯỢNG SẢN PHẨM
+                ================================================= */}
 
                 <div
                     style={{
@@ -303,12 +492,24 @@ function Products() {
                 >
 
                     <h2>
-                        Không có sản phẩm
+
+                        {sortType === "top-selling"
+                            ? "Chưa có sản phẩm bán chạy"
+                            : "Không có sản phẩm"
+                        }
+
                     </h2>
 
+
                     <p>
-                        Hiện chưa có sản phẩm nào
-                        trong danh mục này.
+
+                        {sortType === "top-selling"
+                            ? "Hiện chưa có sản phẩm nào có đơn hàng hoàn tất."
+                            : categoryName
+                                ? "Hiện chưa có sản phẩm nào trong danh mục này."
+                                : "Hiện chưa có sản phẩm nào."
+                        }
+
                     </p>
 
 
@@ -347,14 +548,18 @@ function Products() {
                             key={product.id}
                         >
 
-                            {/* IMAGE */}
+                            {/* =================================================
+                                IMAGE
+                            ================================================= */}
 
                             <div className="product-image">
 
                                 {product.imageUrl ? (
 
                                     <img
-                                        src={getImageUrl(product.imageUrl)}
+                                        src={getImageUrl(
+                                            product.imageUrl
+                                        )}
                                         alt={product.name}
                                     />
 
@@ -369,12 +574,16 @@ function Products() {
                             </div>
 
 
-                            {/* INFO */}
+                            {/* =================================================
+                                INFO
+                            ================================================= */}
 
                             <div className="product-info">
 
 
-                                {/* CATEGORY */}
+                                {/* =================================================
+                                    CATEGORY
+                                ================================================= */}
 
                                 <span className="product-category">
 
@@ -385,26 +594,40 @@ function Products() {
                                 </span>
 
 
-                                {/* NAME */}
+                                {/* =================================================
+                                    NAME
+                                ================================================= */}
 
                                 <h3>
+
                                     {product.name}
+
                                 </h3>
 
 
-                                {/* DESCRIPTION */}
+                                {/* =================================================
+                                    DESCRIPTION
+                                ================================================= */}
 
                                 <p>
+
                                     {product.description}
+
                                 </p>
 
 
-                                {/* PRICE */}
+                                {/* =================================================
+                                    PRICE
+                                ================================================= */}
 
                                 <div className="product-bottom">
 
                                     <strong>
-                                        {formatPrice(product.price)}
+
+                                        {formatPrice(
+                                            product.price
+                                        )}
+
                                     </strong>
 
                                 </div>
@@ -427,3 +650,4 @@ function Products() {
 
 
 export default Products;
+
