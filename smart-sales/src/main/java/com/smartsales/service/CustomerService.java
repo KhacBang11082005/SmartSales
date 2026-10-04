@@ -4,22 +4,30 @@ import com.smartsales.dto.ChangePasswordRequest;
 import com.smartsales.dto.CustomerAdminResponse;
 import com.smartsales.dto.CustomerAdminUpdateRequest;
 import com.smartsales.dto.CustomerOrderSummaryResponse;
+import com.smartsales.dto.CustomerOrderProductResponse;
 import com.smartsales.dto.CustomerProfileResponse;
+
 import com.smartsales.entity.Customer;
 import com.smartsales.entity.User;
+import com.smartsales.entity.Review;
+
 import com.smartsales.repository.CustomerRepository;
 import com.smartsales.repository.OrderRepository;
 import com.smartsales.repository.UserRepository;
+import com.smartsales.repository.ReviewRepository;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Service
 public class CustomerService {
+
 
     private final CustomerRepository customerRepository;
 
@@ -29,12 +37,15 @@ public class CustomerService {
 
     private final OrderRepository orderRepository;
 
+    private final ReviewRepository reviewRepository;
+
 
     public CustomerService(
             CustomerRepository customerRepository,
             UserRepository userRepository,
             OrderRepository orderRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            ReviewRepository reviewRepository
     ) {
 
         this.customerRepository =
@@ -48,6 +59,9 @@ public class CustomerService {
 
         this.passwordEncoder =
                 passwordEncoder;
+
+        this.reviewRepository =
+                reviewRepository;
     }
 
 
@@ -91,7 +105,49 @@ public class CustomerService {
 
 
         // =====================================================
+        // LẤY CÁC ĐÁNH GIÁ CỦA CUSTOMER
+        //
+        // Dùng productId để ghép review với sản phẩm
+        // trong từng đơn hàng.
+        // =====================================================
+
+        Map<Long, Review> reviewByProductId =
+                new HashMap<>();
+
+
+        reviewRepository
+                .findByCustomerId(id)
+                .forEach(review -> {
+
+                    if (
+                            review.getProduct() != null
+                                    && review.getProduct().getId() != null
+                    ) {
+
+                        reviewByProductId.put(
+                                review.getProduct().getId(),
+                                review
+                        );
+                    }
+                });
+
+
+        // =====================================================
         // LẤY LỊCH SỬ ĐƠN HÀNG
+        //
+        // Giữ nguyên các thông tin cũ:
+        // - ID đơn hàng
+        // - Ngày đặt
+        // - Tổng số lượng
+        // - Tổng tiền
+        // - Trạng thái
+        //
+        // Đồng thời thêm:
+        // - Danh sách sản phẩm
+        // - Số lượng từng sản phẩm
+        // - Đã đánh giá hay chưa
+        // - Số sao
+        // - Bình luận
         // =====================================================
 
         List<CustomerOrderSummaryResponse> orders =
@@ -102,6 +158,11 @@ public class CustomerService {
 
                             int productQuantity = 0;
 
+
+                            // =================================================
+                            // TÍNH TỔNG SỐ LƯỢNG SẢN PHẨM
+                            // Giữ nguyên logic cũ
+                            // =================================================
 
                             if (
                                     order.getOrderDetails() != null
@@ -119,6 +180,115 @@ public class CustomerService {
                             }
 
 
+                            // =================================================
+                            // DANH SÁCH SẢN PHẨM TRONG ĐƠN HÀNG
+                            // =================================================
+
+                            List<CustomerOrderProductResponse> products =
+                                    new java.util.ArrayList<>();
+
+
+                            if (
+                                    order.getOrderDetails() != null
+                            ) {
+
+                                for (
+                                        var detail :
+                                        order.getOrderDetails()
+                                ) {
+
+                                    // -----------------------------------------
+                                    // Nếu order detail không có product
+                                    // thì bỏ qua
+                                    // -----------------------------------------
+
+                                    if (
+                                            detail.getProduct() == null
+                                    ) {
+                                        continue;
+                                    }
+
+
+                                    Long productId =
+                                            detail.getProduct().getId();
+
+
+                                    String productName =
+                                            detail.getProduct().getName();
+
+
+                                    Integer quantity =
+                                            detail.getQuantity();
+
+
+                                    // =================================================
+                                    // THÔNG TIN REVIEW
+                                    // =================================================
+
+                                    boolean reviewed = false;
+
+                                    Integer rating = null;
+
+                                    String comment = null;
+
+
+                                    // =================================================
+                                    // CHỈ HIỂN THỊ REVIEW KHI:
+                                    //
+                                    // Đơn hàng đã COMPLETED
+                                    // =================================================
+
+                                    if (
+                                            order.getStatus()
+                                                    == com.smartsales.entity.Order.Status.COMPLETED
+                                    ) {
+
+                                        Review review =
+                                                reviewByProductId.get(
+                                                        productId
+                                                );
+
+
+                                        if (
+                                                review != null
+                                        ) {
+
+                                            reviewed = true;
+
+                                            rating =
+                                                    review.getRating();
+
+                                            comment =
+                                                    review.getComment();
+                                        }
+                                    }
+
+
+                                    // =================================================
+                                    // THÊM SẢN PHẨM VÀO DANH SÁCH
+                                    // =================================================
+
+                                    products.add(
+                                            new CustomerOrderProductResponse(
+                                                    productId,
+                                                    productName,
+                                                    quantity,
+                                                    reviewed,
+                                                    rating,
+                                                    comment
+                                            )
+                                    );
+                                }
+                            }
+
+
+                            // =================================================
+                            // TẠO ORDER RESPONSE
+                            //
+                            // Giữ nguyên toàn bộ dữ liệu cũ
+                            // + danh sách products
+                            // =================================================
+
                             return new CustomerOrderSummaryResponse(
 
                                     order.getId(),
@@ -131,13 +301,19 @@ public class CustomerService {
 
                                     order.getStatus() != null
                                             ? order.getStatus().name()
-                                            : null
+                                            : null,
+
+                                    products
 
                             );
 
                         })
                         .toList();
 
+
+        // =====================================================
+        // GÁN LỊCH SỬ ĐƠN HÀNG VÀO CUSTOMER RESPONSE
+        // =====================================================
 
         response.setOrders(
                 orders
@@ -615,16 +791,16 @@ public class CustomerService {
         // CHỈ CHẤP NHẬN ACTIVE VÀ LOCKED
         // =====================================================
 
-                if (
-                        !status.equals("ACTIVE") &&
-                                !status.equals("LOCKED")
-                ) {
+        if (
+                !status.equals("ACTIVE") &&
+                        !status.equals("LOCKED")
+        ) {
 
-                    throw new RuntimeException(
-                            "Trạng thái không hợp lệ. " +
-                                    "Admin chỉ được chọn Hoạt động hoặc Đã khóa."
-                    );
-                }
+            throw new RuntimeException(
+                    "Trạng thái không hợp lệ. " +
+                            "Admin chỉ được chọn Hoạt động hoặc Đã khóa."
+            );
+        }
 
 
         // =====================================================

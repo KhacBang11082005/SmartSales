@@ -11,7 +11,8 @@ import {
     Mail,
     CalendarDays,
     ShoppingBag,
-    ShieldCheck
+    ShieldCheck,
+    ChevronDown
 } from "lucide-react";
 
 import {
@@ -86,6 +87,11 @@ export default function AdminCustomers({ readOnly = false }) {
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [showDetail, setShowDetail] = useState(false);
 
+    // =========================================================
+    // ĐƠN HÀNG ĐANG ĐƯỢC MỞ TRONG LỊCH SỬ MUA HÀNG
+    // =========================================================
+    const [expandedOrderId, setExpandedOrderId] = useState(null);
+
     const [editingCustomer, setEditingCustomer] = useState(null);
     const [showEdit, setShowEdit] = useState(false);
 
@@ -94,9 +100,9 @@ export default function AdminCustomers({ readOnly = false }) {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
-    // =========================
+    // =========================================================
     // LOAD CUSTOMERS
-    // =========================
+    // =========================================================
     const loadCustomers = async () => {
         try {
             setLoading(true);
@@ -117,9 +123,9 @@ export default function AdminCustomers({ readOnly = false }) {
         loadCustomers();
     }, []);
 
-    // =========================
+    // =========================================================
     // SEARCH + FILTER
-    // =========================
+    // =========================================================
     const filteredCustomers = useMemo(() => {
         const keyword = searchTerm.trim().toLowerCase();
 
@@ -151,9 +157,9 @@ export default function AdminCustomers({ readOnly = false }) {
         });
     }, [customers, searchTerm, statusFilter]);
 
-    // =========================
+    // =========================================================
     // DETAIL
-    // =========================
+    // =========================================================
     const handleView = async (customer) => {
         try {
             setError("");
@@ -161,6 +167,10 @@ export default function AdminCustomers({ readOnly = false }) {
             const data = await getCustomerById(customer.id);
 
             setSelectedCustomer(data);
+
+            // Khi mở khách hàng mới thì tất cả đơn hàng đều thu gọn
+            setExpandedOrderId(null);
+
             setShowDetail(true);
         } catch (err) {
             console.error("Lỗi xem khách hàng:", err);
@@ -168,9 +178,9 @@ export default function AdminCustomers({ readOnly = false }) {
         }
     };
 
-    // =========================
+    // =========================================================
     // EDIT
-    // =========================
+    // =========================================================
     const handleEdit = async (customer) => {
         try {
             setError("");
@@ -266,9 +276,9 @@ export default function AdminCustomers({ readOnly = false }) {
         }
     };
 
-    // =========================
+    // =========================================================
     // DELETE
-    // =========================
+    // =========================================================
     const handleDelete = async (customer) => {
         const confirmed = window.confirm(
             `Bạn có chắc chắn muốn xóa khách hàng "${customer.fullName || customer.username}" không?`
@@ -303,9 +313,22 @@ export default function AdminCustomers({ readOnly = false }) {
         }
     };
 
+    // =========================================================
+    // MỞ / ĐÓNG CHI TIẾT ĐƠN HÀNG
+    // =========================================================
+    const toggleOrder = (orderId) => {
+        setExpandedOrderId((currentId) =>
+            currentId === orderId ? null : orderId
+        );
+    };
+
+    // =========================================================
+    // CLOSE DETAIL
+    // =========================================================
     const closeDetail = () => {
         setShowDetail(false);
         setSelectedCustomer(null);
+        setExpandedOrderId(null);
     };
 
     const closeEdit = () => {
@@ -324,6 +347,7 @@ export default function AdminCustomers({ readOnly = false }) {
             <div className="customer-page-header">
                 <div>
                     <h1>Quản lý khách hàng</h1>
+
                     <p>
                         Quản lý thông tin và trạng thái tài khoản khách hàng
                     </p>
@@ -410,12 +434,19 @@ export default function AdminCustomers({ readOnly = false }) {
                             size={32}
                             className="customer-spinner"
                         />
-                        <span>Đang tải danh sách khách hàng...</span>
+
+                        <span>
+                            Đang tải danh sách khách hàng...
+                        </span>
                     </div>
                 ) : filteredCustomers.length === 0 ? (
                     <div className="customer-empty">
                         <UserRound size={45} />
-                        <h3>Không tìm thấy khách hàng</h3>
+
+                        <h3>
+                            Không tìm thấy khách hàng
+                        </h3>
+
                         <p>
                             Không có khách hàng phù hợp với điều kiện tìm kiếm.
                         </p>
@@ -451,9 +482,11 @@ export default function AdminCustomers({ readOnly = false }) {
                                     <td>
                                         <div className="customer-name-cell">
                                             <div className="customer-avatar">
-                                                {(customer.fullName ||
+                                                {(
+                                                    customer.fullName ||
                                                     customer.username ||
-                                                    "K")
+                                                    "K"
+                                                )
                                                     .charAt(0)
                                                     .toUpperCase()}
                                             </div>
@@ -484,6 +517,7 @@ export default function AdminCustomers({ readOnly = false }) {
                                                 className={`customer-status-badge ${status.className}`}
                                             >
                                                 <span className="status-dot" />
+
                                                 {status.label}
                                             </span>
                                     </td>
@@ -506,7 +540,9 @@ export default function AdminCustomers({ readOnly = false }) {
                                                         className="customer-action-btn customer-action-edit"
                                                         title="Chỉnh sửa"
                                                         onClick={() =>
-                                                            handleEdit(customer)
+                                                            handleEdit(
+                                                                customer
+                                                            )
                                                         }
                                                     >
                                                         <Edit3 size={17} />
@@ -517,7 +553,9 @@ export default function AdminCustomers({ readOnly = false }) {
                                                         title="Xóa"
                                                         disabled={deleting}
                                                         onClick={() =>
-                                                            handleDelete(customer)
+                                                            handleDelete(
+                                                                customer
+                                                            )
                                                         }
                                                     >
                                                         <Trash2 size={17} />
@@ -549,6 +587,7 @@ export default function AdminCustomers({ readOnly = false }) {
                         <div className="customer-modal-header">
                             <div>
                                 <h2>Chi tiết khách hàng</h2>
+
                                 <p>
                                     Thông tin tài khoản và lịch sử mua hàng
                                 </p>
@@ -563,6 +602,9 @@ export default function AdminCustomers({ readOnly = false }) {
                         </div>
 
                         <div className="customer-modal-body">
+                            {/* =========================
+                                CUSTOMER PROFILE
+                            ========================= */}
                             <div className="customer-profile-card">
                                 <div className="customer-profile-avatar">
                                     {(
@@ -592,6 +634,7 @@ export default function AdminCustomers({ readOnly = false }) {
                                         }`}
                                     >
                                         <span className="status-dot" />
+
                                         {
                                             getStatusConfig(
                                                 selectedCustomer.status
@@ -601,11 +644,16 @@ export default function AdminCustomers({ readOnly = false }) {
                                 </div>
                             </div>
 
+                            {/* =========================
+                                CUSTOMER INFO
+                            ========================= */}
                             <div className="customer-detail-grid">
                                 <div className="customer-detail-item">
                                     <Mail size={18} />
+
                                     <div>
                                         <span>Email</span>
+
                                         <strong>
                                             {selectedCustomer.email || "—"}
                                         </strong>
@@ -614,8 +662,10 @@ export default function AdminCustomers({ readOnly = false }) {
 
                                 <div className="customer-detail-item">
                                     <Phone size={18} />
+
                                     <div>
                                         <span>Số điện thoại</span>
+
                                         <strong>
                                             {selectedCustomer.phone || "—"}
                                         </strong>
@@ -624,8 +674,10 @@ export default function AdminCustomers({ readOnly = false }) {
 
                                 <div className="customer-detail-item">
                                     <CalendarDays size={18} />
+
                                     <div>
                                         <span>Ngày đăng ký</span>
+
                                         <strong>
                                             {formatDate(
                                                 selectedCustomer.createdAt
@@ -636,64 +688,217 @@ export default function AdminCustomers({ readOnly = false }) {
 
                                 <div className="customer-detail-item">
                                     <ShieldCheck size={18} />
+
                                     <div>
                                         <span>Vai trò</span>
+
                                         <strong>
-                                            {selectedCustomer.role || "CUSTOMER"}
+                                            {selectedCustomer.role ||
+                                                "CUSTOMER"}
                                         </strong>
                                     </div>
                                 </div>
                             </div>
 
+                            {/* =========================
+                                ORDER HISTORY
+                            ========================= */}
                             <div className="customer-order-history">
                                 <div className="customer-section-title">
                                     <ShoppingBag size={19} />
+
                                     <h3>Lịch sử mua hàng</h3>
                                 </div>
 
                                 {selectedCustomer.orders?.length > 0 ? (
                                     <div className="customer-orders-list">
                                         {selectedCustomer.orders.map(
-                                            (order) => (
-                                                <div
-                                                    className="customer-order-item"
-                                                    key={order.id}
-                                                >
-                                                    <div className="customer-order-main">
-                                                        <strong>
-                                                            Đơn hàng #
-                                                            {order.id}
-                                                        </strong>
+                                            (order) => {
+                                                const isExpanded =
+                                                    expandedOrderId ===
+                                                    order.id;
 
-                                                        <span>
-                                                            {formatDate(
-                                                                order.orderDate
-                                                            )}
-                                                        </span>
-                                                    </div>
+                                                return (
+                                                    <div
+                                                        className={`customer-order-wrapper ${
+                                                            isExpanded
+                                                                ? "expanded"
+                                                                : ""
+                                                        }`}
+                                                        key={order.id}
+                                                    >
+                                                        {/* =========================
+                                                            THÔNG TIN ĐƠN HÀNG
+                                                        ========================= */}
+                                                        <button
+                                                            type="button"
+                                                            className="customer-order-item"
+                                                            onClick={() =>
+                                                                toggleOrder(
+                                                                    order.id
+                                                                )
+                                                            }
+                                                        >
+                                                            <div className="customer-order-main">
+                                                                <strong>
+                                                                    Đơn hàng #
+                                                                    {order.id}
+                                                                </strong>
 
-                                                    <div className="customer-order-quantity">
-                                                        {order.productQuantity ||
-                                                            0}{" "}
-                                                        sản phẩm
-                                                    </div>
+                                                                <span>
+                                                                    {formatDate(
+                                                                        order.orderDate
+                                                                    )}
+                                                                </span>
+                                                            </div>
 
-                                                    <div className="customer-order-total">
-                                                        {formatMoney(
-                                                            order.totalAmount
+                                                            <div className="customer-order-quantity">
+                                                                {order.productQuantity ||
+                                                                    0}{" "}
+                                                                sản phẩm
+                                                            </div>
+
+                                                            <div className="customer-order-total">
+                                                                {formatMoney(
+                                                                    order.totalAmount
+                                                                )}
+                                                            </div>
+
+                                                            <span className="customer-order-status">
+                                                                {order.status ||
+                                                                    "—"}
+                                                            </span>
+
+                                                            <ChevronDown
+                                                                size={19}
+                                                                className={`customer-order-chevron ${
+                                                                    isExpanded
+                                                                        ? "rotated"
+                                                                        : ""
+                                                                }`}
+                                                            />
+                                                        </button>
+
+                                                        {/* =========================
+                                                            CHI TIẾT SẢN PHẨM
+                                                        ========================= */}
+                                                        {isExpanded && (
+                                                            <div className="customer-order-products">
+                                                                {order.products
+                                                                    ?.length >
+                                                                0 ? (
+                                                                    order.products.map(
+                                                                        (
+                                                                            product
+                                                                        ) => (
+                                                                            <div
+                                                                                className="customer-order-product"
+                                                                                key={
+                                                                                    product.productId
+                                                                                }
+                                                                            >
+                                                                                <div className="customer-order-product-info">
+                                                                                    <strong>
+                                                                                        {product.productName ||
+                                                                                            "Sản phẩm không xác định"}
+                                                                                    </strong>
+
+                                                                                    <span>
+                                                                                        Số lượng:{" "}
+                                                                                        <b>
+                                                                                            {product.quantity ||
+                                                                                                0}
+                                                                                        </b>
+                                                                                    </span>
+                                                                                </div>
+
+                                                                                {/* =========================
+                                                                                    ĐÁNH GIÁ
+                                                                                ========================= */}
+                                                                                {String(
+                                                                                    order.status
+                                                                                ).toUpperCase() ===
+                                                                                "COMPLETED" ? (
+                                                                                    <div className="customer-order-product-review">
+                                                                                        {product.reviewed ? (
+                                                                                            <>
+                                                                                                <div className="customer-review-stars">
+                                                                                                    {Array.from(
+                                                                                                        {
+                                                                                                            length: 5
+                                                                                                        },
+                                                                                                        (
+                                                                                                            _,
+                                                                                                            index
+                                                                                                        ) => (
+                                                                                                            <span
+                                                                                                                key={
+                                                                                                                    index
+                                                                                                                }
+                                                                                                                className={
+                                                                                                                    index <
+                                                                                                                    (product.rating ||
+                                                                                                                        0)
+                                                                                                                        ? "filled"
+                                                                                                                        : ""
+                                                                                                                }
+                                                                                                            >
+                                                                                                                ★
+                                                                                                            </span>
+                                                                                                        )
+                                                                                                    )}
+                                                                                                </div>
+
+                                                                                                {product.comment ? (
+                                                                                                    <p>
+                                                                                                        {
+                                                                                                            product.comment
+                                                                                                        }
+                                                                                                    </p>
+                                                                                                ) : (
+                                                                                                    <span>
+                                                                                                        Đã
+                                                                                                        đánh
+                                                                                                        giá,
+                                                                                                        không
+                                                                                                        có
+                                                                                                        bình
+                                                                                                        luận.
+                                                                                                    </span>
+                                                                                                )}
+                                                                                            </>
+                                                                                        ) : (
+                                                                                            <span className="customer-review-not-reviewed">
+                                                                                                Chưa
+                                                                                                đánh
+                                                                                                giá
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                ) : null}
+                                                                            </div>
+                                                                        )
+                                                                    )
+                                                                ) : (
+                                                                    <div className="customer-order-no-products">
+                                                                        Không có
+                                                                        thông tin
+                                                                        sản phẩm
+                                                                        trong đơn
+                                                                        hàng.
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         )}
                                                     </div>
-
-                                                    <span className="customer-order-status">
-                                                        {order.status || "—"}
-                                                    </span>
-                                                </div>
-                                            )
+                                                );
+                                            }
                                         )}
                                     </div>
                                 ) : (
                                     <div className="customer-no-orders">
                                         <ShoppingBag size={35} />
+
                                         <span>
                                             Khách hàng chưa có đơn hàng nào.
                                         </span>
@@ -701,6 +906,7 @@ export default function AdminCustomers({ readOnly = false }) {
                                 )}
                             </div>
                         </div>
+
                         <div className="customer-modal-footer">
                             <button
                                 className="customer-btn customer-btn-secondary"
@@ -722,7 +928,6 @@ export default function AdminCustomers({ readOnly = false }) {
                                 </button>
                             )}
                         </div>
-
                     </div>
                 </div>
             )}
@@ -747,6 +952,7 @@ export default function AdminCustomers({ readOnly = false }) {
 
                                 <div>
                                     <h2>Chỉnh sửa khách hàng</h2>
+
                                     <p>
                                         Cập nhật thông tin tài khoản khách hàng
                                     </p>
@@ -767,12 +973,16 @@ export default function AdminCustomers({ readOnly = false }) {
                             onSubmit={handleSubmit}
                         >
                             <div className="customer-modal-body">
-                                {/* THÔNG TIN TÀI KHOẢN */}
+                                {/* =========================
+                                    THÔNG TIN TÀI KHOẢN
+                                ========================= */}
                                 <div className="customer-form-section">
                                     <div className="customer-form-section-title">
                                         <UserRound size={18} />
+
                                         <div>
                                             <h3>Thông tin tài khoản</h3>
+
                                             <span>
                                                 Username và email chỉ được xem
                                             </span>
@@ -816,12 +1026,16 @@ export default function AdminCustomers({ readOnly = false }) {
                                     </div>
                                 </div>
 
-                                {/* THÔNG TIN CÓ THỂ SỬA */}
+                                {/* =========================
+                                    THÔNG TIN CÓ THỂ SỬA
+                                ========================= */}
                                 <div className="customer-form-section">
                                     <div className="customer-form-section-title">
                                         <Edit3 size={18} />
+
                                         <div>
                                             <h3>Thông tin chỉnh sửa</h3>
+
                                             <span>
                                                 Các thông tin bên dưới có thể
                                                 thay đổi
@@ -833,6 +1047,7 @@ export default function AdminCustomers({ readOnly = false }) {
                                     <div className="customer-form-group">
                                         <label>
                                             Họ và tên
+
                                             <span className="required">
                                                 *
                                             </span>
@@ -857,6 +1072,7 @@ export default function AdminCustomers({ readOnly = false }) {
                                     <div className="customer-form-group">
                                         <label>
                                             Số điện thoại
+
                                             <span className="required">
                                                 *
                                             </span>
@@ -881,6 +1097,7 @@ export default function AdminCustomers({ readOnly = false }) {
                                     <div className="customer-form-group">
                                         <label>
                                             Trạng thái khách hàng
+
                                             <span className="required">
                                                 *
                                             </span>
@@ -898,6 +1115,7 @@ export default function AdminCustomers({ readOnly = false }) {
                                                 <option value="ACTIVE">
                                                     Hoạt động
                                                 </option>
+
                                                 <option value="LOCKED">
                                                     Đã khóa
                                                 </option>
@@ -913,6 +1131,7 @@ export default function AdminCustomers({ readOnly = false }) {
                                                 }`}
                                             >
                                                 <span className="status-dot" />
+
                                                 {
                                                     getStatusConfig(
                                                         form.status
@@ -929,7 +1148,9 @@ export default function AdminCustomers({ readOnly = false }) {
                                 </div>
                             </div>
 
-                            {/* FOOTER */}
+                            {/* =========================
+                                FOOTER
+                            ========================= */}
                             <div className="customer-modal-footer customer-edit-footer">
                                 <button
                                     type="button"
@@ -951,11 +1172,13 @@ export default function AdminCustomers({ readOnly = false }) {
                                                 size={17}
                                                 className="customer-spinner"
                                             />
+
                                             Đang lưu...
                                         </>
                                     ) : (
                                         <>
                                             <ShieldCheck size={17} />
+
                                             Lưu thay đổi
                                         </>
                                     )}

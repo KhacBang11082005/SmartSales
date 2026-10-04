@@ -104,4 +104,22 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Object[]> getRatingDistribution(
             @Param("productId") Long productId
     );
+
+
+
+    // =========================================================
+// LẤY TOÀN BỘ REVIEW CỦA CUSTOMER
+//
+// Dùng cho Admin xem lịch sử mua hàng.
+// Fetch product để CustomerService có thể lấy:
+// - productId
+// - productName
+// =========================================================
+
+    @EntityGraph(attributePaths = {
+            "product"
+    })
+    List<Review> findByCustomerId(
+            Long customerId
+    );
 }
