@@ -14,544 +14,629 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter) {
+        public SecurityConfig(
+                JwtAuthenticationFilter jwtAuthenticationFilter) {
 
-        this.jwtAuthenticationFilter =
-                jwtAuthenticationFilter;
-    }
-
-
-    // =====================================================
-    // PASSWORD ENCODER
-    // =====================================================
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-
-        return new BCryptPasswordEncoder();
-    }
+                this.jwtAuthenticationFilter =
+                        jwtAuthenticationFilter;
+        }
 
 
-    // =====================================================
-    // SECURITY CONFIGURATION
-    // =====================================================
+        // =====================================================
+        // PASSWORD ENCODER
+        // =====================================================
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+        @Bean
+        public PasswordEncoder passwordEncoder() {
 
-        http
-
-                // =================================================
-                // CSRF
-                // =================================================
-
-                .csrf(csrf ->
-                        csrf.disable()
-                )
+                return new BCryptPasswordEncoder();
+        }
 
 
-                // =================================================
-                // CORS
-                //
-                // CORS được cấu hình trong CorsConfig.java
-                // Không tạo corsConfigurationSource() ở đây
-                // =================================================
+        // =====================================================
+        // SECURITY CONFIGURATION
+        // =====================================================
 
-                .cors(cors -> {
-                })
+        @Bean
+        public SecurityFilterChain securityFilterChain(
+                HttpSecurity http) throws Exception {
 
-
-                // =================================================
-                // SESSION
-                // =================================================
-
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
-                )
-
-
-                // =================================================
-                // AUTHORIZATION
-                // =================================================
-
-                .authorizeHttpRequests(auth -> auth
+                http
 
                         // =================================================
-                        // CORS PREFLIGHT
+                        // CSRF
                         // =================================================
 
-                        .requestMatchers(
-                                HttpMethod.OPTIONS,
-                                "/**"
+                        .csrf(csrf ->
+                                csrf.disable()
                         )
-                        .permitAll()
 
 
                         // =================================================
-                        // AUTH
-                        // =================================================
-
-                        .requestMatchers(
-                                "/api/auth/**"
-                        )
-                        .permitAll()
-
-
-                        // =================================================
-                        // USERS
-                        // =================================================
-
-                        .requestMatchers(
-                                "/api/users/**"
-                        )
-                        .hasRole("ADMIN")
-
-
-                        // =================================================
-                        // ROLES
-                        // =================================================
-
-                        .requestMatchers(
-                                "/api/roles/**"
-                        )
-                        .hasRole("ADMIN")
-
-
-                        // =========================================================
-                        // PRODUCT
-                        // =========================================================
-
-                        // ADMIN + EMPLOYEE
-                        // Trang quản lý sản phẩm được xem cả ACTIVE và INACTIVE
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/products/manage/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
-
-                        // Khách hàng được xem sản phẩm đang bán
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/products/**"
-                        )
-                        .permitAll()
-
-                        // ADMIN + EMPLOYEE
-                        // Thêm sản phẩm
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/products/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
-
-                        // ADMIN + EMPLOYEE
-                        // Sửa sản phẩm
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/products/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
-
-                        // Chỉ ADMIN
-                        // Xóa sản phẩm
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/products/**"
-                        )
-                        .hasRole("ADMIN")
-
-
-                        // =================================================
-                        // CATEGORIES
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/categories/**"
-                        )
-                        .permitAll()
-
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/categories/**"
-                        )
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/categories/**"
-                        )
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/categories/**"
-                        )
-                        .hasRole("ADMIN")
-
-
-                        // =========================================================
-                        // KHUYẾN MẠI / PROMOTIONS
-                        // =========================================================
-
-                        // CUSTOMER:
-                        // Kiểm tra và áp dụng mã khuyến mại khi Checkout
+                        // CORS
                         //
-                        // Ví dụ:
-                        // POST /api/promotions/validate
-                        //
-                        // Phải đặt rule này TRƯỚC /api/promotions/**
-                        // để CUSTOMER không bị chặn bởi quyền ADMIN.
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/promotions/validate"
-                        )
-                        .hasRole("CUSTOMER")
+                        // CORS được cấu hình trong CorsConfig.java
+                        // =================================================
 
-
-                        // ADMIN:
-                        // Xem danh sách khuyến mại
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/promotions"
-                        )
-                        .hasRole("ADMIN")
-
-
-                        // ADMIN:
-                        // Thêm khuyến mại
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/promotions"
-                        )
-                        .hasRole("ADMIN")
-
-
-                        // ADMIN:
-                        // Sửa khuyến mại
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/promotions/**"
-                        )
-                        .hasRole("ADMIN")
-
-
-                        // ADMIN:
-                        // Xóa khuyến mại
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/promotions/**"
-                        )
-                        .hasRole("ADMIN")
+                        .cors(cors -> {
+                        })
 
 
                         // =================================================
-                        // CUSTOMERS - CUSTOMER XEM THÔNG TIN CÁ NHÂN
+                        // SESSION
                         // =================================================
 
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/customers/me"
-                        )
-                        .hasRole("CUSTOMER")
-
-
-                        // =================================================
-                        // CUSTOMERS - CUSTOMER CẬP NHẬT THÔNG TIN CÁ NHÂN
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/customers/me"
-                        )
-                        .hasRole("CUSTOMER")
-
-
-                        // =================================================
-                        // CUSTOMERS - ADMIN / EMPLOYEE
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/customers/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
-
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/customers/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
+                        .sessionManagement(session ->
+                                session.sessionCreationPolicy(
+                                        SessionCreationPolicy.STATELESS
+                                )
                         )
 
 
                         // =================================================
-                        // CUSTOMER - ĐỔI MẬT KHẨU
+                        // AUTHORIZATION
                         // =================================================
 
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/customers/me/password"
-                        )
-                        .hasRole("CUSTOMER")
+                        .authorizeHttpRequests(auth -> auth
+
+                                // =================================================
+                                // CORS PREFLIGHT
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.OPTIONS,
+                                        "/**"
+                                )
+                                .permitAll()
 
 
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/customers/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
+                                // =================================================
+                                // AUTH
+                                // =================================================
 
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/customers/**"
-                        )
-                        .hasRole("ADMIN")
+                                .requestMatchers(
+                                        "/api/auth/**"
+                                )
+                                .permitAll()
 
 
-                        // =================================================
-                        // ORDERS - GET
-                        // =================================================
+                                // =================================================
+                                // USERS
+                                // =================================================
 
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/orders/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE",
-                                "CUSTOMER"
-                        )
+                                .requestMatchers(
+                                        "/api/users/**"
+                                )
+                                .hasRole("ADMIN")
 
 
-                        // =================================================
-                        // ORDERS - CREATE
-                        // =================================================
+                                // =================================================
+                                // ROLES
+                                // =================================================
 
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/orders/**"
-                        )
-                        .hasRole("CUSTOMER")
-
-
-                        // =================================================
-                        // CUSTOMER CANCEL ORDER
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.PATCH,
-                                "/api/orders/*/cancel"
-                        )
-                        .hasRole("CUSTOMER")
+                                .requestMatchers(
+                                        "/api/roles/**"
+                                )
+                                .hasRole("ADMIN")
 
 
-                        // =================================================
-                        // ADMIN / EMPLOYEE UPDATE STATUS
-                        // =================================================
+                                // =========================================================
+                                // PRODUCT
+                                // =========================================================
 
-                        .requestMatchers(
-                                HttpMethod.PATCH,
-                                "/api/orders/*/status"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
-
-
-                        // =================================================
-                        // CUSTOMER UPDATE SHIPPING
-                        // =================================================
-                        //
-                        // Phải đặt TRƯỚC /api/orders/**
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/orders/*/shipping"
-                        )
-                        .hasRole("CUSTOMER")
+                                // ADMIN + EMPLOYEE
+                                // Trang quản lý sản phẩm
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/products/manage/**"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
 
 
-                        // =================================================
-                        // ORDERS - PUT
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/orders/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
+                                // CUSTOMER / PUBLIC
+                                // Xem sản phẩm đang bán
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/products/**"
+                                )
+                                .permitAll()
 
 
-                        // =================================================
-                        // ORDERS - DELETE
-                        // =================================================
+                                // ADMIN + EMPLOYEE
+                                // Thêm sản phẩm
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/products/**"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
 
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/orders/**"
-                        )
-                        .hasRole("ADMIN")
+
+                                // ADMIN + EMPLOYEE
+                                // Sửa sản phẩm
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/products/**"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
 
 
-                        // =================================================
-                        // ORDER DETAILS
-                        // =================================================
+                                // ADMIN
+                                // Xóa sản phẩm
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/products/**"
+                                )
+                                .hasRole("ADMIN")
 
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/order-details/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE",
-                                "CUSTOMER"
-                        )
 
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/order-details/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
+                                // =================================================
+                                // CATEGORIES
+                                // =================================================
 
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/api/order-details/**"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/categories/**"
+                                )
+                                .permitAll()
 
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/api/order-details/**"
-                        )
-                        .hasRole("ADMIN")
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/categories/**"
+                                )
+                                .hasRole("ADMIN")
+
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/categories/**"
+                                )
+                                .hasRole("ADMIN")
+
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/categories/**"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                // =========================================================
+                                // KHUYẾN MẠI / PROMOTIONS
+                                // =========================================================
+
+                                // CUSTOMER - kiểm tra mã khuyến mại
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/promotions/validate"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // ADMIN - xem khuyến mại
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/promotions"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                // ADMIN - thêm khuyến mại
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/promotions"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                // ADMIN - sửa khuyến mại
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/promotions/**"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                // ADMIN - xóa khuyến mại
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/promotions/**"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                // =================================================
+                                // CUSTOMERS - CUSTOMER XEM THÔNG TIN CÁ NHÂN
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/customers/me"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // =================================================
+                                // CUSTOMERS - CUSTOMER CẬP NHẬT THÔNG TIN
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/customers/me"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // =================================================
+                                // CUSTOMERS - ADMIN / EMPLOYEE
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/customers/**"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/customers/**"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
+
+
+                                // =================================================
+                                // CUSTOMER - ĐỔI MẬT KHẨU
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/customers/me/password"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/customers/**"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/customers/**"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                // =================================================
+                                // ORDERS - GET
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/orders/**"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE",
+                                        "CUSTOMER"
+                                )
+
+
+                                // =================================================
+                                // ORDERS - CREATE
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/orders/**"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // =================================================
+                                // CUSTOMER CANCEL ORDER
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "/api/orders/*/cancel"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // =================================================
+                                // ADMIN / EMPLOYEE UPDATE STATUS
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.PATCH,
+                                        "/api/orders/*/status"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
+
+
+                                // =================================================
+                                // CUSTOMER UPDATE SHIPPING
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/orders/*/shipping"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // =================================================
+                                // ORDERS - PUT
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/orders/**"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
+
+
+                                // =================================================
+                                // ORDERS - DELETE
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/orders/**"
+                                )
+                                .hasRole("ADMIN")
+
+
+                                // =================================================
+                                // ORDER DETAILS
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/order-details/**"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE",
+                                        "CUSTOMER"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/order-details/**"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/order-details/**"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/order-details/**"
+                                )
+                                .hasRole("ADMIN")
+
 
                                 // =================================================
                                 // STATISTICS - TOP SẢN PHẨM BÁN CHẠY
-                                // =================================================
-                                //
-                                //
                                 // =================================================
 
                                 .requestMatchers(
                                         HttpMethod.GET,
                                         "/api/statistics/top-products"
                                 )
+                                .permitAll()
+
+
+                                // =================================================
+                                // STATISTICS
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/statistics/**"
+                                )
                                 .hasAnyRole(
-                                        "CUSTOMER",
                                         "ADMIN",
                                         "EMPLOYEE"
                                 )
-                        // =================================================
-                        // STATISTICS
-                        // =================================================
 
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/statistics/**"
+
+                                // =================================================
+                                // ẢNH SẢN PHẨM
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/uploads/**"
+                                )
+                                .permitAll()
+
+
+                                // =================================================
+                                // UPLOAD ẢNH SẢN PHẨM
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/upload/product-image"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
+
+
+                                // =================================================
+                                // UPLOAD NHIỀU ẢNH SẢN PHẨM
+                                // =================================================
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/upload/product-images"
+                                )
+                                .hasAnyRole(
+                                        "ADMIN",
+                                        "EMPLOYEE"
+                                )
+
+
+                                // =========================================================
+                                // PRODUCT REVIEWS
+                                // =========================================================
+
+                                // ---------------------------------------------------------
+                                // PUBLIC - XEM DANH SÁCH REVIEW
+                                // ---------------------------------------------------------
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/reviews/product/*"
+                                )
+                                .permitAll()
+
+
+                                // ---------------------------------------------------------
+                                // PUBLIC - XEM TỔNG QUAN REVIEW
+                                // ---------------------------------------------------------
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/reviews/product/*/summary"
+                                )
+                                .permitAll()
+
+
+                                // ---------------------------------------------------------
+                                // PUBLIC - XEM PHÂN BỐ SỐ SAO
+                                // ---------------------------------------------------------
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/reviews/product/*/rating-distribution"
+                                )
+                                .permitAll()
+
+
+                                // ---------------------------------------------------------
+                                // CUSTOMER - KIỂM TRA CÓ ĐƯỢC ĐÁNH GIÁ KHÔNG
+                                // ---------------------------------------------------------
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/reviews/product/*/can-review"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // ---------------------------------------------------------
+                                // CUSTOMER - LẤY REVIEW CỦA CHÍNH MÌNH
+                                // ---------------------------------------------------------
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/reviews/product/*/my-review"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // ---------------------------------------------------------
+                                // CUSTOMER - TẠO REVIEW
+                                // ---------------------------------------------------------
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/reviews/product/**"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // ---------------------------------------------------------
+                                // CUSTOMER - SỬA REVIEW
+                                // ---------------------------------------------------------
+
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/reviews/product/**"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // ---------------------------------------------------------
+                                // CUSTOMER - UPLOAD ẢNH / VIDEO
+                                // ---------------------------------------------------------
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/reviews/*/media"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // ---------------------------------------------------------
+                                // CUSTOMER - XÓA ẢNH / VIDEO
+                                // ---------------------------------------------------------
+
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/reviews/media/**"
+                                )
+                                .hasRole("CUSTOMER")
+
+
+                                // =================================================
+                                // OTHER
+                                // =================================================
+
+                                .anyRequest()
+                                .authenticated()
                         )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
 
 
                         // =================================================
-                        // ẢNH SẢN PHẨM
-                        //
-                        // Cho phép trình duyệt lấy ảnh đã upload.
+                        // JWT FILTER
                         // =================================================
 
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/uploads/**"
-                        )
-                        .permitAll()
+                        .addFilterBefore(
+                                jwtAuthenticationFilter,
+                                UsernamePasswordAuthenticationFilter.class
+                        );
 
 
-                        // =================================================
-                        // UPLOAD ẢNH SẢN PHẨM
-                        //
-                        // ADMIN + EMPLOYEE
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/upload/product-image"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
-
-
-                        // =================================================
-                        // UPLOAD NHIỀU ẢNH SẢN PHẨM
-                        // =================================================
-
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/upload/product-images"
-                        )
-                        .hasAnyRole(
-                                "ADMIN",
-                                "EMPLOYEE"
-                        )
-
-
-                        // =================================================
-                        // OTHER
-                        // =================================================
-
-                        .anyRequest()
-                        .authenticated()
-                )
-
-
-                // =================================================
-                // JWT FILTER
-                // =================================================
-
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                );
-
-
-        return http.build();
-    }
+                return http.build();
+        }
 }

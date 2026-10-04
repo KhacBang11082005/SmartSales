@@ -706,3 +706,144 @@
     }
 
 }
+
+/* =========================================================
+   PRODUCT REVIEWS
+========================================================= */
+
+.product-reviews-section {
+    margin-top: 40px;
+    padding: 30px;
+    background: #fff;
+    border-radius: 12px;
+}
+
+.product-reviews-header h2 {
+    margin: 0 0 25px;
+}
+
+.review-summary {
+    display: flex;
+    gap: 50px;
+    align-items: center;
+}
+
+.review-average {
+    min-width: 180px;
+    text-align: center;
+}
+
+.review-average-number {
+    display: block;
+    font-size: 42px;
+    font-weight: 700;
+}
+
+.review-stars,
+.review-item-stars {
+    display: flex;
+    gap: 3px;
+}
+
+.review-average .review-stars {
+    justify-content: center;
+}
+
+.star {
+    color: #ccc;
+    font-size: 20px;
+}
+
+.star.active {
+    color: #f59e0b;
+}
+
+.review-count {
+    display: block;
+    margin-top: 6px;
+    color: #666;
+}
+
+.rating-distribution {
+    flex: 1;
+    max-width: 500px;
+}
+
+.rating-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 7px 0;
+}
+
+.rating-label {
+    width: 35px;
+}
+
+.rating-bar {
+    flex: 1;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.rating-bar-fill {
+    height: 100%;
+    background: #f59e0b;
+    border-radius: 10px;
+}
+
+.rating-number {
+    width: 30px;
+    color: #666;
+}
+
+.product-reviews-list {
+    margin-top: 30px;
+}
+
+.product-review-item {
+    padding: 20px 0;
+    border-top: 1px solid #eee;
+}
+
+.review-user {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.review-comment {
+    margin: 12px 0;
+    line-height: 1.6;
+}
+
+.review-media-list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.review-media-item {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #eee;
+}
+
+.review-media-item img,
+.review-media-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.review-loading,
+.review-empty {
+    padding: 30px 0;
+    text-align: center;
+    color: #777;
+}

@@ -15,7 +15,9 @@ import {
     Search,
     ChevronDown,
     Package,
-    CircleUserRound
+    CircleUserRound,
+    Star
+
 } from "lucide-react";
 
 import "./CustomerLayout.css";
@@ -370,6 +372,16 @@ function CustomerLayout() {
 
                                 </Link>
 
+                                <Link
+                                    to="/reviews"
+                                    className="user-dropdown-item"
+                                >
+                                    <Star size={18} />
+
+                                    <span>
+                                        Đánh giá sản phẩm
+                                    </span>
+                                </Link>
 
                                 {/* XEM ĐƠN HÀNG */}
 

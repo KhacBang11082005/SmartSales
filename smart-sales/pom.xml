@@ -69,6 +69,18 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
+		<!-- =========================================================
+     JCODEC
+     Dùng để đọc metadata video, đặc biệt là thời lượng video
+     Phục vụ chức năng đánh giá sản phẩm:
+     - Tối đa 1 video / đánh giá
+     - Video tối đa 30 giây
+========================================================= -->
+		<dependency>
+			<groupId>org.jcodec</groupId>
+			<artifactId>jcodec</artifactId>
+			<version>0.2.5</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.mysql</groupId>

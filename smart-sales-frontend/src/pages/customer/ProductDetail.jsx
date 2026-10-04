@@ -30,7 +30,13 @@ import {
 
 import "./ProductDetail.css";
 
-
+import {
+    getProductReviews,
+    getReviewSummary,
+    getRatingDistribution,
+    canReviewProduct,
+    getMyReview
+} from "../../services/reviewApi";
 // =========================================================
 // FORMAT GIÁ
 // =========================================================
@@ -138,7 +144,169 @@ function ProductDetail() {
 
     const touchStartX =
         useRef(null);
+    const [reviews, setReviews] = useState([]);
+    const [reviewSummary, setReviewSummary] = useState({
+        averageRating: 0,
+        reviewCount: 0
+    });
+    const [ratingDistribution, setRatingDistribution] = useState({
+        5: 0,
+        4: 0,
+        3: 0,
+        2: 0,
+        1: 0
+    });
 
+    const [canReview, setCanReview] = useState(false);
+    const [myReview, setMyReview] = useState(null);
+    const [reviewLoading, setReviewLoading] = useState(false);
+    const loadReviewData = async () => {
+        if (!id) {
+            return;
+        }
+
+        try {
+            setReviewLoading(true);
+
+            // =====================================================
+            // CÁC API NÀY PUBLIC
+            // KHÁCH CHƯA ĐĂNG NHẬP VẪN XEM ĐƯỢC REVIEW
+            // =====================================================
+
+            const [
+                reviewsData,
+                summaryData,
+                distributionData
+            ] = await Promise.all([
+                getProductReviews(id),
+                getReviewSummary(id),
+                getRatingDistribution(id)
+            ]);
+
+            setReviews(
+                Array.isArray(reviewsData)
+                    ? reviewsData
+                    : []
+            );
+
+            setReviewSummary(
+                summaryData || {
+                    averageRating: 0,
+                    reviewCount: 0
+                }
+            );
+
+            setRatingDistribution(
+                distributionData || {
+                    5: 0,
+                    4: 0,
+                    3: 0,
+                    2: 0,
+                    1: 0
+                }
+            );
+
+            // =====================================================
+            // CHỈ KIỂM TRA QUYỀN ĐÁNH GIÁ KHI ĐÃ ĐĂNG NHẬP
+            // =====================================================
+
+            if (isLoggedIn) {
+
+                try {
+                    const canReviewData =
+                        await canReviewProduct(id);
+
+                    setCanReview(
+                        canReviewData?.canReview === true
+                    );
+
+                } catch (error) {
+
+                    console.warn(
+                        "Không thể kiểm tra quyền đánh giá:",
+                        error
+                    );
+
+                    setCanReview(false);
+                }
+
+
+                // =================================================
+                // LẤY REVIEW CỦA KHÁCH HÀNG HIỆN TẠI
+                // =================================================
+
+                try {
+                    const myReviewData =
+                        await getMyReview(id);
+
+                    setMyReview(
+                        myReviewData || null
+                    );
+
+                } catch (error) {
+
+                    console.warn(
+                        "Không thể lấy review của khách hàng:",
+                        error
+                    );
+
+                    setMyReview(null);
+                }
+
+            } else {
+
+                // Khách chưa đăng nhập
+                setCanReview(false);
+                setMyReview(null);
+            }
+
+        } catch (error) {
+
+            console.error(
+                "LOAD REVIEW ERROR:",
+                error
+            );
+
+            setReviews([]);
+
+            setReviewSummary({
+                averageRating: 0,
+                reviewCount: 0
+            });
+
+            setRatingDistribution({
+                5: 0,
+                4: 0,
+                3: 0,
+                2: 0,
+                1: 0
+            });
+
+        } finally {
+
+            setReviewLoading(false);
+
+        }
+    };
+    // =====================================================
+// TỰ ĐỘNG LOAD ĐÁNH GIÁ KHI MỞ SẢN PHẨM
+// =====================================================
+    useEffect(() => {
+        loadReviewData();
+    }, [id, isLoggedIn]);
+
+
+    const getRatingPercent = (rating) => {
+        const total = reviewSummary.reviewCount || 0;
+
+        if (total === 0) {
+            return 0;
+        }
+
+        return Math.round(
+            ((ratingDistribution[rating] || 0) / total) * 100
+        );
+    };
 
     // =========================================================
     // LẤY SẢN PHẨM + ẢNH
@@ -1185,8 +1353,165 @@ function ProductDetail() {
                 </p>
 
             </section>
+            {/* =========================================================
+    ĐÁNH GIÁ SẢN PHẨM
+========================================================= */}
+            <section className="product-reviews-section">
 
+                <div className="product-reviews-header">
+                    <h2>Đánh giá sản phẩm</h2>
+
+                    <div className="review-summary">
+
+                        <div className="review-average">
+                <span className="review-average-number">
+                    {Number(reviewSummary.averageRating || 0).toFixed(1)}
+                </span>
+
+                            <div className="review-stars">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <span
+                                        key={star}
+                                        className={
+                                            star <= Math.round(
+                                                reviewSummary.averageRating || 0
+                                            )
+                                                ? "star active"
+                                                : "star"
+                                        }
+                                    >
+                            ★
+                        </span>
+                                ))}
+                            </div>
+
+                            <span className="review-count">
+                    {reviewSummary.reviewCount || 0} đánh giá
+                </span>
+                        </div>
+
+
+                        <div className="rating-distribution">
+
+                            {[5, 4, 3, 2, 1].map((rating) => (
+                                <div
+                                    className="rating-row"
+                                    key={rating}
+                                >
+                        <span className="rating-label">
+                            {rating} ★
+                        </span>
+
+                                    <div className="rating-bar">
+                                        <div
+                                            className="rating-bar-fill"
+                                            style={{
+                                                width: `${getRatingPercent(rating)}%`
+                                            }}
+                                        />
+                                    </div>
+
+                                    <span className="rating-number">
+                            {ratingDistribution[rating] || 0}
+                        </span>
+                                </div>
+                            ))}
+
+                        </div>
+
+                    </div>
+                </div>
+
+
+                {/* =====================================================
+        DANH SÁCH REVIEW
+    ===================================================== */}
+
+                <div className="product-reviews-list">
+
+                    {reviewLoading ? (
+                        <div className="review-loading">
+                            Đang tải đánh giá...
+                        </div>
+                    ) : reviews.length === 0 ? (
+                        <div className="review-empty">
+                            Chưa có đánh giá nào cho sản phẩm này.
+                        </div>
+                    ) : (
+                        reviews.map((review) => (
+                            <div
+                                className="product-review-item"
+                                key={review.id}
+                            >
+
+                                <div className="review-user">
+                                    <strong>
+                                        {review.customerName || "Khách hàng"}
+                                    </strong>
+
+                                    <div className="review-item-stars">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <span
+                                                key={star}
+                                                className={
+                                                    star <= review.rating
+                                                        ? "star active"
+                                                        : "star"
+                                                }
+                                            >
+                                    ★
+                                </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+
+                                {review.comment && (
+                                    <p className="review-comment">
+                                        {review.comment}
+                                    </p>
+                                )}
+
+
+                                {review.media &&
+                                    review.media.length > 0 && (
+                                        <div className="review-media-list">
+
+                                            {review.media.map((media) => (
+                                                <div
+                                                    className="review-media-item"
+                                                    key={media.id}
+                                                >
+
+                                                    {media.mediaType === "IMAGE" ? (
+                                                        <img
+                                                            src={getImageUrl(media.fileUrl)}
+                                                            alt="Ảnh đánh giá"
+                                                        />
+                                                    ) : (
+                                                        <video
+                                                            src={getImageUrl(media.fileUrl)}
+                                                            controls
+                                                            preload="metadata"
+                                                        />
+                                                    )}
+
+                                                </div>
+                                            ))}
+
+                                        </div>
+                                    )}
+
+                            </div>
+                        ))
+                    )}
+
+                </div>
+
+            </section>
         </div>
+
+
     );
 }
 

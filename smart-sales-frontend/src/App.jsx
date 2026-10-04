@@ -13,6 +13,7 @@ import { useAuth } from "./context/AuthContext";
 // =====================================================
 
 import Account from "./pages/customer/Account";
+import Reviews from "./pages/customer/Reviews";
 import CustomerLayout from "./layouts/CustomerLayout";
 
 import Home from "./pages/customer/Home";
@@ -320,7 +321,20 @@ function App() {
 
                 </Route>
 
+                {/* =================================================
+                        PRODUCT REVIEWS
+                    ================================================= */}
 
+                <Route
+                    path="/reviews"
+                    element={
+                        <ProtectedRoute
+                            allowedRoles={["CUSTOMER"]}
+                        >
+                            <Reviews />
+                        </ProtectedRoute>
+                    }
+                />
                 {/* =================================================
                     AUTH
                 ================================================= */}
