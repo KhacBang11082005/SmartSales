@@ -15,6 +15,8 @@ import com.smartsales.repository.PromotionUsageRepository;
 
 import jakarta.transaction.Transactional;
 
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -96,17 +98,68 @@ public class PromotionService {
 
 
     // =====================================================
-    // =====================================================
-    // PHẦN 1 - ADMIN CRUD PROMOTION
-    // =====================================================
-    // =====================================================
+// PHẦN 1 - ADMIN CRUD PROMOTION
+// =====================================================
 
 
-    // =====================================================
-    // LẤY TẤT CẢ KHUYẾN MẠI
-    // =====================================================
+// =====================================================
+// TỰ ĐỘNG NGƯNG HOẠT ĐỘNG KHUYẾN MẠI ĐÃ HẾT HẠN
+// =====================================================
+//
+// Hàm này kiểm tra tất cả promotion:
+//
+// ACTIVE + endDate <= hiện tại
+//
+// => chuyển thành INACTIVE.
+//
+// Hàm được gọi bởi Scheduler và cũng được gọi
+// trước khi lấy/kiểm tra promotion.
+//
+// =====================================================
 
+    @Transactional
+    public void deactivateExpiredPromotions() {
+
+        promotionRepository.deactivateExpiredPromotions(
+                LocalDateTime.now()
+        );
+    }
+
+
+// =====================================================
+// SCHEDULER
+// =====================================================
+//
+// Tự động chạy mỗi 60 giây.
+//
+// Ví dụ:
+//
+// 18:00:00 -> promotion hết hạn
+// 18:00:xx -> scheduler sẽ cập nhật ACTIVE -> INACTIVE
+//
+// =====================================================
+
+    @Scheduled(
+            fixedRate = 60000,
+            initialDelay = 1000
+    )
+    @Transactional
+    public void scheduledDeactivateExpiredPromotions() {
+
+        deactivateExpiredPromotions();
+    }
+
+
+// =====================================================
+// LẤY TẤT CẢ KHUYẾN MẠI
+// =====================================================
+
+    @Transactional
     public List<Promotion> getAllPromotions() {
+
+        // Cập nhật ngay các promotion đã hết hạn
+        // trước khi trả dữ liệu cho Admin.
+        deactivateExpiredPromotions();
 
         return promotionRepository.findAll();
     }
@@ -116,7 +169,12 @@ public class PromotionService {
     // LẤY CHI TIẾT KHUYẾN MẠI
     // =====================================================
 
+    @Transactional
     public Promotion getPromotionById(Long id) {
+
+        // Cập nhật ngay các promotion vừa hết hạn.
+        deactivateExpiredPromotions();
+
 
         if (id == null) {
 
@@ -124,6 +182,7 @@ public class PromotionService {
                     "ID khuyến mại không được để trống"
             );
         }
+
 
         return promotionRepository
                 .findById(id)
@@ -972,12 +1031,25 @@ public class PromotionService {
     // KIỂM TRA MÃ KHUYẾN MẠI
     // =====================================================
 
+    @Transactional
     public Promotion validatePromotion(
             String code,
             BigDecimal orderAmount,
             Long customerId
     ) {
-
+        // =================================================
+        // CẬP NHẬT PROMOTION HẾT HẠN TRƯỚC KHI VALIDATE
+        // =================================================
+        //
+        // Điều này đảm bảo:
+        //
+        // endDate đã qua
+        //
+        // => ACTIVE sẽ được chuyển thành INACTIVE
+        //
+        // ngay cả khi Scheduler chưa chạy đến lượt.
+        //
+        deactivateExpiredPromotions();
         // -------------------------------------------------
         // 1. KIỂM TRA CODE
         // -------------------------------------------------
