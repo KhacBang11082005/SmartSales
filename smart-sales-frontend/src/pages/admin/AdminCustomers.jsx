@@ -1,3 +1,4 @@
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
     Edit3,
@@ -12,7 +13,9 @@ import {
     CalendarDays,
     ShoppingBag,
     ShieldCheck,
-    ChevronDown
+    ChevronDown,
+    Image as ImageIcon,
+    Video
 } from "lucide-react";
 
 import {
@@ -72,6 +75,29 @@ const getStatusConfig = (status) => {
             className: ""
         }
     );
+};
+
+// =========================================================
+// URL ẢNH / VIDEO REVIEW
+// =========================================================
+const getReviewMediaUrl = (fileUrl) => {
+    if (!fileUrl) return "";
+
+    // Backend đã trả URL đầy đủ
+    if (
+        fileUrl.startsWith("http://") ||
+        fileUrl.startsWith("https://")
+    ) {
+        return fileUrl;
+    }
+
+    // Backend trả /uploads/...
+    if (fileUrl.startsWith("/")) {
+        return `http://localhost:8080${fileUrl}`;
+    }
+
+// Backend trả uploads/...
+return `http://localhost:8080/${fileUrl}`;
 };
 
 export default function AdminCustomers({ readOnly = false }) {
@@ -474,9 +500,9 @@ export default function AdminCustomers({ readOnly = false }) {
                             return (
                                 <tr key={customer.id}>
                                     <td>
-                                            <span className="customer-id">
-                                                #{customer.id}
-                                            </span>
+                                        <span className="customer-id">
+                                            #{customer.id}
+                                        </span>
                                     </td>
 
                                     <td>
@@ -513,13 +539,13 @@ export default function AdminCustomers({ readOnly = false }) {
                                     </td>
 
                                     <td>
-                                            <span
-                                                className={`customer-status-badge ${status.className}`}
-                                            >
-                                                <span className="status-dot" />
+                                        <span
+                                            className={`customer-status-badge ${status.className}`}
+                                        >
+                                            <span className="status-dot" />
 
-                                                {status.label}
-                                            </span>
+                                            {status.label}
+                                        </span>
                                     </td>
 
                                     <td>
@@ -820,6 +846,9 @@ export default function AdminCustomers({ readOnly = false }) {
                                                                                     <div className="customer-order-product-review">
                                                                                         {product.reviewed ? (
                                                                                             <>
+                                                                                                {/* =========================
+                                                                                                    SAO
+                                                                                                ========================= */}
                                                                                                 <div className="customer-review-stars">
                                                                                                     {Array.from(
                                                                                                         {
@@ -847,6 +876,9 @@ export default function AdminCustomers({ readOnly = false }) {
                                                                                                     )}
                                                                                                 </div>
 
+                                                                                                {/* =========================
+                                                                                                    BÌNH LUẬN
+                                                                                                ========================= */}
                                                                                                 {product.comment ? (
                                                                                                     <p>
                                                                                                         {
@@ -864,6 +896,172 @@ export default function AdminCustomers({ readOnly = false }) {
                                                                                                         luận.
                                                                                                     </span>
                                                                                                 )}
+
+                                                                                                {/* =========================
+                                                                                                    ẢNH / VIDEO
+                                                                                                ========================= */}
+                                                                                                {Array.isArray(
+                                                                                                        product.reviewMedia
+                                                                                                    ) &&
+                                                                                                    product
+                                                                                                        .reviewMedia
+                                                                                                        .length >
+                                                                                                    0 && (
+                                                                                                        <div className="customer-review-media">
+                                                                                                            <div className="customer-review-media-title">
+                                                                                                                <span>
+                                                                                                                    Hình ảnh / video đánh giá
+                                                                                                                </span>
+
+                                                                                                                <small>
+                                                                                                                    {
+                                                                                                                        product
+                                                                                                                            .reviewMedia
+                                                                                                                            .length
+                                                                                                                    }{" "}
+                                                                                                                    tệp
+                                                                                                                </small>
+                                                                                                            </div>
+
+                                                                                                            <div className="customer-review-media-list">
+                                                                                                                {product.reviewMedia.map(
+                                                                                                                    (
+                                                                                                                        media
+                                                                                                                    ) => {
+                                                                                                                        if (
+                                                                                                                            !media
+                                                                                                                        ) {
+                                                                                                                            return null;
+                                                                                                                        }
+
+                                                                                                                        const mediaUrl =
+                                                                                                                            getReviewMediaUrl(
+                                                                                                                                media.fileUrl
+                                                                                                                            );
+
+                                                                                                                        if (
+                                                                                                                            !mediaUrl
+                                                                                                                        ) {
+                                                                                                                            return null;
+                                                                                                                        }
+
+                                                                                                                        const mediaType =
+                                                                                                                            String(
+                                                                                                                                media.mediaType ||
+                                                                                                                                ""
+                                                                                                                            ).toUpperCase();
+
+                                                                                                                        const mimeType =
+                                                                                                                            String(
+                                                                                                                                media.mimeType ||
+                                                                                                                                ""
+                                                                                                                            ).toLowerCase();
+
+                                                                                                                        const isImage =
+                                                                                                                            mediaType ===
+                                                                                                                            "IMAGE" ||
+                                                                                                                            mimeType.startsWith(
+                                                                                                                                "image/"
+                                                                                                                            );
+
+                                                                                                                        const isVideo =
+                                                                                                                            mediaType ===
+                                                                                                                            "VIDEO" ||
+                                                                                                                            mimeType.startsWith(
+                                                                                                                                "video/"
+                                                                                                                            );
+
+                                                                                                                        {/* =========================
+                                                                                                                            ẢNH
+                                                                                                                        ========================= */}
+                                                                                                                        if (
+                                                                                                                            isImage
+                                                                                                                        ) {
+                                                                                                                            return (
+                                                                                                                                <a
+                                                                                                                                    key={
+                                                                                                                                        media.id
+                                                                                                                                    }
+                                                                                                                                    href={
+                                                                                                                                        mediaUrl
+                                                                                                                                    }
+                                                                                                                                    target="_blank"
+                                                                                                                                    rel="noreferrer"
+                                                                                                                                    className="customer-review-media-image"
+                                                                                                                                    title="Xem ảnh đánh giá"
+                                                                                                                                >
+                                                                                                                                    <img
+                                                                                                                                        src={
+                                                                                                                                            mediaUrl
+                                                                                                                                        }
+                                                                                                                                        alt={
+                                                                                                                                            media.fileName ||
+                                                                                                                                            "Ảnh đánh giá"
+                                                                                                                                        }
+                                                                                                                                        onError={(
+                                                                                                                                            e
+                                                                                                                                        ) => {
+                                                                                                                                            e.currentTarget.style.display =
+                                                                                                                                                "none";
+                                                                                                                                        }}
+                                                                                                                                    />
+
+                                                                                                                                    <span>
+                                                                                                                                        <ImageIcon
+                                                                                                                                            size={
+                                                                                                                                                14
+                                                                                                                                            }
+                                                                                                                                        />
+
+                                                                                                                                        Xem ảnh
+                                                                                                                                    </span>
+                                                                                                                                </a>
+                                                                                                                            );
+                                                                                                                        }
+
+                                                                                                                        {/* =========================
+                                                                                                                            VIDEO
+                                                                                                                        ========================= */}
+                                                                                                                        if (
+                                                                                                                            isVideo
+                                                                                                                        ) {
+                                                                                                                            return (
+                                                                                                                                <div
+                                                                                                                                    key={
+                                                                                                                                        media.id
+                                                                                                                                    }
+                                                                                                                                    className="customer-review-media-video"
+                                                                                                                                >
+                                                                                                                                    <video
+                                                                                                                                        src={
+                                                                                                                                            mediaUrl
+                                                                                                                                        }
+                                                                                                                                        controls
+                                                                                                                                        preload="metadata"
+                                                                                                                                    />
+
+                                                                                                                                    <div className="customer-review-video-name">
+                                                                                                                                        <Video
+                                                                                                                                            size={
+                                                                                                                                                14
+                                                                                                                                            }
+                                                                                                                                        />
+
+                                                                                                                                        <span>
+                                                                                                                                            {media.fileName ||
+                                                                                                                                                "Video đánh giá"}
+                                                                                                                                        </span>
+                                                                                                                                    </div>
+                                                                                                                                </div>
+                                                                                                                            );
+                                                                                                                        }
+
+                                                                                                                        return null;
+                                                                                                                    }
+                                                                                                                )}
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    )}
                                                                                             </>
                                                                                         ) : (
                                                                                             <span className="customer-review-not-reviewed">

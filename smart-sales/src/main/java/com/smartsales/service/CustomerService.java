@@ -1,4 +1,4 @@
-package com.smartsales.service;
+ package com.smartsales.service;
 
 import com.smartsales.dto.ChangePasswordRequest;
 import com.smartsales.dto.CustomerAdminResponse;
@@ -6,10 +6,12 @@ import com.smartsales.dto.CustomerAdminUpdateRequest;
 import com.smartsales.dto.CustomerOrderSummaryResponse;
 import com.smartsales.dto.CustomerOrderProductResponse;
 import com.smartsales.dto.CustomerProfileResponse;
+import com.smartsales.dto.CustomerReviewMediaResponse;
 
 import com.smartsales.entity.Customer;
 import com.smartsales.entity.User;
 import com.smartsales.entity.Review;
+import com.smartsales.entity.ReviewMedia;
 
 import com.smartsales.repository.CustomerRepository;
 import com.smartsales.repository.OrderRepository;
@@ -27,7 +29,6 @@ import java.util.Map;
 
 @Service
 public class CustomerService {
-
 
     private final CustomerRepository customerRepository;
 
@@ -108,21 +109,10 @@ public class CustomerService {
         // =====================================================
         // LẤY CÁC ĐÁNH GIÁ CỦA CUSTOMER
         //
-        // QUAN TRỌNG:
         // Dùng orderDetailId để ghép review với đúng
         // sản phẩm trong đúng đơn hàng.
         //
-        // Không dùng productId nữa.
-        //
-        // Ví dụ:
-        //
-        // Đơn A:
-        // product 10 -> orderDetail 16 -> review 5 sao
-        //
-        // Đơn B:
-        // product 10 -> orderDetail 18 -> review 3 sao
-        //
-        // Hai review sẽ được giữ riêng.
+        // Không dùng productId.
         // =====================================================
 
         Map<Long, Review> reviewByOrderDetailId =
@@ -148,20 +138,6 @@ public class CustomerService {
 
         // =====================================================
         // LẤY LỊCH SỬ ĐƠN HÀNG
-        //
-        // Giữ nguyên các thông tin cũ:
-        // - ID đơn hàng
-        // - Ngày đặt
-        // - Tổng số lượng
-        // - Tổng tiền
-        // - Trạng thái
-        //
-        // Đồng thời thêm:
-        // - Danh sách sản phẩm
-        // - Số lượng từng sản phẩm
-        // - Đã đánh giá hay chưa
-        // - Số sao
-        // - Bình luận
         // =====================================================
 
         List<CustomerOrderSummaryResponse> orders =
@@ -175,7 +151,6 @@ public class CustomerService {
 
                             // =================================================
                             // TÍNH TỔNG SỐ LƯỢNG SẢN PHẨM
-                            // Giữ nguyên logic cũ
                             // =================================================
 
                             if (
@@ -256,6 +231,9 @@ public class CustomerService {
 
                                     String comment = null;
 
+                                    List<CustomerReviewMediaResponse> reviewMedia =
+                                            new java.util.ArrayList<>();
+
 
                                     // =================================================
                                     // CHỈ HIỂN THỊ REVIEW KHI:
@@ -280,6 +258,10 @@ public class CustomerService {
                                                 );
 
 
+                                        // =================================================
+                                        // NẾU CÓ REVIEW
+                                        // =================================================
+
                                         if (
                                                 review != null
                                         ) {
@@ -291,6 +273,57 @@ public class CustomerService {
 
                                             comment =
                                                     review.getComment();
+
+
+                                            // =================================================
+                                            // LẤY ẢNH / VIDEO CỦA REVIEW
+                                            //
+                                            // QUAN TRỌNG:
+                                            // Phần này phải nằm bên trong
+                                            // if (review != null)
+                                            // vì biến review chỉ tồn tại
+                                            // trong phạm vi này.
+                                            // =================================================
+
+                                            if (
+                                                    review.getMedia() != null
+                                            ) {
+
+                                                for (
+                                                        ReviewMedia media :
+                                                        review.getMedia()
+                                                ) {
+
+                                                    if (
+                                                            media == null
+                                                    ) {
+                                                        continue;
+                                                    }
+
+
+                                                    reviewMedia.add(
+                                                            new CustomerReviewMediaResponse(
+
+                                                                    media.getId(),
+
+                                                                    media.getMediaType(),
+
+                                                                    media.getFileUrl(),
+
+                                                                    media.getFileName(),
+
+                                                                    media.getFileSize(),
+
+                                                                    media.getMimeType(),
+
+                                                                    media.getDurationSeconds(),
+
+                                                                    media.getDisplayOrder()
+
+                                                            )
+                                                    );
+                                                }
+                                            }
                                         }
                                     }
 
@@ -301,13 +334,23 @@ public class CustomerService {
 
                                     products.add(
                                             new CustomerOrderProductResponse(
+
                                                     detail.getId(),
+
                                                     productId,
+
                                                     productName,
+
                                                     quantity,
+
                                                     reviewed,
+
                                                     rating,
-                                                    comment
+
+                                                    comment,
+
+                                                    reviewMedia
+
                                             )
                                     );
                                 }
@@ -316,9 +359,6 @@ public class CustomerService {
 
                             // =================================================
                             // TẠO ORDER RESPONSE
-                            //
-                            // Giữ nguyên toàn bộ dữ liệu cũ
-                            // + danh sách products
                             // =================================================
 
                             return new CustomerOrderSummaryResponse(
@@ -517,11 +557,6 @@ public class CustomerService {
 
         // =====================================================
         // UPDATE ADDRESS
-        //
-        // Lưu ý:
-        // Đây là PROFILE CỦA KHÁCH HÀNG,
-        // KHÔNG phải form Admin chỉnh sửa.
-        // Vì vậy vẫn giữ address ở đây.
         // =====================================================
 
         customer.setAddress(
@@ -787,17 +822,6 @@ public class CustomerService {
 
         // =====================================================
         // VALIDATE STATUS
-        //
-        // ADMIN CHỈ ĐƯỢC PHÉP CHỌN:
-        //
-        // ACTIVE = Hoạt động
-        // LOCKED = Đã khóa
-        //
-        // ADMIN KHÔNG ĐƯỢC CHỌN:
-        //
-        // INACTIVE = Không hoạt động
-        //
-        // INACTIVE do hệ thống Scheduler tự động xử lý.
         // =====================================================
 
         if (
@@ -863,8 +887,7 @@ public class CustomerService {
         existingCustomer.setPhone(
 
                 request.getPhone() != null
-                        ? request.getPhone()
-                        .trim()
+                        ? request.getPhone().trim()
                         : ""
         );
 
@@ -984,3 +1007,4 @@ public class CustomerService {
         );
     }
 }
+

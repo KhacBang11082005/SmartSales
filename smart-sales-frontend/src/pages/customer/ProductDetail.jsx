@@ -18,7 +18,8 @@ import {
     Plus,
     ArrowLeft,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    X
 } from "lucide-react";
 
 import { useCart } from "../../context/CartContext";
@@ -37,6 +38,8 @@ import {
     canReviewProduct,
     getMyReview
 } from "../../services/reviewApi";
+
+
 // =========================================================
 // FORMAT GIÁ
 // =========================================================
@@ -49,7 +52,7 @@ function formatPrice(price) {
 
 
 // =========================================================
-// XỬ LÝ URL ẢNH
+// XỬ LÝ URL ẢNH / VIDEO
 // =========================================================
 
 function getImageUrl(imageUrl) {
@@ -68,9 +71,9 @@ function getImageUrl(imageUrl) {
     }
 
 
-    // Nếu là ảnh upload từ Backend
+    // Nếu là file upload từ Backend
     return `http://localhost:8080${imageUrl}`;
-}
+    }
 
 
 // =========================================================
@@ -104,7 +107,6 @@ function ProductDetail() {
         useState([]);
 
 
-    // Ảnh đang chọn
     const [selectedImageIndex, setSelectedImageIndex] =
         useState(0);
 
@@ -144,33 +146,70 @@ function ProductDetail() {
 
     const touchStartX =
         useRef(null);
-    const [reviews, setReviews] = useState([]);
-    const [reviewSummary, setReviewSummary] = useState({
-        averageRating: 0,
-        reviewCount: 0
-    });
-    const [ratingDistribution, setRatingDistribution] = useState({
-        5: 0,
-        4: 0,
-        3: 0,
-        2: 0,
-        1: 0
-    });
 
-    const [canReview, setCanReview] = useState(false);
-    const [myReview, setMyReview] = useState(null);
-    const [reviewLoading, setReviewLoading] = useState(false);
+
+    // =====================================================
+    // STATE REVIEW
+    // =====================================================
+
+    const [reviews, setReviews] =
+        useState([]);
+
+    const [reviewSummary, setReviewSummary] =
+        useState({
+            averageRating: 0,
+            reviewCount: 0
+        });
+
+    const [ratingDistribution, setRatingDistribution] =
+        useState({
+            5: 0,
+            4: 0,
+            3: 0,
+            2: 0,
+            1: 0
+        });
+
+    const [canReview, setCanReview] =
+        useState(false);
+
+    const [myReview, setMyReview] =
+        useState(null);
+
+    const [reviewLoading, setReviewLoading] =
+        useState(false);
+
+
+    // =====================================================
+    // STATE XEM MEDIA REVIEW
+    //
+    // selectedReviewMedia:
+    // - null = không mở
+    // - object = media đang được xem
+    // =====================================================
+
+    const [selectedReviewMedia, setSelectedReviewMedia] =
+        useState(null);
+
+
+    // =====================================================
+    // LOAD REVIEW DATA
+    // =====================================================
+
     const loadReviewData = async () => {
+
         if (!id) {
             return;
         }
 
+
         try {
+
             setReviewLoading(true);
 
+
             // =====================================================
-            // CÁC API NÀY PUBLIC
-            // KHÁCH CHƯA ĐĂNG NHẬP VẪN XEM ĐƯỢC REVIEW
+            // CÁC API PUBLIC
             // =====================================================
 
             const [
@@ -183,11 +222,13 @@ function ProductDetail() {
                 getRatingDistribution(id)
             ]);
 
+
             setReviews(
                 Array.isArray(reviewsData)
                     ? reviewsData
                     : []
             );
+
 
             setReviewSummary(
                 summaryData || {
@@ -195,6 +236,7 @@ function ProductDetail() {
                     reviewCount: 0
                 }
             );
+
 
             setRatingDistribution(
                 distributionData || {
@@ -206,6 +248,7 @@ function ProductDetail() {
                 }
             );
 
+
             // =====================================================
             // CHỈ KIỂM TRA QUYỀN ĐÁNH GIÁ KHI ĐÃ ĐĂNG NHẬP
             // =====================================================
@@ -213,6 +256,7 @@ function ProductDetail() {
             if (isLoggedIn) {
 
                 try {
+
                     const canReviewData =
                         await canReviewProduct(id);
 
@@ -236,6 +280,7 @@ function ProductDetail() {
                 // =================================================
 
                 try {
+
                     const myReviewData =
                         await getMyReview(id);
 
@@ -255,8 +300,8 @@ function ProductDetail() {
 
             } else {
 
-                // Khách chưa đăng nhập
                 setCanReview(false);
+
                 setMyReview(null);
             }
 
@@ -266,6 +311,7 @@ function ProductDetail() {
                 "LOAD REVIEW ERROR:",
                 error
             );
+
 
             setReviews([]);
 
@@ -288,25 +334,104 @@ function ProductDetail() {
 
         }
     };
+
+
     // =====================================================
-// TỰ ĐỘNG LOAD ĐÁNH GIÁ KHI MỞ SẢN PHẨM
-// =====================================================
+    // TỰ ĐỘNG LOAD REVIEW
+    // =====================================================
+
     useEffect(() => {
+
         loadReviewData();
+
     }, [id, isLoggedIn]);
 
 
+    // =====================================================
+    // TÍNH PHẦN TRĂM RATING
+    // =====================================================
+
     const getRatingPercent = (rating) => {
-        const total = reviewSummary.reviewCount || 0;
+
+        const total =
+            reviewSummary.reviewCount || 0;
+
 
         if (total === 0) {
             return 0;
         }
 
+
         return Math.round(
-            ((ratingDistribution[rating] || 0) / total) * 100
+            (
+                (ratingDistribution[rating] || 0)
+                / total
+            ) * 100
         );
     };
+
+
+    // =====================================================
+    // MỞ ẢNH / VIDEO REVIEW
+    // =====================================================
+
+    const handleOpenReviewMedia = (media) => {
+
+        if (!media || !media.fileUrl) {
+            return;
+        }
+
+
+        setSelectedReviewMedia(media);
+    };
+
+
+    // =====================================================
+    // ĐÓNG ẢNH / VIDEO REVIEW
+    // =====================================================
+
+    const handleCloseReviewMedia = () => {
+
+        setSelectedReviewMedia(null);
+    };
+
+
+    // =====================================================
+    // NHẤN ESC ĐỂ ĐÓNG MEDIA
+    // =====================================================
+
+    useEffect(() => {
+
+        const handleKeyDown = (event) => {
+
+            if (
+                event.key === "Escape"
+            ) {
+
+                setSelectedReviewMedia(null);
+            }
+        };
+
+
+        if (selectedReviewMedia) {
+
+            document.addEventListener(
+                "keydown",
+                handleKeyDown
+            );
+        }
+
+
+        return () => {
+
+            document.removeEventListener(
+                "keydown",
+                handleKeyDown
+            );
+        };
+
+    }, [selectedReviewMedia]);
+
 
     // =========================================================
     // LẤY SẢN PHẨM + ẢNH
@@ -375,10 +500,6 @@ function ProductDetail() {
 
                     } else {
 
-                        // =========================================
-                        // Sản phẩm cũ chỉ có imageUrl
-                        // =========================================
-
                         if (productData.imageUrl) {
 
                             setProductImages([
@@ -402,11 +523,6 @@ function ProductDetail() {
                         imageError
                     );
 
-
-                    // =============================================
-                    // Nếu API nhiều ảnh lỗi
-                    // vẫn hiển thị ảnh cũ.
-                    // =============================================
 
                     if (productData.imageUrl) {
 
@@ -547,7 +663,6 @@ function ProductDetail() {
             touchEndX;
 
 
-        // Vuốt sang trái
         if (difference > 50) {
 
             handleNextImage();
@@ -555,7 +670,6 @@ function ProductDetail() {
         }
 
 
-        // Vuốt sang phải
         if (difference < -50) {
 
             handlePreviousImage();
@@ -575,7 +689,9 @@ function ProductDetail() {
 
         return (
             <div className="product-loading">
+
                 Đang tải sản phẩm...
+
             </div>
         );
     }
@@ -636,7 +752,6 @@ function ProductDetail() {
         setEditingQuantity(value);
 
 
-        // Cho phép ô tạm thời rỗng
         if (value === "") {
             return;
         }
@@ -646,13 +761,11 @@ function ProductDetail() {
             Number(value);
 
 
-        // Không cho nhập 0
         if (newQuantity === 0) {
             return;
         }
 
 
-        // Không vượt tồn kho
         if (
             newQuantity >
             Number(product.quantity || 0)
@@ -757,7 +870,6 @@ function ProductDetail() {
 
     const handleAddToCart = () => {
 
-        // Chưa đăng nhập
         if (!isLoggedIn) {
 
             navigate("/login", {
@@ -771,13 +883,11 @@ function ProductDetail() {
         }
 
 
-        // Hết hàng
         if (product.quantity <= 0) {
             return;
         }
 
 
-        // Kiểm tra số lượng
         if (
             quantity < 1 ||
             quantity > product.quantity
@@ -786,14 +896,12 @@ function ProductDetail() {
         }
 
 
-        // Thêm vào giỏ
         addToCart(
             product,
             quantity
         );
 
 
-        // Hiện thông báo
         setShowSuccess(true);
 
 
@@ -847,6 +955,7 @@ function ProductDetail() {
     // =========================================================
 
     return (
+
         <div className="product-detail-page">
 
 
@@ -951,10 +1060,6 @@ function ProductDetail() {
                                 />
 
 
-                                {/* =================================
-                                    NÚT TRÁI
-                                ================================= */}
-
                                 {productImages.length > 1 && (
 
                                     <button
@@ -979,10 +1084,6 @@ function ProductDetail() {
                                     </button>
                                 )}
 
-
-                                {/* =================================
-                                    NÚT PHẢI
-                                ================================= */}
 
                                 {productImages.length > 1 && (
 
@@ -1082,7 +1183,6 @@ function ProductDetail() {
 
                 <div className="detail-info">
 
-
                     <span className="detail-category">
 
                         {product.category?.name}
@@ -1161,9 +1261,6 @@ function ProductDetail() {
 
                         <div className="quantity-control">
 
-
-                            {/* GIẢM */}
-
                             <button
                                 type="button"
 
@@ -1181,8 +1278,6 @@ function ProductDetail() {
 
                             </button>
 
-
-                            {/* INPUT */}
 
                             <input
                                 type="text"
@@ -1251,8 +1346,6 @@ function ProductDetail() {
                                 aria-label="Số lượng sản phẩm"
                             />
 
-
-                            {/* TĂNG */}
 
                             <button
                                 type="button"
@@ -1353,25 +1446,41 @@ function ProductDetail() {
                 </p>
 
             </section>
+
+
             {/* =========================================================
-    ĐÁNH GIÁ SẢN PHẨM
-========================================================= */}
+                ĐÁNH GIÁ SẢN PHẨM
+            ========================================================= */}
+
             <section className="product-reviews-section">
 
                 <div className="product-reviews-header">
-                    <h2>Đánh giá sản phẩm</h2>
+
+                    <h2>
+                        Đánh giá sản phẩm
+                    </h2>
+
 
                     <div className="review-summary">
 
                         <div className="review-average">
-                <span className="review-average-number">
-                    {Number(reviewSummary.averageRating || 0).toFixed(1)}
-                </span>
+
+                            <span className="review-average-number">
+
+                                {Number(
+                                    reviewSummary.averageRating || 0
+                                ).toFixed(1)}
+
+                            </span>
+
 
                             <div className="review-stars">
+
                                 {[1, 2, 3, 4, 5].map((star) => (
+
                                     <span
                                         key={star}
+
                                         className={
                                             star <= Math.round(
                                                 reviewSummary.averageRating || 0
@@ -1380,140 +1489,404 @@ function ProductDetail() {
                                                 : "star"
                                         }
                                     >
-                            ★
-                        </span>
+
+                                        ★
+
+                                    </span>
+
                                 ))}
+
                             </div>
 
+
                             <span className="review-count">
-                    {reviewSummary.reviewCount || 0} đánh giá
-                </span>
+
+                                {reviewSummary.reviewCount || 0}
+                                {" "}đánh giá
+
+                            </span>
+
                         </div>
 
 
                         <div className="rating-distribution">
 
                             {[5, 4, 3, 2, 1].map((rating) => (
+
                                 <div
                                     className="rating-row"
                                     key={rating}
                                 >
-                        <span className="rating-label">
-                            {rating} ★
-                        </span>
+
+                                    <span className="rating-label">
+
+                                        {rating} ★
+
+                                    </span>
+
 
                                     <div className="rating-bar">
+
                                         <div
                                             className="rating-bar-fill"
+
                                             style={{
-                                                width: `${getRatingPercent(rating)}%`
+                                                width:
+                                                    `${getRatingPercent(rating)}%`
                                             }}
                                         />
+
                                     </div>
 
+
                                     <span className="rating-number">
-                            {ratingDistribution[rating] || 0}
-                        </span>
+
+                                        {ratingDistribution[rating] || 0}
+
+                                    </span>
+
                                 </div>
+
                             ))}
 
                         </div>
 
                     </div>
+
                 </div>
 
 
                 {/* =====================================================
-        DANH SÁCH REVIEW
-    ===================================================== */}
+                    DANH SÁCH REVIEW
+                ===================================================== */}
 
                 <div className="product-reviews-list">
 
                     {reviewLoading ? (
+
                         <div className="review-loading">
+
                             Đang tải đánh giá...
+
                         </div>
+
                     ) : reviews.length === 0 ? (
+
                         <div className="review-empty">
+
                             Chưa có đánh giá nào cho sản phẩm này.
+
                         </div>
+
                     ) : (
+
                         reviews.map((review) => (
+
                             <div
                                 className="product-review-item"
                                 key={review.id}
                             >
 
                                 <div className="review-user">
+
                                     <strong>
-                                        {review.customerName || "Khách hàng"}
+
+                                        {review.customerName ||
+                                            "Khách hàng"}
+
                                     </strong>
 
+
                                     <div className="review-item-stars">
+
                                         {[1, 2, 3, 4, 5].map((star) => (
+
                                             <span
                                                 key={star}
+
                                                 className={
                                                     star <= review.rating
                                                         ? "star active"
                                                         : "star"
                                                 }
                                             >
-                                    ★
-                                </span>
+
+                                                ★
+
+                                            </span>
+
                                         ))}
+
                                     </div>
+
                                 </div>
 
 
                                 {review.comment && (
+
                                     <p className="review-comment">
+
                                         {review.comment}
+
                                     </p>
+
                                 )}
 
 
+                                {/* =================================================
+                                    ẢNH / VIDEO REVIEW
+                                ================================================= */}
+
                                 {review.media &&
                                     review.media.length > 0 && (
+
                                         <div className="review-media-list">
 
-                                            {review.media.map((media) => (
-                                                <div
-                                                    className="review-media-item"
-                                                    key={media.id}
-                                                >
+                                            {review.media.map((media) => {
 
-                                                    {media.mediaType === "IMAGE" ? (
-                                                        <img
-                                                            src={getImageUrl(media.fileUrl)}
-                                                            alt="Ảnh đánh giá"
-                                                        />
-                                                    ) : (
-                                                        <video
-                                                            src={getImageUrl(media.fileUrl)}
-                                                            controls
-                                                            preload="metadata"
-                                                        />
-                                                    )}
+                                                const mediaUrl =
+                                                    getImageUrl(
+                                                        media.fileUrl
+                                                    );
 
-                                                </div>
-                                            ))}
+
+                                                const mediaType =
+                                                    String(
+                                                        media.mediaType || ""
+                                                    ).toUpperCase();
+
+
+                                                const mimeType =
+                                                    String(
+                                                        media.mimeType || ""
+                                                    ).toLowerCase();
+
+
+                                                const isImage =
+                                                    mediaType === "IMAGE" ||
+                                                    mimeType.startsWith(
+                                                        "image/"
+                                                    );
+
+
+                                                const isVideo =
+                                                    mediaType === "VIDEO" ||
+                                                    mimeType.startsWith(
+                                                        "video/"
+                                                    );
+
+
+                                                return (
+
+                                                    <div
+                                                        className={
+                                                            "review-media-item " +
+                                                            "review-media-clickable"
+                                                        }
+
+                                                        key={media.id}
+
+                                                        onClick={() =>
+                                                            handleOpenReviewMedia(
+                                                                media
+                                                            )
+                                                        }
+
+                                                        role="button"
+
+                                                        tabIndex={0}
+
+                                                        onKeyDown={(event) => {
+
+                                                            if (
+                                                                event.key === "Enter" ||
+                                                                event.key === " "
+                                                            ) {
+
+                                                                event.preventDefault();
+
+                                                                handleOpenReviewMedia(
+                                                                    media
+                                                                );
+                                                            }
+                                                        }}
+
+                                                        title={
+                                                            isImage
+                                                                ? "Bấm để xem ảnh"
+                                                                : isVideo
+                                                                    ? "Bấm để xem video"
+                                                                    : ""
+                                                        }
+                                                    >
+
+                                                        {isImage ? (
+
+                                                            <img
+                                                                src={mediaUrl}
+
+                                                                alt="Ảnh đánh giá"
+
+                                                                loading="lazy"
+                                                            />
+
+                                                        ) : isVideo ? (
+
+                                                            <div className="review-video-preview">
+
+                                                                <video
+                                                                    src={mediaUrl}
+
+                                                                    preload="metadata"
+
+                                                                    muted
+
+                                                                    playsInline
+                                                                />
+
+                                                                <div className="review-video-overlay">
+
+                                                                    <span className="review-video-play">
+
+                                                                        ▶
+
+                                                                    </span>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        ) : (
+
+                                                            <div className="review-media-unknown">
+
+                                                                Không hỗ trợ
+
+                                                            </div>
+
+                                                        )}
+
+                                                    </div>
+
+                                                );
+                                            })}
 
                                         </div>
                                     )}
 
                             </div>
+
                         ))
+
                     )}
 
                 </div>
 
             </section>
+
+
+            {/* =========================================================
+                POPUP XEM ẢNH / VIDEO REVIEW
+            ========================================================= */}
+
+            {selectedReviewMedia && (
+
+                <div
+                    className="review-media-modal"
+
+                    onClick={(event) => {
+
+                        // Chỉ đóng khi click vào nền ngoài
+                        if (
+                            event.target === event.currentTarget
+                        ) {
+
+                            handleCloseReviewMedia();
+
+                        }
+                    }}
+                >
+
+                    {/* =================================================
+                        NÚT ĐÓNG
+                    ================================================= */}
+
+                    <button
+                        type="button"
+
+                        className="review-media-modal-close"
+
+                        onClick={
+                            handleCloseReviewMedia
+                        }
+
+                        aria-label="Đóng"
+                    >
+
+                        <X size={28} />
+
+                    </button>
+
+
+                    {/* =================================================
+                        NỘI DUNG MEDIA
+                    ================================================= */}
+
+                    <div className="review-media-modal-content">
+
+                        {(
+                            String(
+                                selectedReviewMedia.mediaType || ""
+                            ).toUpperCase() === "IMAGE"
+                            ||
+                            String(
+                                selectedReviewMedia.mimeType || ""
+                            )
+                                .toLowerCase()
+                                .startsWith("image/")
+                        ) ? (
+
+                            <img
+                                src={
+                                    getImageUrl(
+                                        selectedReviewMedia.fileUrl
+                                    )
+                                }
+
+                                alt="Ảnh đánh giá sản phẩm"
+
+                                className="review-media-modal-image"
+                            />
+
+                        ) : (
+
+                            <video
+                                src={
+                                    getImageUrl(
+                                        selectedReviewMedia.fileUrl
+                                    )
+                                }
+
+                                className="review-media-modal-video"
+
+                                controls
+
+                                autoPlay
+
+                                playsInline
+                            />
+
+                        )}
+
+                    </div>
+
+                </div>
+            )}
+
         </div>
-
-
     );
 }
 
 
 export default ProductDetail;
+

@@ -2328,3 +2328,214 @@
         font-size: 14px;
     }
 }
+
+/* =========================================================
+   ẢNH / VIDEO ĐÁNH GIÁ CỦA KHÁCH HÀNG
+========================================================= */
+
+.customer-review-media {
+    width: 100%;
+
+    margin-top: 6px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    gap: 6px;
+}
+
+
+/* Tiêu đề */
+
+.customer-review-media-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #6b7280;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.customer-review-media-title small {
+    padding: 2px 6px;
+
+    border-radius: 999px;
+
+    background: #f3f4f6;
+
+    color: #6b7280;
+
+    font-size: 10px;
+}
+
+
+/* Danh sách media */
+
+.customer-review-media-list {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+
+    flex-wrap: wrap;
+
+    gap: 6px;
+
+    max-width: 330px;
+}
+
+
+/* =========================================================
+   ẢNH
+========================================================= */
+
+.customer-review-media-image {
+    position: relative;
+
+    width: 64px;
+    height: 64px;
+
+    display: block;
+
+    overflow: hidden;
+
+    border-radius: 7px;
+
+    background: #f3f4f6;
+
+    border: 1px solid #e5e7eb;
+
+    text-decoration: none;
+}
+
+.customer-review-media-image img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    transition: transform 0.2s ease;
+}
+
+.customer-review-media-image:hover img {
+    transform: scale(1.05);
+}
+
+
+/* Overlay ảnh */
+
+.customer-review-media-image span {
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    padding: 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+
+    background: rgba(0, 0, 0, 0.65);
+
+    color: white;
+
+    font-size: 9px;
+
+    opacity: 0;
+
+    transition: opacity 0.2s ease;
+}
+
+.customer-review-media-image:hover span {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   VIDEO
+========================================================= */
+
+.customer-review-media-video {
+    width: 150px;
+
+    overflow: hidden;
+
+    border-radius: 7px;
+
+    background: #111827;
+
+    border: 1px solid #e5e7eb;
+}
+
+.customer-review-media-video video {
+    width: 150px;
+    height: 86px;
+
+    display: block;
+
+    object-fit: cover;
+
+    background: #000;
+}
+
+
+/* Tên video */
+
+.customer-review-video-name {
+    min-height: 27px;
+
+    padding: 4px 6px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 4px;
+
+    color: #e5e7eb;
+
+    font-size: 9px;
+
+    text-align: left;
+}
+
+.customer-review-video-name span {
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 768px) {
+
+    .customer-review-media-list {
+        max-width: 100%;
+    }
+
+    .customer-review-media-image {
+        width: 58px;
+        height: 58px;
+    }
+
+    .customer-review-media-video {
+        width: 140px;
+    }
+
+    .customer-review-media-video video {
+        width: 140px;
+        height: 80px;
+    }
+}
