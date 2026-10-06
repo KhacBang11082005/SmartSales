@@ -11,9 +11,38 @@ import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    // =========================================================
-    // CUSTOMER + PRODUCT
-    // =========================================================
+    /*
+     * =========================================================
+     * REVIEW THEO ORDER DETAIL
+     * =========================================================
+     *
+     * Đây là phương thức quan trọng cho chức năng mới:
+     *
+     * Order #1001 -> Product A -> Review A
+     * Order #1002 -> Product A -> Review B
+     *
+     * Hai review có cùng customer + product nhưng khác orderDetail.
+     */
+
+    @EntityGraph(attributePaths = {
+            "customer",
+            "customer.user",
+            "product",
+            "orderDetail",
+            "media"
+    })
+    Optional<Review> findByOrderDetailId(Long orderDetailId);
+
+
+    /*
+     * =========================================================
+     * CÁC PHƯƠNG THỨC CŨ
+     * =========================================================
+     *
+     * Giữ lại để không làm hỏng các chức năng review hiện tại,
+     * đặc biệt là hiển thị review theo sản phẩm và các review cũ
+     * đang có order_detail_id = NULL.
+     */
 
     @EntityGraph(attributePaths = {
             "customer",
@@ -25,16 +54,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             Long productId
     );
 
-    // =========================================================
-    // LẤY REVIEW CỦA SẢN PHẨM
-    //
-    // Fetch luôn:
-    // - customer
-    // - customer.user
-    // - media
-    //
-    // để Controller có thể trả về đầy đủ thông tin.
-    // =========================================================
 
     @EntityGraph(attributePaths = {
             "customer",
@@ -45,15 +64,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             Long productId
     );
 
-    // =========================================================
-    // ĐẾM REVIEW
-    // =========================================================
 
     long countByProductId(Long productId);
 
-    // =========================================================
-    // ĐIỂM TRUNG BÌNH
-    // =========================================================
 
     @Query("""
             SELECT COALESCE(AVG(r.rating), 0)
@@ -64,9 +77,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             @Param("productId") Long productId
     );
 
-    // =========================================================
-    // KIỂM TRA ĐÃ MUA VÀ ĐƠN ĐÃ HOÀN THÀNH
-    // =========================================================
 
     @Query("""
             SELECT COUNT(od) > 0
@@ -81,18 +91,42 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             @Param("productId") Long productId
     );
 
-    // =========================================================
-    // LẤY REVIEW THEO ID KÈM CUSTOMER + MEDIA
-    // =========================================================
 
     @EntityGraph(attributePaths = {
             "customer",
             "customer.user",
+            "product",
+            "orderDetail",
             "media"
     })
     Optional<Review> findReviewById(
             Long reviewId
     );
+
+
+    /*
+     * =========================================================
+     * REVIEW CỦA MỘT CUSTOMER
+     * =========================================================
+     *
+     * Dùng cho phần lịch sử đánh giá của khách hàng/admin.
+     */
+
+    @EntityGraph(attributePaths = {
+            "customer",
+            "customer.user",
+            "product",
+            "orderDetail",
+            "media"
+    })
+    List<Review> findByCustomerId(Long customerId);
+
+
+    /*
+     * =========================================================
+     * PHÂN BỐ SỐ SAO
+     * =========================================================
+     */
 
     @Query("""
         SELECT r.rating, COUNT(r)
@@ -103,23 +137,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         """)
     List<Object[]> getRatingDistribution(
             @Param("productId") Long productId
-    );
-
-
-
-    // =========================================================
-// LẤY TOÀN BỘ REVIEW CỦA CUSTOMER
-//
-// Dùng cho Admin xem lịch sử mua hàng.
-// Fetch product để CustomerService có thể lấy:
-// - productId
-// - productName
-// =========================================================
-
-    @EntityGraph(attributePaths = {
-            "product"
-    })
-    List<Review> findByCustomerId(
-            Long customerId
     );
 }

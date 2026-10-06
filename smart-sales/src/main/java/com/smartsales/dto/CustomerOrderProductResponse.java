@@ -2,6 +2,8 @@ package com.smartsales.dto;
 
 public class CustomerOrderProductResponse {
 
+    private Long orderDetailId;
+
     private Long productId;
 
     private String productName;
@@ -14,20 +16,11 @@ public class CustomerOrderProductResponse {
 
     private String comment;
 
-
-    // =========================================================
-    // CONSTRUCTOR MẶC ĐỊNH
-    // =========================================================
-
     public CustomerOrderProductResponse() {
     }
 
-
-    // =========================================================
-    // CONSTRUCTOR ĐẦY ĐỦ
-    // =========================================================
-
     public CustomerOrderProductResponse(
+            Long orderDetailId,
             Long productId,
             String productName,
             Integer quantity,
@@ -35,6 +28,7 @@ public class CustomerOrderProductResponse {
             Integer rating,
             String comment
     ) {
+        this.orderDetailId = orderDetailId;
         this.productId = productId;
         this.productName = productName;
         this.quantity = quantity;
@@ -43,10 +37,13 @@ public class CustomerOrderProductResponse {
         this.comment = comment;
     }
 
+    public Long getOrderDetailId() {
+        return orderDetailId;
+    }
 
-    // =========================================================
-    // GETTER / SETTER
-    // =========================================================
+    public void setOrderDetailId(Long orderDetailId) {
+        this.orderDetailId = orderDetailId;
+    }
 
     public Long getProductId() {
         return productId;
@@ -56,7 +53,6 @@ public class CustomerOrderProductResponse {
         this.productId = productId;
     }
 
-
     public String getProductName() {
         return productName;
     }
@@ -64,7 +60,6 @@ public class CustomerOrderProductResponse {
     public void setProductName(String productName) {
         this.productName = productName;
     }
-
 
     public Integer getQuantity() {
         return quantity;
@@ -74,7 +69,6 @@ public class CustomerOrderProductResponse {
         this.quantity = quantity;
     }
 
-
     public Boolean getReviewed() {
         return reviewed;
     }
@@ -83,7 +77,6 @@ public class CustomerOrderProductResponse {
         this.reviewed = reviewed;
     }
 
-
     public Integer getRating() {
         return rating;
     }
@@ -91,7 +84,6 @@ public class CustomerOrderProductResponse {
     public void setRating(Integer rating) {
         this.rating = rating;
     }
-
 
     public String getComment() {
         return comment;

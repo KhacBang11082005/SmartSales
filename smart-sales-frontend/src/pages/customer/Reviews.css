@@ -1011,3 +1011,38 @@
         gap: 5px;
     }
 }
+
+/* =========================================================
+   ĐƠN HÀNG CỦA SẢN PHẨM ĐÁNH GIÁ
+========================================================= */
+
+.review-product-order {
+    display: inline-flex;
+    align-items: center;
+
+    margin-top: 8px;
+    padding: 5px 10px;
+
+    border-radius: 6px;
+
+    background: #f1f5f9;
+    color: #475569;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* =========================================================
+   ĐƠN HÀNG TRONG FORM ĐÁNH GIÁ
+========================================================= */
+
+.review-form-order {
+    display: inline-block;
+
+    margin-top: 6px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    color: #64748b;
+}

@@ -793,9 +793,7 @@ export default function AdminCustomers({ readOnly = false }) {
                                                                         ) => (
                                                                             <div
                                                                                 className="customer-order-product"
-                                                                                key={
-                                                                                    product.productId
-                                                                                }
+                                                                                key={product.orderDetailId}
                                                                             >
                                                                                 <div className="customer-order-product-info">
                                                                                     <strong>

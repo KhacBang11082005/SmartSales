@@ -18,7 +18,7 @@ import { Link } from "react-router-dom";
 import { getMyOrders } from "../../services/orderApi";
 
 import {
-    getMyReview,
+    getMyReviewByOrderDetail,
     canReviewProduct,
     createReview,
     updateReview,
@@ -87,10 +87,15 @@ function Reviews() {
 
 
     // =====================================================
-    // PRODUCT ĐANG ĐÁNH GIÁ
+    // ORDER DETAIL ĐANG ĐÁNH GIÁ
+    //
+    // Dùng orderDetailId thay cho productId.
+    //
+    // Điều này cho phép cùng một sản phẩm xuất hiện
+    // ở nhiều đơn hàng và được đánh giá riêng từng đơn.
     // =====================================================
 
-    const [activeProductId, setActiveProductId] =
+    const [activeOrderDetailId, setActiveOrderDetailId] =
         useState(null);
 
 
@@ -176,11 +181,19 @@ function Reviews() {
 
 
             // =================================================
-            // GOM SẢN PHẨM
+            // GOM SẢN PHẨM THEO ORDER DETAIL
+            //
+            // KHÔNG còn dùng productId làm key.
+            //
+            // Ví dụ:
+            //
+            // Đơn 29 -> product 10 -> orderDetail 16
+            // Đơn 31 -> product 10 -> orderDetail 18
+            //
+            // Hai dòng vẫn được giữ riêng.
             // =================================================
 
-            const productMap = new Map();
-
+            const productList = [];
 
             completedOrders.forEach((order) => {
 
@@ -198,7 +211,7 @@ function Reviews() {
                     const product =
                         item?.product;
 
-                    if (!product?.id) {
+                    if (!product?.id || !item?.id) {
                         return;
                     }
 
@@ -206,54 +219,53 @@ function Reviews() {
                     const productId =
                         Number(product.id);
 
-
-                    if (
-                        productMap.has(productId)
-                    ) {
-                        return;
-                    }
+                    const orderDetailId =
+                        Number(item.id);
 
 
-                    productMap.set(
+                    productList.push({
+                        // =================================================
+                        // MÃ ĐƠN HÀNG
+                        // Dùng để xác định sản phẩm thuộc đơn hàng nào
+                        // =================================================
+                        orderId: Number(order.id),
+
+                        // =================================================
+                        // ORDER DETAIL ID
+                        // Dùng để xác định chính xác sản phẩm trong đơn
+                        // =================================================
+                        orderDetailId,
+
                         productId,
-                        {
-                            productId,
 
-                            name:
-                                product.name ||
-                                "Sản phẩm",
+                        name:
+                            product.name ||
+                            "Sản phẩm",
 
-                            imageUrl:
-                                product.imageUrl ||
-                                "",
+                        imageUrl:
+                            product.imageUrl ||
+                            "",
 
-                            price:
-                                Number(
-                                    product.price || 0
-                                ),
+                        price:
+                            Number(
+                                product.price || 0
+                            ),
 
-                            quantity:
-                                Number(
-                                    item?.quantity || 0
-                                ),
+                        quantity:
+                            Number(
+                                item?.quantity || 0
+                            ),
 
-                            canReview: false,
+                        canReview: false,
 
-                            myReview: null,
+                        myReview: null,
 
-                            reviewLoading: true
-                        }
-                    );
+                        reviewLoading: true
+                    });
 
                 });
 
             });
-
-
-            const productList =
-                Array.from(
-                    productMap.values()
-                );
 
 
             // =================================================
@@ -275,6 +287,8 @@ function Reviews() {
 
                             // ---------------------------------
                             // KIỂM TRA CÓ QUYỀN ĐÁNH GIÁ
+                            //
+                            // API cũ vẫn dùng productId.
                             // ---------------------------------
 
                             try {
@@ -299,21 +313,25 @@ function Reviews() {
 
 
                             // ---------------------------------
-                            // LẤY ĐÁNH GIÁ CỦA BẢN THÂN
+                            // LẤY REVIEW THEO ORDER DETAIL
+                            //
+                            // Đây là điểm quan trọng nhất.
+                            // Không dùng getMyReview(productId)
+                            // nữa.
                             // ---------------------------------
 
                             try {
 
                                 myReview =
-                                    await getMyReview(
-                                        product.productId
+                                    await getMyReviewByOrderDetail(
+                                        product.orderDetailId
                                     );
 
                             } catch (error) {
 
                                 console.warn(
-                                    "GET MY REVIEW ERROR:",
-                                    product.productId,
+                                    "GET REVIEW BY ORDER DETAIL ERROR:",
+                                    product.orderDetailId,
                                     error
                                 );
 
@@ -423,8 +441,8 @@ function Reviews() {
 
     const openReviewForm = (product) => {
 
-        setActiveProductId(
-            product.productId
+        setActiveOrderDetailId(
+            product.orderDetailId
         );
 
         setRating(
@@ -460,7 +478,7 @@ function Reviews() {
             return;
         }
 
-        setActiveProductId(null);
+        setActiveOrderDetailId(null);
 
         resetForm();
 
@@ -489,8 +507,8 @@ function Reviews() {
         const activeProduct =
             products.find(
                 (product) =>
-                    product.productId ===
-                    activeProductId
+                    product.orderDetailId ===
+                    activeOrderDetailId
             );
 
 
@@ -695,8 +713,8 @@ function Reviews() {
         const activeProduct =
             products.find(
                 (product) =>
-                    product.productId ===
-                    activeProductId
+                    product.orderDetailId ===
+                    activeOrderDetailId
             );
 
 
@@ -781,6 +799,16 @@ function Reviews() {
         }
 
 
+        if (!product.orderDetailId) {
+
+            setFormError(
+                "Không xác định được sản phẩm trong đơn hàng."
+            );
+
+            return;
+        }
+
+
         try {
 
             setSubmitting(true);
@@ -802,6 +830,7 @@ function Reviews() {
                 savedReview =
                     await updateReview(
                         product.productId,
+                        product.orderDetailId,
                         rating,
                         comment
                     );
@@ -811,6 +840,7 @@ function Reviews() {
                 savedReview =
                     await createReview(
                         product.productId,
+                        product.orderDetailId,
                         rating,
                         comment
                     );
@@ -875,23 +905,30 @@ function Reviews() {
 
 
             // =================================================
-            // TẢI LẠI DỮ LIỆU
-            // =================================================
+// CẬP NHẬT NGAY REVIEW TRÊN GIAO DIỆN
+// Không phụ thuộc vào việc gọi lại API
+// =================================================
 
-            setFormSuccess(
-                product.myReview
-                    ? "Đã cập nhật đánh giá."
-                    : "Đã gửi đánh giá thành công."
+            setProducts((prevProducts) =>
+                prevProducts.map((item) =>
+                    item.orderDetailId === product.orderDetailId
+                        ? {
+                            ...item,
+                            myReview: savedReview,
+                            reviewLoading: false
+                        }
+                        : item
+                )
             );
 
+// Đóng form
+            setActiveOrderDetailId(null);
 
-            await loadProducts();
-
-
+// Reset dữ liệu form
             setSelectedImages([]);
-
             setSelectedVideo(null);
-
+            setFormError("");
+            setFormSuccess("");
 
         } catch (error) {
 
@@ -1090,35 +1127,7 @@ function Reviews() {
                     HEADER
                 ================================================= */}
 
-                <div className="reviews-header">
 
-                    <div>
-
-                        <div className="reviews-brand">
-                            SMART SALES
-                        </div>
-
-                        <h1>
-                            Đánh giá sản phẩm
-                        </h1>
-
-                        <p>
-                            Đánh giá những sản phẩm bạn
-                            đã mua và nhận hàng thành công.
-                        </p>
-
-                    </div>
-
-
-                    <Link
-                        to="/orders"
-                        className="reviews-back-button"
-                    >
-                        <ArrowLeft size={18} />
-                        Xem đơn hàng
-                    </Link>
-
-                </div>
 
 
                 {/* =================================================
@@ -1163,8 +1172,8 @@ function Reviews() {
 
 
                                 const isActive =
-                                    activeProductId ===
-                                    product.productId;
+                                    activeOrderDetailId ===
+                                    product.orderDetailId;
 
 
                                 const reviewImages =
@@ -1184,7 +1193,7 @@ function Reviews() {
                                     <div
                                         className="review-product-card"
                                         key={
-                                            product.productId
+                                            product.orderDetailId
                                         }
                                     >
 
@@ -1230,10 +1239,13 @@ function Reviews() {
                                                 {product.name}
                                             </h2>
 
+                                            {/* Đơn hàng mà sản phẩm này thuộc về */}
+                                            <div className="review-product-order">
+                                                Đơn hàng #{product.orderId}
+                                            </div>
+
                                             <div className="review-product-price">
-                                                {formatPrice(
-                                                    product.price
-                                                )}
+                                                {formatPrice(product.price)}
                                             </div>
 
                                             <div className="review-product-status">
@@ -1430,6 +1442,15 @@ function Reviews() {
                                                         <p>
                                                             {product.name}
                                                         </p>
+
+                                                            {/* =================================================
+                                                                    ĐƠN HÀNG CỦA SẢN PHẨM
+                                                                    Giúp khách hàng xác định chính xác đang đánh giá
+                                                                    sản phẩm thuộc đơn hàng nào.
+                                                                ================================================= */}
+                                                        <span className="review-form-order">
+                                                            Đơn hàng #{product.orderId}
+                                                        </span>
 
                                                     </div>
 

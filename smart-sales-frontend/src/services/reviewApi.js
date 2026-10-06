@@ -1,9 +1,9 @@
 import api from "./api";
 
 // =========================================================
-// LẤY TẤT CẢ REVIEW CỦA SẢN PHẨM
-// PUBLIC
+// LẤY DANH SÁCH REVIEW CỦA SẢN PHẨM
 // =========================================================
+
 export const getProductReviews = async (productId) => {
     const response = await api.get(
         `/reviews/product/${productId}`
@@ -12,13 +12,10 @@ export const getProductReviews = async (productId) => {
     return response.data;
 };
 
-
 // =========================================================
 // LẤY THỐNG KÊ REVIEW
-// - averageRating
-// - reviewCount
-// PUBLIC
 // =========================================================
+
 export const getReviewSummary = async (productId) => {
     const response = await api.get(
         `/reviews/product/${productId}/summary`
@@ -27,11 +24,10 @@ export const getReviewSummary = async (productId) => {
     return response.data;
 };
 
+// =========================================================
+// LẤY PHÂN BỐ SỐ SAO
+// =========================================================
 
-// =========================================================
-// LẤY PHÂN BỐ 1★ → 5★
-// PUBLIC
-// =========================================================
 export const getRatingDistribution = async (productId) => {
     const response = await api.get(
         `/reviews/product/${productId}/rating-distribution`
@@ -40,11 +36,10 @@ export const getRatingDistribution = async (productId) => {
     return response.data;
 };
 
+// =========================================================
+// KIỂM TRA CÓ THỂ ĐÁNH GIÁ SẢN PHẨM KHÔNG
+// =========================================================
 
-// =========================================================
-// KIỂM TRA KHÁCH HÀNG CÓ ĐƯỢC ĐÁNH GIÁ KHÔNG
-// CUSTOMER
-// =========================================================
 export const canReviewProduct = async (productId) => {
     const response = await api.get(
         `/reviews/product/${productId}/can-review`
@@ -53,11 +48,12 @@ export const canReviewProduct = async (productId) => {
     return response.data;
 };
 
+// =========================================================
+// API CŨ
+//
+// Giữ lại để không làm hỏng các chức năng hiện tại.
+// =========================================================
 
-// =========================================================
-// LẤY REVIEW CỦA CHÍNH KHÁCH HÀNG
-// CUSTOMER
-// =========================================================
 export const getMyReview = async (productId) => {
     const response = await api.get(
         `/reviews/product/${productId}/my-review`
@@ -66,19 +62,44 @@ export const getMyReview = async (productId) => {
     return response.data;
 };
 
+// =========================================================
+// API MỚI
+//
+// LẤY REVIEW THEO ORDER DETAIL
+//
+// Một sản phẩm có thể xuất hiện ở nhiều đơn hàng,
+// vì vậy phải dùng orderDetailId để xác định chính xác
+// review thuộc đơn hàng nào.
+// =========================================================
+
+export const getMyReviewByOrderDetail = async (
+    orderDetailId
+) => {
+
+    const response = await api.get(
+        `/reviews/order-detail/${orderDetailId}`
+    );
+
+    return response.data;
+};
 
 // =========================================================
 // TẠO REVIEW
-// CUSTOMER
+//
+// orderDetailId bắt buộc phải được gửi lên Backend.
 // =========================================================
+
 export const createReview = async (
     productId,
+    orderDetailId,
     rating,
     comment
 ) => {
+
     const response = await api.post(
         `/reviews/product/${productId}`,
         {
+            orderDetailId,
             rating,
             comment
         }
@@ -87,19 +108,21 @@ export const createReview = async (
     return response.data;
 };
 
+// =========================================================
+// SỬA REVIEW
+// =========================================================
 
-// =========================================================
-// CẬP NHẬT REVIEW
-// CUSTOMER
-// =========================================================
 export const updateReview = async (
     productId,
+    orderDetailId,
     rating,
     comment
 ) => {
+
     const response = await api.put(
         `/reviews/product/${productId}`,
         {
+            orderDetailId,
             rating,
             comment
         }
@@ -108,15 +131,15 @@ export const updateReview = async (
     return response.data;
 };
 
-
 // =========================================================
 // UPLOAD ẢNH / VIDEO REVIEW
-// CUSTOMER
 // =========================================================
+
 export const uploadReviewMedia = async (
     reviewId,
     files
 ) => {
+
     const formData = new FormData();
 
     files.forEach((file) => {
@@ -131,12 +154,14 @@ export const uploadReviewMedia = async (
     return response.data;
 };
 
+// =========================================================
+// XÓA MEDIA REVIEW
+// =========================================================
 
-// =========================================================
-// XÓA ẢNH / VIDEO REVIEW
-// CUSTOMER
-// =========================================================
-export const deleteReviewMedia = async (mediaId) => {
+export const deleteReviewMedia = async (
+    mediaId
+) => {
+
     const response = await api.delete(
         `/reviews/media/${mediaId}`
     );

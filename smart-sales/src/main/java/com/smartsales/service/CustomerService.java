@@ -83,6 +83,7 @@ public class CustomerService {
     // Bao gồm lịch sử mua hàng
     // =========================================================
 
+    @Transactional(readOnly = true)
     public CustomerAdminResponse getCustomerById(
             Long id
     ) {
@@ -107,11 +108,24 @@ public class CustomerService {
         // =====================================================
         // LẤY CÁC ĐÁNH GIÁ CỦA CUSTOMER
         //
-        // Dùng productId để ghép review với sản phẩm
-        // trong từng đơn hàng.
+        // QUAN TRỌNG:
+        // Dùng orderDetailId để ghép review với đúng
+        // sản phẩm trong đúng đơn hàng.
+        //
+        // Không dùng productId nữa.
+        //
+        // Ví dụ:
+        //
+        // Đơn A:
+        // product 10 -> orderDetail 16 -> review 5 sao
+        //
+        // Đơn B:
+        // product 10 -> orderDetail 18 -> review 3 sao
+        //
+        // Hai review sẽ được giữ riêng.
         // =====================================================
 
-        Map<Long, Review> reviewByProductId =
+        Map<Long, Review> reviewByOrderDetailId =
                 new HashMap<>();
 
 
@@ -120,12 +134,12 @@ public class CustomerService {
                 .forEach(review -> {
 
                     if (
-                            review.getProduct() != null
-                                    && review.getProduct().getId() != null
+                            review.getOrderDetail() != null
+                                    && review.getOrderDetail().getId() != null
                     ) {
 
-                        reviewByProductId.put(
-                                review.getProduct().getId(),
+                        reviewByOrderDetailId.put(
+                                review.getOrderDetail().getId(),
                                 review
                         );
                     }
@@ -222,6 +236,17 @@ public class CustomerService {
 
 
                                     // =================================================
+                                    // ORDER DETAIL ID
+                                    //
+                                    // Đây là khóa xác định sản phẩm trong
+                                    // một đơn hàng cụ thể.
+                                    // =================================================
+
+                                    Long orderDetailId =
+                                            detail.getId();
+
+
+                                    // =================================================
                                     // THÔNG TIN REVIEW
                                     // =================================================
 
@@ -243,9 +268,15 @@ public class CustomerService {
                                                     == com.smartsales.entity.Order.Status.COMPLETED
                                     ) {
 
+                                        // -----------------------------------------
+                                        // TÌM REVIEW THEO ORDER DETAIL
+                                        //
+                                        // KHÔNG tìm theo productId nữa.
+                                        // -----------------------------------------
+
                                         Review review =
-                                                reviewByProductId.get(
-                                                        productId
+                                                reviewByOrderDetailId.get(
+                                                        orderDetailId
                                                 );
 
 
@@ -270,6 +301,7 @@ public class CustomerService {
 
                                     products.add(
                                             new CustomerOrderProductResponse(
+                                                    detail.getId(),
                                                     productId,
                                                     productName,
                                                     quantity,

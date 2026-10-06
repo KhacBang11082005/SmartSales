@@ -11,8 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import com.smartsales.entity.Customer;
 import com.smartsales.repository.CustomerRepository;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,9 +41,6 @@ public class ReviewController {
     // 1. LẤY ĐÁNH GIÁ CỦA MỘT SẢN PHẨM
     //
     // GET /api/reviews/product/{productId}
-    //
-    // API này có thể được gọi công khai.
-    // Không yêu cầu khách hàng đăng nhập.
     // =========================================================
 
     @GetMapping("/product/{productId}")
@@ -79,15 +78,6 @@ public class ReviewController {
     // 2. LẤY THỐNG KÊ ĐÁNH GIÁ CỦA SẢN PHẨM
     //
     // GET /api/reviews/product/{productId}/summary
-    //
-    // Ví dụ:
-    //
-    // {
-    //     "averageRating": 4.5,
-    //     "reviewCount": 12
-    // }
-    //
-    // Đây là số liệu THỰC TẾ lấy từ bảng product_reviews.
     // =========================================================
 
     @GetMapping("/product/{productId}/summary")
@@ -130,10 +120,6 @@ public class ReviewController {
     // 3. KIỂM TRA KHÁCH HÀNG CÓ ĐƯỢC ĐÁNH GIÁ KHÔNG
     //
     // GET /api/reviews/product/{productId}/can-review
-    //
-    // CUSTOMER phải:
-    // - đã mua sản phẩm
-    // - đơn hàng chứa sản phẩm phải COMPLETED
     // =========================================================
 
     @GetMapping("/product/{productId}/can-review")
@@ -163,7 +149,7 @@ public class ReviewController {
     //
     // GET /api/reviews/product/{productId}/my-review
     //
-    // Nếu chưa đánh giá -> trả null.
+    // API cũ vẫn giữ nguyên để không phá chức năng hiện tại.
     // =========================================================
 
     @GetMapping("/product/{productId}/my-review")
@@ -191,6 +177,59 @@ public class ReviewController {
     }
 
     // =========================================================
+    // 4A. LẤY REVIEW THEO ORDER DETAIL
+    //
+    // GET
+    // /api/reviews/order-detail/{orderDetailId}
+    //
+    // Dùng để xác định chính xác:
+    // sản phẩm này trong ĐƠN HÀNG NÀO đã được đánh giá.
+    //
+    // Đây là API mới, không thay thế API cũ.
+    // =========================================================
+
+    @GetMapping("/order-detail/{orderDetailId}")
+    public ResponseEntity<?> getMyReviewByOrderDetail(
+            Authentication authentication,
+            @PathVariable Long orderDetailId
+    ) {
+
+        try {
+
+            User user =
+                    (User) authentication.getPrincipal();
+
+            Long customerId =
+                    getCustomerId(user);
+
+            Review review =
+                    reviewService.getMyReviewByOrderDetail(
+                            customerId,
+                            null,
+                            orderDetailId
+                    );
+
+            if (review == null) {
+                return ResponseEntity.ok(null);
+            }
+
+            return ResponseEntity.ok(
+                    toResponse(review)
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            new MessageResponse(
+                                    e.getMessage()
+                            )
+                    );
+        }
+    }
+
+    // =========================================================
     // 5. TẠO ĐÁNH GIÁ
     //
     // POST /api/reviews/product/{productId}
@@ -198,6 +237,7 @@ public class ReviewController {
     // Body:
     //
     // {
+    //     "orderDetailId": 16,
     //     "rating": 5,
     //     "comment": "Sản phẩm rất tốt"
     // }
@@ -219,6 +259,7 @@ public class ReviewController {
                     reviewService.createReview(
                             getCustomerId(user),
                             productId,
+                            request.getOrderDetailId(),
                             request.getRating(),
                             request.getComment()
                     );
@@ -245,6 +286,14 @@ public class ReviewController {
     // 6. SỬA ĐÁNH GIÁ
     //
     // PUT /api/reviews/product/{productId}
+    //
+    // Body:
+    //
+    // {
+    //     "orderDetailId": 16,
+    //     "rating": 4,
+    //     "comment": "Sau khi sử dụng..."
+    // }
     // =========================================================
 
     @PutMapping("/product/{productId}")
@@ -263,6 +312,7 @@ public class ReviewController {
                     reviewService.updateReview(
                             getCustomerId(user),
                             productId,
+                            request.getOrderDetailId(),
                             request.getRating(),
                             request.getComment()
                     );
@@ -287,15 +337,6 @@ public class ReviewController {
     // 7. UPLOAD ẢNH / VIDEO CHO REVIEW
     //
     // POST /api/reviews/{reviewId}/media
-    //
-    // multipart:
-    //
-    // files = nhiều file
-    //
-    // ReviewMediaService sẽ kiểm tra:
-    // - tối đa 5 ảnh
-    // - tối đa 1 video
-    // - video tối đa 30 giây
     // =========================================================
 
     @PostMapping(
@@ -313,10 +354,6 @@ public class ReviewController {
 
             User user =
                     (User) authentication.getPrincipal();
-
-            // -------------------------------------------------
-            // KIỂM TRA REVIEW CÓ THUỘC CUSTOMER KHÔNG
-            // -------------------------------------------------
 
             Review review =
                     reviewService.getReviewById(
@@ -376,12 +413,10 @@ public class ReviewController {
     }
 
     // =========================================================
-// XÓA MEDIA REVIEW
-//
-// DELETE /api/reviews/media/{mediaId}
-//
-// Chỉ customer sở hữu review mới được xóa.
-// =========================================================
+    // 8. XÓA MEDIA REVIEW
+    //
+    // DELETE /api/reviews/media/{mediaId}
+    // =========================================================
 
     @DeleteMapping("/media/{mediaId}")
     public ResponseEntity<?> deleteMedia(
@@ -396,10 +431,6 @@ public class ReviewController {
 
             Long customerId =
                     getCustomerId(user);
-
-            // -----------------------------------------------------
-            // Lấy media
-            // -----------------------------------------------------
 
             ReviewMedia media =
                     reviewMediaService.getMediaById(
@@ -416,10 +447,6 @@ public class ReviewController {
                                 )
                         );
             }
-
-            // -----------------------------------------------------
-            // Kiểm tra review
-            // -----------------------------------------------------
 
             if (media.getReview() == null ||
                     media.getReview().getCustomer() == null) {
@@ -439,10 +466,6 @@ public class ReviewController {
                             .getCustomer()
                             .getId();
 
-            // -----------------------------------------------------
-            // KIỂM TRA QUYỀN SỞ HỮU
-            // -----------------------------------------------------
-
             if (!reviewCustomerId.equals(
                     customerId
             )) {
@@ -455,10 +478,6 @@ public class ReviewController {
                                 )
                         );
             }
-
-            // -----------------------------------------------------
-            // Xóa media
-            // -----------------------------------------------------
 
             reviewMediaService.deleteMedia(
                     mediaId
@@ -483,16 +502,42 @@ public class ReviewController {
     }
 
     // =========================================================
-// LẤY CUSTOMER ID TỪ USER ĐĂNG NHẬP
-//
-// SmartSales hiện tại:
-// User không chứa Customer.
-//
-// Quan hệ:
-// Customer.user -> User
-//
-// Vì vậy tìm Customer bằng user_id.
-// =========================================================
+    // 9. LẤY RATING DISTRIBUTION
+    //
+    // GET /api/reviews/product/{productId}/rating-distribution
+    // =========================================================
+
+    @GetMapping("/product/{productId}/rating-distribution")
+    public ResponseEntity<?> getRatingDistribution(
+            @PathVariable Long productId
+    ) {
+
+        try {
+
+            Map<Integer, Long> distribution =
+                    reviewService.getRatingDistribution(
+                            productId
+                    );
+
+            return ResponseEntity.ok(
+                    distribution
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            new MessageResponse(
+                                    e.getMessage()
+                            )
+                    );
+        }
+    }
+
+    // =========================================================
+    // LẤY CUSTOMER ID TỪ USER ĐĂNG NHẬP
+    // =========================================================
 
     private Long getCustomerId(User user) {
 
@@ -582,11 +627,24 @@ public class ReviewController {
 
     public static class ReviewRequest {
 
+        // ID của OrderDetail mà khách hàng đang đánh giá
+        private Long orderDetailId;
+
         private Integer rating;
 
         private String comment;
 
         public ReviewRequest() {
+        }
+
+        public Long getOrderDetailId() {
+            return orderDetailId;
+        }
+
+        public void setOrderDetailId(
+                Long orderDetailId
+        ) {
+            this.orderDetailId = orderDetailId;
         }
 
         public Integer getRating() {
@@ -723,6 +781,7 @@ public class ReviewController {
             this.mediaType = mediaType;
             this.fileUrl = fileUrl;
             this.fileName = fileName;
+            this.fileName = fileName;
             this.fileSize = fileSize;
             this.mimeType = mimeType;
             this.durationSeconds = durationSeconds;
@@ -761,22 +820,7 @@ public class ReviewController {
             return displayOrder;
         }
     }
-    @GetMapping("/product/{productId}/rating-distribution")
-    public ResponseEntity<?> getRatingDistribution(
-            @PathVariable Long productId
-    ) {
-        try {
-            Map<Integer, Long> distribution =
-                    reviewService.getRatingDistribution(productId);
 
-            return ResponseEntity.ok(distribution);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse(e.getMessage()));
-        }
-    }
     // =========================================================
     // SUMMARY RESPONSE
     // =========================================================

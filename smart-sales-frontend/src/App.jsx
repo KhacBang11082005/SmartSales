@@ -318,23 +318,23 @@ function App() {
                             </ProtectedRoute>
                         }
                     />
-
-                </Route>
-
-                {/* =================================================
+                    {/* =================================================
                         PRODUCT REVIEWS
                     ================================================= */}
 
-                <Route
-                    path="/reviews"
-                    element={
-                        <ProtectedRoute
-                            allowedRoles={["CUSTOMER"]}
-                        >
-                            <Reviews />
-                        </ProtectedRoute>
-                    }
-                />
+                    <Route
+                        path="/reviews"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={["CUSTOMER"]}
+                            >
+                                <Reviews />
+                            </ProtectedRoute>
+                        }
+                    />
+                </Route>
+
+
                 {/* =================================================
                     AUTH
                 ================================================= */}
