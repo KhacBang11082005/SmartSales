@@ -616,7 +616,98 @@ public class SecurityConfig {
                                         "/api/reviews/media/**"
                                 )
                                 .hasRole("CUSTOMER")
+// =================================================
+// CHAT - CUSTOMER
+// =================================================
 
+// CUSTOMER - tạo cuộc trò chuyện
+                                        .requestMatchers(
+                                                HttpMethod.POST,
+                                                "/api/chat/conversations"
+                                        )
+                                        .hasRole("CUSTOMER")
+
+// CUSTOMER - lấy cuộc trò chuyện hiện tại
+                                        .requestMatchers(
+                                                HttpMethod.GET,
+                                                "/api/chat/conversations/current"
+                                        )
+                                        .hasRole("CUSTOMER")
+
+// CUSTOMER - lịch sử cuộc trò chuyện
+                                        .requestMatchers(
+                                                HttpMethod.GET,
+                                                "/api/chat/conversations/my"
+                                        )
+                                        .hasRole("CUSTOMER")
+
+
+// =================================================
+// CHAT - CUSTOMER / EMPLOYEE
+// =================================================
+
+// Lấy tin nhắn
+                                        .requestMatchers(
+                                                HttpMethod.GET,
+                                                "/api/chat/conversations/*/messages"
+                                        )
+                                        .hasAnyRole(
+                                                "CUSTOMER",
+                                                "EMPLOYEE"
+                                        )
+
+// Gửi tin nhắn
+                                        .requestMatchers(
+                                                HttpMethod.POST,
+                                                "/api/chat/conversations/*/messages"
+                                        )
+                                        .hasAnyRole(
+                                                "CUSTOMER",
+                                                "EMPLOYEE"
+                                        )
+
+// Đóng cuộc trò chuyện
+                                        .requestMatchers(
+                                                HttpMethod.POST,
+                                                "/api/chat/conversations/*/close"
+                                        )
+                                        .hasAnyRole(
+                                                "CUSTOMER",
+                                                "EMPLOYEE"
+                                        )
+
+
+// =================================================
+// CHAT - EMPLOYEE
+// =================================================
+
+// Inbox CSKH
+                                        .requestMatchers(
+                                                HttpMethod.GET,
+                                                "/api/chat/staff/inbox"
+                                        )
+                                        .hasRole("EMPLOYEE")
+
+// Xem cuộc trò chuyện
+                                        .requestMatchers(
+                                                HttpMethod.GET,
+                                                "/api/chat/staff/conversations/*"
+                                        )
+                                        .hasRole("EMPLOYEE")
+
+// Tiếp nhận cuộc trò chuyện
+                                        .requestMatchers(
+                                                HttpMethod.POST,
+                                                "/api/chat/staff/conversations/*/accept"
+                                        )
+                                        .hasRole("EMPLOYEE")
+
+// Heartbeat online
+                                        .requestMatchers(
+                                                HttpMethod.POST,
+                                                "/api/chat/staff/presence"
+                                        )
+                                        .hasRole("EMPLOYEE")
 
                                 // =================================================
                                 // OTHER

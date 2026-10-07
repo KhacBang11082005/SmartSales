@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 import "./CustomerLayout.css";
-
+import CustomerChatWidget from "../components/chat/CustomerChatWidget";
 import logo from "../assets/logo.png";
 
 import { useAuth } from "../context/AuthContext";
@@ -466,6 +466,16 @@ function CustomerLayout() {
 
             </footer>
 
+            {/* ==================================
+                CHAT HỖ TRỢ KHÁCH HÀNG
+
+                Chỉ hiển thị khi khách hàng
+                đã đăng nhập.
+            ================================== */}
+
+            {isLoggedIn && (
+                <CustomerChatWidget />
+            )}
         </div>
 
     );
