@@ -60,10 +60,14 @@ function StaffLayout() {
         {
             to: "/staff/categories",
             label: "Danh mục"
+        },
+
+        {
+            to: "/staff/chat",
+            label: "Hỗ trợ khách hàng"
         }
 
     ];
-
 
     // =====================================================
     // XÁC ĐỊNH TRANG HIỆN TẠI

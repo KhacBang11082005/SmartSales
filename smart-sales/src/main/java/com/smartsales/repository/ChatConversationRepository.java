@@ -21,6 +21,11 @@ public interface ChatConversationRepository
 
     /**
      * Lấy cuộc trò chuyện đang hoạt động của khách hàng.
+     *
+     * Bao gồm:
+     * - WAITING
+     * - ASSIGNED
+     * - ACTIVE
      */
     Optional<ChatConversation> findFirstByCustomerIdAndStatusInOrderByIdDesc(
             Long customerId,
@@ -28,7 +33,12 @@ public interface ChatConversationRepository
     );
 
     /**
-     * Lấy các cuộc trò chuyện được phân cho một nhân viên.
+     * Lấy các cuộc trò chuyện được phân cho một nhân viên
+     * theo danh sách trạng thái.
+     *
+     * Dùng cho:
+     * - ASSIGNED
+     * - ACTIVE
      */
     List<ChatConversation> findByStaffIdAndStatusInOrderByLastMessageAtDescIdDesc(
             Long staffId,
@@ -36,9 +46,25 @@ public interface ChatConversationRepository
     );
 
     /**
+     * Lấy lịch sử các cuộc trò chuyện đã kết thúc
+     * của chính nhân viên.
+     *
+     * Dùng cho phần:
+     * "Lịch sử gần đây"
+     */
+    List<ChatConversation> findByStaffIdAndStatusOrderByLastMessageAtDescIdDesc(
+            Long staffId,
+            ChatConversation.Status status
+    );
+
+    /**
      * Đếm số cuộc trò chuyện nhân viên đang xử lý.
      *
      * Dùng để phân khách cho nhân viên có ít tải nhất.
+     *
+     * Chỉ tính:
+     * - ASSIGNED
+     * - ACTIVE
      */
     long countByStaffIdAndStatusIn(
             Long staffId,
@@ -47,6 +73,8 @@ public interface ChatConversationRepository
 
     /**
      * Lấy các yêu cầu đang chờ.
+     *
+     * Dùng cho trạng thái WAITING.
      */
     List<ChatConversation> findByStatusOrderByRequestedAtAsc(
             ChatConversation.Status status
@@ -70,10 +98,16 @@ public interface ChatConversationRepository
     );
 
     /**
-     * Lấy danh sách cuộc trò chuyện đang chờ hoặc đã
-     * được phân công nhưng chưa đóng.
+     * Lấy danh sách các cuộc trò chuyện theo trạng thái
+     * cho Inbox nhân viên.
      *
-     * Query này dùng cho Inbox nhân viên.
+     * Method này vẫn được giữ lại để sử dụng cho
+     * các trường hợp cần lấy WAITING / ASSIGNED / ACTIVE
+     * theo trạng thái.
+     *
+     * Lưu ý:
+     * Không sử dụng method này để lấy CLOSED của nhân viên,
+     * vì CLOSED cần lọc theo staffId.
      */
     @Query("""
         SELECT c

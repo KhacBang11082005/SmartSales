@@ -62,8 +62,7 @@ import StaffOrders from "./pages/staff/StaffOrders";
 import StaffCustomers from "./pages/staff/StaffCustomers";
 import StaffProducts from "./pages/staff/StaffProducts";
 import StaffCategories from "./pages/staff/StaffCategories";
-
-
+import StaffChat from "./pages/staff/StaffChat";
 // =====================================================
 // ROLE NORMALIZER
 // =====================================================
@@ -484,6 +483,12 @@ function App() {
                     <Route
                         path="categories"
                         element={<StaffCategories />}
+                    />
+                    {/* Chat / Hỗ trợ khách hàng */}
+
+                    <Route
+                        path="chat"
+                        element={<StaffChat />}
                     />
 
                 </Route>

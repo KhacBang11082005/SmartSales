@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+
 import {
     MessageCircle,
     Send,
@@ -21,28 +23,44 @@ import "./CustomerChatWidget.css";
 function CustomerChatWidget() {
 
     // =========================================================
+    // USER ĐANG ĐĂNG NHẬP
+    // =========================================================
+
+    const { user } = useAuth();
+
+
+    // =========================================================
     // UI
     // =========================================================
 
     const [open, setOpen] = useState(false);
 
-    const [messageInput, setMessageInput] = useState("");
+    const [messageInput, setMessageInput] =
+        useState("");
 
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] =
+        useState([]);
 
-    const [conversation, setConversation] = useState(null);
+    const [conversation, setConversation] =
+        useState(null);
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] =
+        useState(false);
 
-    const [sending, setSending] = useState(false);
+    const [sending, setSending] =
+        useState(false);
 
-    const [error, setError] = useState("");
+    const [error, setError] =
+        useState("");
 
-    const chatRef = useRef(null);
+    const chatRef =
+        useRef(null);
 
-    const messagesEndRef = useRef(null);
+    const messagesEndRef =
+        useRef(null);
 
-    const location = useLocation();
+    const location =
+        useLocation();
 
 
     // =========================================================
@@ -56,9 +74,10 @@ function CustomerChatWidget() {
 
     const getProductIdFromUrl = () => {
 
-        const match = location.pathname.match(
-            /\/products\/(\d+)/
-        );
+        const match =
+            location.pathname.match(
+                /\/products\/(\d+)/
+            );
 
         if (!match) {
             return null;
@@ -82,10 +101,13 @@ function CustomerChatWidget() {
 
             if (
                 chatRef.current &&
-                !chatRef.current.contains(event.target)
+                !chatRef.current.contains(
+                    event.target
+                )
             ) {
                 setOpen(false);
             }
+
         };
 
         document.addEventListener(
@@ -155,17 +177,20 @@ function CustomerChatWidget() {
             return;
         }
 
-        const interval = setInterval(() => {
+        const interval =
+            setInterval(() => {
 
-            loadMessages(
-                conversation.id,
-                false
-            );
+                loadMessages(
+                    conversation.id,
+                    false
+                );
 
-        }, 2000);
+            }, 2000);
 
         return () => {
+
             clearInterval(interval);
+
         };
 
     }, [
@@ -179,49 +204,52 @@ function CustomerChatWidget() {
     // LOAD CONVERSATION HIỆN TẠI
     // =========================================================
 
-    const loadCurrentConversation = async () => {
+    const loadCurrentConversation =
+        async () => {
 
-        try {
+            try {
 
-            setLoading(true);
-            setError("");
+                setLoading(true);
+                setError("");
 
-            const data =
-                await getCurrentConversation();
+                const data =
+                    await getCurrentConversation();
 
-            setConversation(data || null);
-
-            if (data?.id) {
-
-                await loadMessages(
-                    data.id,
-                    false
+                setConversation(
+                    data || null
                 );
 
-            } else {
+                if (data?.id) {
 
-                setMessages([]);
+                    await loadMessages(
+                        data.id,
+                        false
+                    );
+
+                } else {
+
+                    setMessages([]);
+
+                }
+
+            } catch (err) {
+
+                console.error(
+                    "Không thể tải conversation:",
+                    err
+                );
+
+                setError(
+                    "Không thể kết nối với hệ thống hỗ trợ."
+                );
+
+            } finally {
+
+                setLoading(false);
 
             }
 
-        } catch (err) {
-
-            console.error(
-                "Không thể tải conversation:",
-                err
-            );
-
-            setError(
-                "Không thể kết nối với hệ thống hỗ trợ."
-            );
-
-        } finally {
-
-            setLoading(false);
-
-        }
-
-    };
+        };
 
 
     // =========================================================
@@ -280,102 +308,104 @@ function CustomerChatWidget() {
     // GỬI TIN NHẮN
     // =========================================================
 
-    const handleSendMessage = async () => {
+    const handleSendMessage =
+        async () => {
 
-        const content =
-            messageInput.trim();
+            const content =
+                messageInput.trim();
 
-        if (
-            !content ||
-            sending
-        ) {
-            return;
-        }
+            if (
+                !content ||
+                sending
+            ) {
+                return;
+            }
 
-        try {
+            try {
 
-            setSending(true);
-            setError("");
+                setSending(true);
+                setError("");
 
-            // -------------------------------------------------
-            // CHƯA CÓ CONVERSATION
-            // -> TẠO MỚI
-            // -------------------------------------------------
+                // -------------------------------------------------
+                // CHƯA CÓ CONVERSATION
+                // -> TẠO MỚI
+                // -------------------------------------------------
 
-            if (!conversation?.id) {
+                if (!conversation?.id) {
 
-                const productId =
-                    getProductIdFromUrl();
+                    const productId =
+                        getProductIdFromUrl();
 
-                const newConversation =
-                    await createConversation(
-                        productId,
-                        content
+                    const newConversation =
+                        await createConversation(
+                            productId,
+                            content
+                        );
+
+                    setConversation(
+                        newConversation
                     );
 
-                setConversation(
-                    newConversation
+                    setMessageInput("");
+
+                    // Backend đã lưu message đầu tiên
+                    await loadMessages(
+                        newConversation.id,
+                        false
+                    );
+
+                    return;
+                }
+
+
+                // -------------------------------------------------
+                // CONVERSATION ĐÃ TỒN TẠI
+                // -------------------------------------------------
+
+                if (
+                    conversation.status ===
+                    "CLOSED"
+                ) {
+
+                    setError(
+                        "Cuộc trò chuyện đã kết thúc. Vui lòng tạo yêu cầu hỗ trợ mới."
+                    );
+
+                    return;
+                }
+
+
+                await sendMessage(
+                    conversation.id,
+                    content
                 );
 
                 setMessageInput("");
 
-                // Backend đã lưu message đầu tiên
                 await loadMessages(
-                    newConversation.id,
+                    conversation.id,
                     false
                 );
 
-                return;
-            }
+            } catch (err) {
 
-
-            // -------------------------------------------------
-            // CONVERSATION ĐÃ TỒN TẠI
-            // -------------------------------------------------
-
-            if (
-                conversation.status === "CLOSED"
-            ) {
-
-                setError(
-                    "Cuộc trò chuyện đã kết thúc. Vui lòng tạo yêu cầu hỗ trợ mới."
+                console.error(
+                    "Không thể gửi tin nhắn:",
+                    err
                 );
 
-                return;
+                setError(
+                    err?.response?.data?.message ||
+                    "Không thể gửi tin nhắn. Vui lòng thử lại."
+                );
+
+            } finally {
+
+                setSending(false);
+
             }
 
-
-            await sendMessage(
-                conversation.id,
-                content
-            );
-
-            setMessageInput("");
-
-            await loadMessages(
-                conversation.id,
-                false
-            );
-
-        } catch (err) {
-
-            console.error(
-                "Không thể gửi tin nhắn:",
-                err
-            );
-
-            setError(
-                err?.response?.data?.message ||
-                "Không thể gửi tin nhắn. Vui lòng thử lại."
-            );
-
-        } finally {
-
-            setSending(false);
-
-        }
-
-    };
+        };
 
 
     // =========================================================
@@ -402,42 +432,43 @@ function CustomerChatWidget() {
     // ĐÓNG CUỘC TRÒ CHUYỆN
     // =========================================================
 
-    const handleCloseConversation = async () => {
+    const handleCloseConversation =
+        async () => {
 
-        if (!conversation?.id) {
-            return;
-        }
+            if (!conversation?.id) {
+                return;
+            }
 
-        try {
+            try {
 
-            await closeConversation(
-                conversation.id
-            );
+                await closeConversation(
+                    conversation.id
+                );
 
-            setConversation(
-                prev =>
-                    prev
-                        ? {
-                            ...prev,
-                            status: "CLOSED"
-                        }
-                        : null
-            );
+                setConversation(
+                    prev =>
+                        prev
+                            ? {
+                                ...prev,
+                                status: "CLOSED"
+                            }
+                            : null
+                );
 
-        } catch (err) {
+            } catch (err) {
 
-            console.error(
-                "Không thể đóng conversation:",
-                err
-            );
+                console.error(
+                    "Không thể đóng conversation:",
+                    err
+                );
 
-            setError(
-                "Không thể kết thúc cuộc trò chuyện."
-            );
+                setError(
+                    "Không thể kết thúc cuộc trò chuyện."
+                );
 
-        }
+            }
 
-    };
+        };
 
 
     // =========================================================
@@ -476,6 +507,18 @@ function CustomerChatWidget() {
 
     // =========================================================
     // KIỂM TRA MESSAGE CỦA CUSTOMER
+    //
+    // QUAN TRỌNG:
+    //
+    // message.senderId = User.id
+    //
+    // KHÔNG được so với:
+    // conversation.customerId
+    //
+    // vì conversation.customerId = Customer.id
+    //
+    // Phải so với:
+    // user.id = User.id của khách đang đăng nhập
     // =========================================================
 
     const isCustomerMessage = (
@@ -485,14 +528,14 @@ function CustomerChatWidget() {
         const senderId =
             message?.senderId;
 
-        const customerId =
-            conversation?.customerId;
+        const currentUserId =
+            user?.id;
 
         return (
             senderId != null &&
-            customerId != null &&
+            currentUserId != null &&
             Number(senderId) ===
-            Number(customerId)
+            Number(currentUserId)
         );
 
     };
@@ -503,6 +546,7 @@ function CustomerChatWidget() {
     // =========================================================
 
     return (
+
         <>
             <div
                 ref={chatRef}
@@ -556,9 +600,11 @@ function CustomerChatWidget() {
                             <div className="customer-chat-header-info">
 
                                 <div className="customer-chat-avatar">
+
                                     <Headphones
                                         size={20}
                                     />
+
                                 </div>
 
                                 <div className="customer-chat-title">
@@ -591,7 +637,9 @@ function CustomerChatWidget() {
                                 }
                                 aria-label="Đóng cửa sổ chat"
                             >
+
                                 <X size={19} />
+
                             </button>
 
                         </div>
@@ -609,7 +657,9 @@ function CustomerChatWidget() {
                                 messages.length === 0 && (
 
                                     <div className="customer-chat-loading">
+
                                         Đang tải...
+
                                     </div>
 
                                 )}
@@ -661,7 +711,9 @@ function CustomerChatWidget() {
                             {error && (
 
                                 <div className="customer-chat-error">
+
                                     {error}
+
                                 </div>
 
                             )}
@@ -716,24 +768,6 @@ function CustomerChatWidget() {
 
                                 }
                             )}
-
-
-                            {/* PRODUCT CONTEXT */}
-
-                            {conversation?.productName && (
-                                <div className="customer-chat-product-context">
-
-                                    <span>
-                                        Đang hỗ trợ sản phẩm:
-                                    </span>
-
-                                    <strong>
-                                        {conversation.productName}
-                                    </strong>
-
-                                </div>
-                            )}
-
 
                             <div
                                 ref={messagesEndRef}
@@ -822,7 +856,9 @@ function CustomerChatWidget() {
                                         handleCloseConversation
                                     }
                                 >
+
                                     Kết thúc cuộc trò chuyện
+
                                 </button>
 
                             )}
@@ -833,7 +869,9 @@ function CustomerChatWidget() {
 
             </div>
         </>
+
     );
+
 }
 
 

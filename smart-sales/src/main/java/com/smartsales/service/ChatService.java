@@ -535,8 +535,22 @@ public class ChatService {
     // WAITING
     // ASSIGNED
     // ACTIVE
+    // CLOSED
     //
-    // Để nhân viên nhìn thấy yêu cầu mới và cuộc chat đang xử lý.
+    // Quy tắc:
+    //
+    // WAITING:
+    //     Tất cả nhân viên có thể thấy.
+    //
+    // ASSIGNED:
+    //     Chỉ nhân viên được phân công thấy.
+    //
+    // ACTIVE:
+    //     Chỉ nhân viên đang xử lý thấy.
+    //
+    // CLOSED:
+    //     Chỉ nhân viên đã xử lý thấy trong
+    //     "Lịch sử gần đây".
     // =========================================================
 
     @Transactional(readOnly = true)
@@ -549,20 +563,81 @@ public class ChatService {
         );
 
 
-        List<ChatConversation.Status> statuses =
+        // =====================================================
+        // 1. YÊU CẦU MỚI
+        //
+        // WAITING chưa có nhân viên xử lý.
+        //
+        // Tất cả nhân viên có thể nhìn thấy.
+        // =====================================================
+
+        List<ChatConversation> waitingConversations =
+                chatConversationRepository
+                        .findByStatusOrderByRequestedAtAsc(
+                                ChatConversation.Status.WAITING
+                        );
+
+
+        // =====================================================
+        // 2. CÁC CUỘC CHAT ĐÃ ĐƯỢC PHÂN CHO CHÍNH NHÂN VIÊN
+        //
+        // ASSIGNED
+        // ACTIVE
+        // =====================================================
+
+        List<ChatConversation.Status> assignedStatuses =
                 List.of(
-                        ChatConversation.Status.WAITING,
                         ChatConversation.Status.ASSIGNED,
                         ChatConversation.Status.ACTIVE
                 );
 
 
-        List<ChatConversation> conversations =
+        List<ChatConversation> myActiveConversations =
                 chatConversationRepository
-                        .findInboxConversations(
-                                statuses
+                        .findByStaffIdAndStatusInOrderByLastMessageAtDescIdDesc(
+                                staffId,
+                                assignedStatuses
                         );
 
+
+        // =====================================================
+        // 3. LỊCH SỬ CHAT ĐÃ KẾT THÚC
+        //
+        // CLOSED của chính nhân viên.
+        // =====================================================
+
+        List<ChatConversation> historyConversations =
+                chatConversationRepository
+                        .findByStaffIdAndStatusOrderByLastMessageAtDescIdDesc(
+                                staffId,
+                                ChatConversation.Status.CLOSED
+                        );
+
+
+        // =====================================================
+        // 4. GỘP TẤT CẢ
+        // =====================================================
+
+        List<ChatConversation> conversations =
+                new ArrayList<>();
+
+
+        conversations.addAll(
+                waitingConversations
+        );
+
+        conversations.addAll(
+                myActiveConversations
+        );
+
+        conversations.addAll(
+                historyConversations
+        );
+
+
+        // =====================================================
+        // 5. CONVERT SANG RESPONSE
+        // =====================================================
 
         return conversations
                 .stream()
@@ -717,6 +792,7 @@ public class ChatService {
         // - Chat của chính mình
         // - Hoặc chat WAITING
         //
+        // CLOSED của chính nhân viên vẫn xem được.
         // =====================================================
 
         if (
@@ -748,6 +824,8 @@ public class ChatService {
     //
     // EMPLOYEE:
     // chỉ được lấy chat đã phân cho mình hoặc WAITING.
+    //
+    // CLOSED của nhân viên đã xử lý vẫn được phép xem.
     // =========================================================
 
     @Transactional
@@ -897,17 +975,21 @@ public class ChatService {
         ChatMessage message =
                 new ChatMessage();
 
+
         message.setConversation(
                 conversation
         );
+
 
         message.setSender(
                 sender
         );
 
+
         message.setContent(
                 content.trim()
         );
+
 
         message.setSentAt(
                 LocalDateTime.now()
@@ -1018,6 +1100,7 @@ public class ChatService {
 
             presence =
                     new StaffChatPresence();
+
 
             presence.setStaff(
                     staff
