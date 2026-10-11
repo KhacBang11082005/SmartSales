@@ -7,7 +7,6 @@ import {
     CheckCircle2,
     Clock3,
     XCircle,
-    Headphones,
     Check
 } from "lucide-react";
 
@@ -208,11 +207,18 @@ function StaffChat() {
     // =====================================================
 
     useEffect(() => {
+        let isActive = true;
 
-        loadInbox(true);
+        Promise.resolve().then(() => {
+            if (isActive) {
+                void loadInbox(true);
+            }
+        });
 
+        return () => {
+            isActive = false;
+        };
     }, []);
-
 
     // =====================================================
     // POLLING INBOX

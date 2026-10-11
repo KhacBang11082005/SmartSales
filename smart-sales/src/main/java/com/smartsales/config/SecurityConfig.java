@@ -709,6 +709,8 @@ public class SecurityConfig {
                                         )
                                         .hasRole("EMPLOYEE")
 
+                                        .requestMatchers(HttpMethod.POST, "/api/ai/chat").hasRole("CUSTOMER")
+
                                 // =================================================
                                 // OTHER
                                 // =================================================

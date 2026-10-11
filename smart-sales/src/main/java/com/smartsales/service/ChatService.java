@@ -651,21 +651,17 @@ public class ChatService {
     }
 
 
+
     // =========================================================
     // EMPLOYEE
     //
     // NHẬN CUỘC CHAT
     //
-    // WAITING:
-    //     Chưa có nhân viên
-    //
-    // ASSIGNED:
-    //     Đã được phân cho nhân viên
-    //
-    // Nhân viên chỉ được nhận:
-    //
-    // - Cuộc chat WAITING
-    // - Cuộc chat đã được phân cho chính mình
+    // Khi nhân viên tiếp nhận lần đầu:
+    // - Gán nhân viên xử lý.
+    // - Chuyển trạng thái sang ACTIVE.
+    // - Tự động gửi lời chào vào khung chat khách hàng.
+    // - Không gửi lời chào trùng khi gọi lại API.
     // =========================================================
 
     @Transactional
@@ -674,87 +670,81 @@ public class ChatService {
             Long conversationId
     ) {
 
-        User staff =
-                validateEmployee(
-                        staffId
-                );
+        // 1. Kiểm tra tài khoản nhân viên.
+        User staff = validateEmployee(staffId);
 
-
+        // 2. Tìm cuộc trò chuyện.
         ChatConversation conversation =
-                chatConversationRepository
-                        .findById(
-                                conversationId
-                        )
+                chatConversationRepository.findById(conversationId)
                         .orElseThrow(() ->
                                 new RuntimeException(
                                         "Không tìm thấy cuộc trò chuyện"
                                 )
                         );
 
-
-        // =====================================================
-        // KHÔNG CHO NHẬN CHAT ĐÃ ĐÓNG
-        // =====================================================
-
-        if (
-                conversation.getStatus()
-                        == ChatConversation.Status.CLOSED
-        ) {
-
+        // 3. Không cho tiếp nhận cuộc trò chuyện đã đóng.
+        if (conversation.getStatus() == ChatConversation.Status.CLOSED) {
             throw new RuntimeException(
                     "Cuộc trò chuyện đã kết thúc"
             );
         }
 
-
-        // =====================================================
-        // NẾU ĐÃ CÓ NHÂN VIÊN KHÁC ĐƯỢC PHÂN
-        // =====================================================
-
-        if (
-                conversation.getStaff() != null
-                        && !conversation
-                        .getStaff()
-                        .getId()
-                        .equals(staffId)
-        ) {
-
+        // 4. Không cho nhân viên khác tiếp nhận cuộc trò chuyện.
+        if (conversation.getStaff() != null
+                && !conversation.getStaff().getId().equals(staffId)) {
             throw new RuntimeException(
                     "Cuộc trò chuyện này đã được nhân viên khác tiếp nhận"
             );
         }
 
+        // 5. Kiểm tra đây có phải lần đầu tiếp nhận hay không.
+        boolean firstAcceptance =
+                conversation.getStatus()
+                        != ChatConversation.Status.ACTIVE;
 
-        // =====================================================
-        // GÁN NHÂN VIÊN
-        // =====================================================
+        // 6. Gán nhân viên và cập nhật trạng thái.
+        conversation.setStaff(staff);
+        conversation.setStatus(ChatConversation.Status.ACTIVE);
 
-        conversation.setStaff(
-                staff
-        );
+        // Chỉ cập nhật thời gian tiếp nhận trong lần đầu.
+        if (firstAcceptance) {
+            conversation.setAcceptedAt(LocalDateTime.now());
+        }
 
+        conversation = chatConversationRepository.save(conversation);
 
-        conversation.setStatus(
-                ChatConversation.Status.ACTIVE
-        );
+        // 7. Gửi lời chào tự động khi nhân viên tiếp nhận lần đầu.
+        if (firstAcceptance) {
 
+            String staffName = staff.getFullName();
 
-        conversation.setAcceptedAt(
-                LocalDateTime.now()
-        );
+            if (staffName == null || staffName.trim().isEmpty()) {
+                staffName = "nhân viên tư vấn";
+            }
 
+            String greeting =
+                    "Xin chào bạn! Mình là "
+                            + staffName
+                            + ", nhân viên tư vấn của SmartSales. "
+                            + "Mình có thể giúp gì cho bạn ạ?";
 
-        conversation =
-                chatConversationRepository.save(
-                        conversation
-                );
+            // Lưu lời chào với người gửi là nhân viên thật.
+            // Tin nhắn được lưu vào cơ sở dữ liệu và lấy qua getMessages().
+            saveMessage(
+                    conversation,
+                    staff,
+                    greeting
+            );
+        }
 
-
+        // 8. Trả thông tin cuộc trò chuyện.
         return toConversationResponse(
                 conversation,
                 staffId
         );
     }
+
+
 
 
     // =========================================================

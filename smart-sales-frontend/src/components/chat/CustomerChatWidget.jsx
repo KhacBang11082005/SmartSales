@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
@@ -6,7 +7,8 @@ import {
     MessageCircle,
     Send,
     Headphones,
-    X
+    X,
+    Bot
 } from "lucide-react";
 
 import {
@@ -14,100 +16,154 @@ import {
     getCurrentConversation,
     getMessages,
     sendMessage,
-    closeConversation
+    closeConversation,
+    askSmartSalesAI
 } from "../../services/chatApi";
 
 import "./CustomerChatWidget.css";
 
-
 function CustomerChatWidget() {
-
-    // =========================================================
-    // USER ĐANG ĐĂNG NHẬP
-    // =========================================================
-
     const { user } = useAuth();
-
-
-    // =========================================================
-    // UI
-    // =========================================================
+    const location = useLocation();
 
     const [open, setOpen] = useState(false);
+    const [messageInput, setMessageInput] = useState("");
+    const [messages, setMessages] = useState([]);
+    const [aiMessages, setAiMessages] = useState([]);
 
-    const [messageInput, setMessageInput] =
-        useState("");
+    // AI là chế độ mặc định. Không hiển thị nút chuyển chế độ.
+    const [chatMode, setChatMode] = useState("AI");
 
-    const [messages, setMessages] =
-        useState([]);
+    const [conversation, setConversation] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [sending, setSending] = useState(false);
+    const [error, setError] = useState("");
 
-    const [conversation, setConversation] =
-        useState(null);
+    const chatRef = useRef(null);
+    const messagesEndRef = useRef(null);
 
-    const [loading, setLoading] =
-        useState(false);
+    const visibleMessages =
+        chatMode === "AI" ? aiMessages : messages;
 
-    const [sending, setSending] =
-        useState(false);
+    // Lấy product ID nếu đang ở trang chi tiết sản phẩm.
+    const getProductIdFromUrl = useCallback(() => {
+        const match = location.pathname.match(/\/products\/(\d+)/);
+        return match ? Number(match[1]) : null;
+    }, [location.pathname]);
 
-    const [error, setError] =
-        useState("");
+    // Nhận diện yêu cầu gặp nhân viên.
+    const isHumanSupportRequest = useCallback((content) => {
+        const normalized = content
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d")
+            .replace(/[.,!?;:]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
 
-    const chatRef =
-        useRef(null);
+        const patterns = [
+            /\b(nhan vien|nhan vien tu van|nhan vien ho tro)\b/,
+            /\b(gap nguoi that|noi chuyen voi nguoi that)\b/,
+            /\b(ket noi|chuyen|noi chuyen|gap|tu van|ho tro)\b.{0,35}\b(nhan vien|tu van vien|nguoi that)\b/,
+            /\b(cho toi gap|toi muon gap|toi can gap)\b/,
+            /\b(goi dien|lien he)\b.{0,25}\b(nhan vien|tu van vien)\b/
+        ];
 
-    const messagesEndRef =
-        useRef(null);
+        return patterns.some((pattern) => pattern.test(normalized));
+    }, []);
 
-    const location =
-        useLocation();
+    // Tải tin nhắn của cuộc trò chuyện với nhân viên.
+    const loadMessages = useCallback(async (
+        conversationId,
+        showLoading = true
+    ) => {
+        try {
+            if (showLoading) {
+                setLoading(true);
+            }
 
+            const data = await getMessages(conversationId);
 
-    // =========================================================
-    // LẤY PRODUCT ID NẾU ĐANG Ở TRANG PRODUCT DETAIL
-    //
-    // Ví dụ:
-    // /products/10
-    //
-    // => productId = 10
-    // =========================================================
+            setMessages(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("Không thể tải tin nhắn:", err);
 
-    const getProductIdFromUrl = () => {
+            if (showLoading) {
+                setError("Không thể tải tin nhắn.");
+            }
+        } finally {
+            if (showLoading) {
+                setLoading(false);
+            }
+        }
+    }, []);
 
-        const match =
-            location.pathname.match(
-                /\/products\/(\d+)/
+    // Tải cuộc trò chuyện hiện tại.
+    // active() giúp tránh cập nhật state sau khi effect đã được dọn dẹp.
+    const loadCurrentConversation = useCallback(async (active) => {
+        try {
+            if (active()) {
+                setLoading(true);
+                setError("");
+            }
+
+            const data = await getCurrentConversation();
+
+            if (!active()) return;
+
+            const currentConversation = data || null;
+            setConversation(currentConversation);
+
+            if (currentConversation?.id) {
+                const messageData = await getMessages(
+                    currentConversation.id
+                );
+
+                if (!active()) return;
+
+                setMessages(
+                    Array.isArray(messageData) ? messageData : []
+                );
+
+                setChatMode(
+                    currentConversation.status === "CLOSED"
+                        ? "AI"
+                        : "STAFF"
+                );
+            } else {
+                setMessages([]);
+                setChatMode("AI");
+            }
+        } catch (err) {
+            if (!active()) return;
+
+            console.error(
+                "Không thể tải cuộc trò chuyện hiện tại:",
+                err
             );
 
-        if (!match) {
-            return null;
+            setError(
+                "Không thể kết nối với hệ thống hỗ trợ."
+            );
+        } finally {
+            if (active()) {
+                setLoading(false);
+            }
         }
+    }, []);
 
-        return Number(match[1]);
-    };
-
-
-    // =========================================================
-    // CLICK RA NGOÀI CHAT -> ĐÓNG
-    // =========================================================
-
+    // Đóng cửa sổ khi nhấn ra ngoài.
     useEffect(() => {
-
-        if (!open) {
-            return;
-        }
+        if (!open) return undefined;
 
         const handleClickOutside = (event) => {
-
             if (
                 chatRef.current &&
-                !chatRef.current.contains(
-                    event.target
-                )
+                !chatRef.current.contains(event.target)
             ) {
                 setOpen(false);
             }
-
         };
 
         document.addEventListener(
@@ -116,265 +172,248 @@ function CustomerChatWidget() {
         );
 
         return () => {
-
             document.removeEventListener(
                 "mousedown",
                 handleClickOutside
             );
-
         };
-
     }, [open]);
 
-
-    // =========================================================
-    // CUỘN XUỐNG TIN NHẮN CUỐI
-    // =========================================================
-
+    // Cuộn xuống tin nhắn mới nhất.
     useEffect(() => {
-
-        if (!open) {
-            return;
-        }
+        if (!open) return;
 
         messagesEndRef.current?.scrollIntoView({
             behavior: "smooth"
         });
+    }, [visibleMessages, open, loading, sending]);
 
-    }, [messages, open]);
-
-
-    // =========================================================
-    // KHI MỞ CHAT
-    //
-    // Tải conversation hiện tại
-    // =========================================================
-
+    // Khi mở chat, tải hội thoại hiện có.
     useEffect(() => {
-
-        if (!open) {
-            return;
+        if (!open || !user?.id) {
+            return undefined;
         }
 
-        loadCurrentConversation();
+        let isActive = true;
 
-    }, [open]);
+        // Hoãn lời gọi sang microtask để tránh gọi hàm cập nhật state
+        // đồng bộ ngay trong quá trình chạy effect.
+        void Promise.resolve().then(() => {
+            if (isActive) {
+                return loadCurrentConversation(
+                    () => isActive
+                );
+            }
 
+            return undefined;
+        }).catch((err) => {
+            if (isActive) {
+                console.error(
+                    "Lỗi tải cuộc trò chuyện:",
+                    err
+                );
+            }
+        });
 
-    // =========================================================
-    // POLLING TIN NHẮN
-    //
-    // Cứ khoảng 2 giây lấy tin nhắn mới
-    // =========================================================
+        return () => {
+            isActive = false;
+        };
+    }, [open, user?.id, loadCurrentConversation]);
 
+    // Polling tin nhắn nhân viên mỗi 2 giây.
     useEffect(() => {
-
         if (
             !open ||
+            chatMode !== "STAFF" ||
             !conversation?.id ||
             conversation.status === "CLOSED"
         ) {
+            return undefined;
+        }
+
+        let isActive = true;
+
+        const interval = setInterval(() => {
+            if (isActive) {
+                void loadMessages(
+                    conversation.id,
+                    false
+                ).catch((err) => {
+                    console.error(
+                        "Lỗi cập nhật tin nhắn:",
+                        err
+                    );
+                });
+            }
+        }, 2000);
+
+        return () => {
+            isActive = false;
+            clearInterval(interval);
+        };
+    }, [
+        open,
+        chatMode,
+        conversation?.id,
+        conversation?.status,
+        loadMessages
+    ]);
+
+    // Gửi câu hỏi cho AI.
+    const handleSendAIMessage = async (content) => {
+        if (!user) {
+            setError(
+                "Vui lòng đăng nhập tài khoản khách hàng để sử dụng AI tư vấn."
+            );
             return;
         }
 
-        const interval =
-            setInterval(() => {
-
-                loadMessages(
-                    conversation.id,
-                    false
-                );
-
-            }, 2000);
-
-        return () => {
-
-            clearInterval(interval);
-
+        const userMessage = {
+            id: `user-${Date.now()}`,
+            content,
+            sentAt: new Date().toISOString(),
+            sender: "customer"
         };
 
-    }, [
-        open,
-        conversation?.id,
-        conversation?.status
-    ]);
+        setAiMessages((previous) => [
+            ...previous,
+            userMessage
+        ]);
 
-
-    // =========================================================
-    // LOAD CONVERSATION HIỆN TẠI
-    // =========================================================
-
-    const loadCurrentConversation =
-        async () => {
-
-            try {
-
-                setLoading(true);
-                setError("");
-
-                const data =
-                    await getCurrentConversation();
-
-                setConversation(
-                    data || null
-                );
-
-                if (data?.id) {
-
-                    await loadMessages(
-                        data.id,
-                        false
-                    );
-
-                } else {
-
-                    setMessages([]);
-
-                }
-
-            } catch (err) {
-
-                console.error(
-                    "Không thể tải conversation:",
-                    err
-                );
-
-                setError(
-                    "Không thể kết nối với hệ thống hỗ trợ."
-                );
-
-            } finally {
-
-                setLoading(false);
-
-            }
-
-        };
-
-
-    // =========================================================
-    // LOAD MESSAGES
-    // =========================================================
-
-    const loadMessages = async (
-        conversationId,
-        showLoading = true
-    ) => {
+        setMessageInput("");
+        setSending(true);
+        setError("");
 
         try {
+            const data = await askSmartSalesAI(content);
 
-            if (showLoading) {
-                setLoading(true);
+            if (!data?.reply) {
+                throw new Error(
+                    "AI không trả về nội dung phản hồi."
+                );
             }
 
-            const data =
-                await getMessages(
-                    conversationId
-                );
-
-            setMessages(
-                Array.isArray(data)
-                    ? data
-                    : []
-            );
-
+            setAiMessages((previous) => [
+                ...previous,
+                {
+                    id: `ai-${Date.now()}`,
+                    content: data.reply,
+                    sentAt: new Date().toISOString(),
+                    sender: "ai"
+                }
+            ]);
         } catch (err) {
-
             console.error(
-                "Không thể tải tin nhắn:",
+                "Không thể gửi tin nhắn cho AI:",
                 err
             );
 
-            if (showLoading) {
+            setError(
+                err?.response?.data?.message ||
+                "AI chưa thể trả lời. Vui lòng thử lại sau."
+            );
 
-                setError(
-                    "Không thể tải tin nhắn."
-                );
+            setMessageInput(content);
 
-            }
-
+            setAiMessages((previous) =>
+                previous.filter(
+                    (message) => message.id !== userMessage.id
+                )
+            );
         } finally {
-
-            if (showLoading) {
-                setLoading(false);
-            }
-
+            setSending(false);
         }
-
     };
 
+    // Chuyển sang nhân viên.
+    const handleTransferToStaff = async (content) => {
+        if (!user) {
+            setError(
+                "Vui lòng đăng nhập tài khoản khách hàng để được nhân viên hỗ trợ."
+            );
+            return;
+        }
 
-    // =========================================================
-    // GỬI TIN NHẮN
-    // =========================================================
+        setSending(true);
+        setError("");
 
-    const handleSendMessage =
-        async () => {
-
-            const content =
-                messageInput.trim();
+        try {
+            let currentConversation = conversation;
 
             if (
-                !content ||
-                sending
+                !currentConversation?.id ||
+                currentConversation.status === "CLOSED"
             ) {
+                const productId = getProductIdFromUrl();
+
+                currentConversation = await createConversation(
+                    productId,
+                    content
+                );
+
+                setConversation(currentConversation);
+            } else {
+                await sendMessage(
+                    currentConversation.id,
+                    content
+                );
+            }
+
+            setChatMode("STAFF");
+            setMessageInput("");
+
+            if (currentConversation?.id) {
+                await loadMessages(
+                    currentConversation.id,
+                    false
+                );
+            }
+        } catch (err) {
+            console.error(
+                "Không thể chuyển sang nhân viên:",
+                err
+            );
+
+            setError(
+                err?.response?.data?.message ||
+                "Chưa thể kết nối nhân viên. Vui lòng thử lại."
+            );
+
+            setMessageInput(content);
+        } finally {
+            setSending(false);
+        }
+    };
+
+    // Gửi tin nhắn theo chế độ đang hoạt động.
+    const handleSendMessage = async () => {
+        const content = messageInput.trim();
+
+        if (!content || sending) return;
+
+        if (!user) {
+            setError(
+                "Vui lòng đăng nhập tài khoản khách hàng để sử dụng khung chat."
+            );
+            return;
+        }
+
+        // Đang trao đổi với nhân viên.
+        if (chatMode === "STAFF") {
+            if (
+                !conversation?.id ||
+                conversation.status === "CLOSED"
+            ) {
+                setError(
+                    "Cuộc trò chuyện đã kết thúc. Vui lòng gửi yêu cầu hỗ trợ mới."
+                );
                 return;
             }
 
+            setSending(true);
+            setError("");
+
             try {
-
-                setSending(true);
-                setError("");
-
-                // -------------------------------------------------
-                // CHƯA CÓ CONVERSATION
-                // -> TẠO MỚI
-                // -------------------------------------------------
-
-                if (!conversation?.id) {
-
-                    const productId =
-                        getProductIdFromUrl();
-
-                    const newConversation =
-                        await createConversation(
-                            productId,
-                            content
-                        );
-
-                    setConversation(
-                        newConversation
-                    );
-
-                    setMessageInput("");
-
-                    // Backend đã lưu message đầu tiên
-                    await loadMessages(
-                        newConversation.id,
-                        false
-                    );
-
-                    return;
-                }
-
-
-                // -------------------------------------------------
-                // CONVERSATION ĐÃ TỒN TẠI
-                // -------------------------------------------------
-
-                if (
-                    conversation.status ===
-                    "CLOSED"
-                ) {
-
-                    setError(
-                        "Cuộc trò chuyện đã kết thúc. Vui lòng tạo yêu cầu hỗ trợ mới."
-                    );
-
-                    return;
-                }
-
-
                 await sendMessage(
                     conversation.id,
                     content
@@ -386,9 +425,7 @@ function CustomerChatWidget() {
                     conversation.id,
                     false
                 );
-
             } catch (err) {
-
                 console.error(
                     "Không thể gửi tin nhắn:",
                     err
@@ -398,481 +435,335 @@ function CustomerChatWidget() {
                     err?.response?.data?.message ||
                     "Không thể gửi tin nhắn. Vui lòng thử lại."
                 );
-
             } finally {
-
                 setSending(false);
-
             }
 
-        };
+            return;
+        }
 
+        // Khách yêu cầu nhân viên: không gọi AI.
+        if (isHumanSupportRequest(content)) {
+            await handleTransferToStaff(content);
+            return;
+        }
 
-    // =========================================================
-    // NHẤN ENTER ĐỂ GỬI
-    // =========================================================
+        // Câu hỏi thông thường: AI tự động tư vấn.
+        await handleSendAIMessage(content);
+    };
 
+    // Enter để gửi tin nhắn.
     const handleKeyDown = (event) => {
-
         if (
             event.key === "Enter" &&
             !event.shiftKey
         ) {
-
             event.preventDefault();
-
-            handleSendMessage();
-
+            void handleSendMessage();
         }
-
     };
 
+    // Kết thúc hội thoại nhân viên.
+    const handleCloseConversation = async () => {
+        if (!conversation?.id) return;
 
-    // =========================================================
-    // ĐÓNG CUỘC TRÒ CHUYỆN
-    // =========================================================
+        try {
+            await closeConversation(conversation.id);
 
-    const handleCloseConversation =
-        async () => {
+            setConversation((previous) =>
+                previous
+                    ? {
+                        ...previous,
+                        status: "CLOSED"
+                    }
+                    : null
+            );
 
-            if (!conversation?.id) {
-                return;
-            }
+            setChatMode("AI");
+            setError("");
+        } catch (err) {
+            console.error(
+                "Không thể đóng cuộc trò chuyện:",
+                err
+            );
 
-            try {
-
-                await closeConversation(
-                    conversation.id
-                );
-
-                setConversation(
-                    prev =>
-                        prev
-                            ? {
-                                ...prev,
-                                status: "CLOSED"
-                            }
-                            : null
-                );
-
-            } catch (err) {
-
-                console.error(
-                    "Không thể đóng conversation:",
-                    err
-                );
-
-                setError(
-                    "Không thể kết thúc cuộc trò chuyện."
-                );
-
-            }
-
-        };
-
-
-    // =========================================================
-    // FORMAT THỜI GIAN
-    // =========================================================
-
-    const formatMessageTime = (
-        value
-    ) => {
-
-        if (!value) {
-            return "";
+            setError(
+                "Không thể kết thúc cuộc trò chuyện."
+            );
         }
-
-        const date =
-            new Date(value);
-
-        if (
-            Number.isNaN(
-                date.getTime()
-            )
-        ) {
-            return "";
-        }
-
-        return date.toLocaleTimeString(
-            "vi-VN",
-            {
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        );
-
     };
 
+    // Định dạng thời gian.
+    const formatMessageTime = (value) => {
+        if (!value) return "";
 
-    // =========================================================
-    // KIỂM TRA MESSAGE CỦA CUSTOMER
-    //
-    // QUAN TRỌNG:
-    //
-    // message.senderId = User.id
-    //
-    // KHÔNG được so với:
-    // conversation.customerId
-    //
-    // vì conversation.customerId = Customer.id
-    //
-    // Phải so với:
-    // user.id = User.id của khách đang đăng nhập
-    // =========================================================
+        const date = new Date(value);
 
-    const isCustomerMessage = (
-        message
-    ) => {
+        if (Number.isNaN(date.getTime())) return "";
 
-        const senderId =
-            message?.senderId;
+        return date.toLocaleTimeString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    };
 
-        const currentUserId =
-            user?.id;
+    // Kiểm tra tin nhắn của khách.
+    const isCustomerMessage = (message) => {
+        const senderId = message?.senderId;
+        const currentUserId = user?.id;
 
         return (
             senderId != null &&
             currentUserId != null &&
-            Number(senderId) ===
-            Number(currentUserId)
+            Number(senderId) === Number(currentUserId)
         );
-
     };
 
-
-    // =========================================================
-    // RENDER
-    // =========================================================
-
     return (
-
-        <>
-            <div
-                ref={chatRef}
-                className="customer-chat-widget-wrapper"
+        <div
+            ref={chatRef}
+            className="customer-chat-widget-wrapper"
+        >
+            {/* Nút mở/đóng chat */}
+            <button
+                type="button"
+                className="customer-chat-button"
+                onClick={() => setOpen((previous) => !previous)}
+                aria-label={
+                    open
+                        ? "Đóng hỗ trợ khách hàng"
+                        : "Mở hỗ trợ khách hàng"
+                }
             >
+                {open ? (
+                    <X size={25} />
+                ) : (
+                    <MessageCircle size={25} />
+                )}
+            </button>
 
-                {/* =================================================
-                    FLOATING BUTTON
-                ================================================= */}
-
-                <button
-                    type="button"
-                    className="customer-chat-button"
-                    onClick={() =>
-                        setOpen(
-                            prev => !prev
-                        )
-                    }
-                    aria-label={
-                        open
-                            ? "Đóng hỗ trợ khách hàng"
-                            : "Mở hỗ trợ khách hàng"
-                    }
-                >
-
-                    {open ? (
-                        <X size={25} />
-                    ) : (
-                        <MessageCircle
-                            size={25}
-                        />
-                    )}
-
-                </button>
-
-
-                {/* =================================================
-                    CHAT WINDOW
-                ================================================= */}
-
-                {open && (
-
-                    <div className="customer-chat-window">
-
-                        {/* =================================================
-                            HEADER
-                        ================================================= */}
-
-                        <div className="customer-chat-header">
-
-                            <div className="customer-chat-header-info">
-
-                                <div className="customer-chat-avatar">
-
-                                    <Headphones
-                                        size={20}
-                                    />
-
-                                </div>
-
-                                <div className="customer-chat-title">
-
-                                    <strong>
-                                        Hỗ trợ khách hàng
-                                    </strong>
-
-                                    <div className="customer-chat-status">
-
-                                        <span className="customer-chat-status-dot" />
-
-                                        {conversation?.status ===
-                                        "CLOSED"
-                                            ? "Đã kết thúc"
-                                            : "Đang trực tuyến"}
-
-                                    </div>
-
-                                </div>
-
+            {open && (
+                <div className="customer-chat-window">
+                    {/* HEADER */}
+                    <div className="customer-chat-header">
+                        <div className="customer-chat-header-info">
+                            <div className="customer-chat-avatar">
+                                {chatMode === "AI" ? (
+                                    <Bot size={20} />
+                                ) : (
+                                    <Headphones size={20} />
+                                )}
                             </div>
 
+                            <div className="customer-chat-title">
+                                <strong>
+                                    {chatMode === "AI"
+                                        ? "Tư vấn SmartSales"
+                                        : "Hỗ trợ khách hàng"}
+                                </strong>
 
-                            <button
-                                type="button"
-                                className="customer-chat-close"
-                                onClick={() =>
-                                    setOpen(false)
-                                }
-                                aria-label="Đóng cửa sổ chat"
-                            >
+                                <div className="customer-chat-status">
+                                    <span className="customer-chat-status-dot" />
 
-                                <X size={19} />
-
-                            </button>
-
+                                    {chatMode === "AI"
+                                        ? "Trợ lý AI trực tuyến"
+                                        : conversation?.status === "CLOSED"
+                                            ? "Đã kết thúc"
+                                            : "Hỗ trợ nhân viên"}
+                                </div>
+                            </div>
                         </div>
 
+                        <button
+                            type="button"
+                            className="customer-chat-close"
+                            onClick={() => setOpen(false)}
+                            aria-label="Đóng cửa sổ chat"
+                        >
+                            <X size={19} />
+                        </button>
+                    </div>
 
-                        {/* =================================================
-                            BODY
-                        ================================================= */}
+                    {/* BODY */}
+                    <div className="customer-chat-body">
+                        {loading &&
+                            chatMode === "STAFF" &&
+                            messages.length === 0 && (
+                                <div className="customer-chat-loading">
+                                    Đang tải...
+                                </div>
+                            )}
 
-                        <div className="customer-chat-body">
-
-                            {/* LOADING */}
-
-                            {loading &&
-                                messages.length === 0 && (
-
-                                    <div className="customer-chat-loading">
-
-                                        Đang tải...
-
+                        {visibleMessages.length === 0 &&
+                            !(chatMode === "STAFF" && loading) && (
+                                <div className="customer-chat-welcome">
+                                    <div className="customer-chat-welcome-icon">
+                                        {chatMode === "AI" ? (
+                                            <Bot size={16} />
+                                        ) : (
+                                            <MessageCircle size={16} />
+                                        )}
                                     </div>
 
-                                )}
+                                    <div className="customer-chat-welcome-content">
+                                        <strong>Xin chào! 👋</strong>
 
+                                        {chatMode === "AI" ? (
+                                            <>
+                                                <p>
+                                                    Mình là trợ lý tư vấn
+                                                    SmartSales. Bạn có thể hỏi
+                                                    về sản phẩm, giá bán và lựa
+                                                    chọn thiết bị phù hợp.
+                                                </p>
 
-                            {/* WELCOME */}
+                                                <p>
+                                                    Nếu cần nhân viên hỗ trợ,
+                                                    hãy nhắn “Tôi muốn gặp
+                                                    nhân viên”.
+                                                </p>
 
-                            {!loading &&
-                                messages.length === 0 && (
+                                                {!user && (
+                                                    <p>
+                                                        Vui lòng đăng nhập để
+                                                        sử dụng chức năng chat.
+                                                    </p>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <p>
+                                                Nhân viên hỗ trợ sẽ tiếp nhận
+                                                yêu cầu của bạn tại đây.
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
-                                    <div className="customer-chat-welcome">
+                        {error && (
+                            <div className="customer-chat-error">
+                                {error}
+                            </div>
+                        )}
 
-                                        <div className="customer-chat-welcome-icon">
+                        {visibleMessages.map((message) => {
+                            const isCustomer =
+                                chatMode === "AI"
+                                    ? message.sender === "customer"
+                                    : isCustomerMessage(message);
 
-                                            <MessageCircle
-                                                size={16}
-                                            />
+                            return (
+                                <div
+                                    key={message.id}
+                                    className={`customer-chat-message ${
+                                        isCustomer
+                                            ? "customer"
+                                            : "staff"
+                                    }`}
+                                >
+                                    <div>
+                                        {chatMode === "AI" &&
+                                            !isCustomer && (
+                                                <div className="customer-chat-sender-label">
+                                                    AI SmartSales
+                                                </div>
+                                            )}
 
+                                        <div className="customer-chat-message-bubble">
+                                            {message.content}
                                         </div>
 
-                                        <div className="customer-chat-welcome-content">
-
-                                            <strong>
-                                                Xin chào! 👋
-                                            </strong>
-
-                                            SmartSales luôn
-                                            sẵn sàng hỗ trợ
-                                            bạn về sản phẩm,
-                                            đơn hàng và các
-                                            vấn đề trong quá
-                                            trình mua hàng.
-
-                                            <br />
-
-                                            Hãy nhập tin nhắn
-                                            bên dưới để bắt
-                                            đầu trò chuyện.
-
+                                        <div className="customer-chat-message-time">
+                                            {formatMessageTime(
+                                                message.sentAt
+                                            )}
                                         </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
 
+                        {chatMode === "AI" && sending && (
+                            <div className="customer-chat-message staff">
+                                <div>
+                                    <div className="customer-chat-sender-label">
+                                        AI SmartSales
                                     </div>
 
-                                )}
-
-
-                            {/* ERROR */}
-
-                            {error && (
-
-                                <div className="customer-chat-error">
-
-                                    {error}
-
+                                    <div className="customer-chat-message-bubble">
+                                        AI đang trả lời...
+                                    </div>
                                 </div>
+                            </div>
+                        )}
 
-                            )}
+                        <div ref={messagesEndRef} />
+                    </div>
 
-
-                            {/* MESSAGES */}
-
-                            {messages.map(
-                                message => {
-
-                                    const isCustomer =
-                                        isCustomerMessage(
-                                            message
-                                        );
-
-                                    return (
-
-                                        <div
-                                            key={
-                                                message.id
-                                            }
-                                            className={
-                                                `customer-chat-message ${
-                                                    isCustomer
-                                                        ? "customer"
-                                                        : "staff"
-                                                }`
-                                            }
-                                        >
-
-                                            <div>
-
-                                                <div className="customer-chat-message-bubble">
-
-                                                    {message.content}
-
-                                                </div>
-
-                                                <div className="customer-chat-message-time">
-
-                                                    {formatMessageTime(
-                                                        message.sentAt
-                                                    )}
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                    );
-
-                                }
-                            )}
-
-                            <div
-                                ref={messagesEndRef}
-                            />
-
-                        </div>
-
-
-                        {/* =================================================
-                            FOOTER
-                        ================================================= */}
-
-                        <div className="customer-chat-footer">
-
-                            {conversation?.status ===
-                            "CLOSED" ? (
-
-                                <div className="customer-chat-closed-message">
-
-                                    Cuộc trò chuyện đã kết thúc.
-
-                                </div>
-
-                            ) : (
-
-                                <>
-
-                                    <input
-                                        type="text"
-                                        className="customer-chat-input"
-                                        placeholder="Nhập tin nhắn..."
-                                        value={
-                                            messageInput
-                                        }
-                                        onChange={event =>
-                                            setMessageInput(
-                                                event.target.value
-                                            )
-                                        }
-                                        onKeyDown={
-                                            handleKeyDown
-                                        }
-                                        disabled={
-                                            sending
-                                        }
-                                    />
-
-                                    <button
-                                        type="button"
-                                        className="customer-chat-send"
-                                        onClick={
-                                            handleSendMessage
-                                        }
-                                        disabled={
-                                            sending ||
-                                            !messageInput.trim()
-                                        }
-                                        aria-label="Gửi tin nhắn"
-                                    >
-
-                                        <Send
-                                            size={18}
-                                        />
-
-                                    </button>
-
-                                </>
-
-                            )}
-
-                        </div>
-
-
-                        {/* =================================================
-                            CLOSE CONVERSATION
-                        ================================================= */}
-
-                        {conversation &&
-                            conversation.status !==
-                            "CLOSED" && (
+                    {/* FOOTER */}
+                    <div className="customer-chat-footer">
+                        {chatMode === "STAFF" &&
+                        conversation?.status === "CLOSED" ? (
+                            <div className="customer-chat-closed-message">
+                                Cuộc trò chuyện đã kết thúc.
+                            </div>
+                        ) : (
+                            <>
+                                <input
+                                    type="text"
+                                    className="customer-chat-input"
+                                    placeholder={
+                                        !user
+                                            ? "Đăng nhập để sử dụng chat..."
+                                            : chatMode === "AI"
+                                                ? "Hỏi về sản phẩm hoặc yêu cầu nhân viên..."
+                                                : "Nhập tin nhắn..."
+                                    }
+                                    value={messageInput}
+                                    onChange={(event) =>
+                                        setMessageInput(event.target.value)
+                                    }
+                                    onKeyDown={handleKeyDown}
+                                    disabled={sending || !user}
+                                />
 
                                 <button
                                     type="button"
-                                    className="customer-chat-end"
-                                    onClick={
-                                        handleCloseConversation
+                                    className="customer-chat-send"
+                                    onClick={() => {
+                                        void handleSendMessage();
+                                    }}
+                                    disabled={
+                                        sending ||
+                                        !messageInput.trim() ||
+                                        !user
                                     }
+                                    aria-label="Gửi tin nhắn"
                                 >
-
-                                    Kết thúc cuộc trò chuyện
-
+                                    <Send size={18} />
                                 </button>
-
-                            )}
-
+                            </>
+                        )}
                     </div>
 
-                )}
-
-            </div>
-        </>
-
+                    {/* Kết thúc hội thoại nhân viên */}
+                    {chatMode === "STAFF" &&
+                        conversation &&
+                        conversation.status !== "CLOSED" && (
+                            <button
+                                type="button"
+                                className="customer-chat-end"
+                                onClick={() => {
+                                    void handleCloseConversation();
+                                }}
+                            >
+                                Kết thúc cuộc trò chuyện
+                            </button>
+                        )}
+                </div>
+            )}
+        </div>
     );
-
 }
-
 
 export default CustomerChatWidget;

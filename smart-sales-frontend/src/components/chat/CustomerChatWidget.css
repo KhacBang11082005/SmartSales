@@ -1,749 +1,721 @@
-/* =========================================================
-   SMART SALES - CUSTOMER CHAT WIDGET
-   ========================================================= */
 
+    /* =========================================
+       SMARTSALES - CUSTOMER CHAT WIDGET
+       Đồng bộ với CustomerChatWidget.jsx
+       ========================================= */
 
-/* =========================================================
-   CHAT BUTTON
-   ========================================================= */
+.customer-chat-widget-wrapper {
+    --chat-primary: #2563eb;
+    --chat-primary-hover: #1d4ed8;
+    --chat-primary-light: #eff6ff;
+    --chat-bg: #ffffff;
+    --chat-page-bg: #f8fafc;
+    --chat-text: #1e293b;
+    --chat-text-secondary: #64748b;
+    --chat-border: #e2e8f0;
+    --chat-success: #22c55e;
+    --chat-danger: #dc2626;
+    --chat-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
 
-.customer-chat-button {
     position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 9999;
 
-    right: 28px;
-    bottom: 28px;
+    font-family:
+            Inter,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            Roboto,
+            sans-serif;
 
-    width: 58px;
-    height: 58px;
+    color: var(--chat-text);
+}
 
+/* =========================================
+   1. NÚT MỞ CHAT
+   ========================================= */
+
+.customer-chat-widget-wrapper .customer-chat-button {
     display: flex;
     align-items: center;
     justify-content: center;
 
+    width: 60px;
+    height: 60px;
+    padding: 0;
+
     border: none;
     border-radius: 50%;
 
-    background: linear-gradient(
-            135deg,
-            #005BFF,
-            #008AF5
-    );
+    color: #ffffff;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
 
-    color: #FFFFFF;
-
-    font-size: 25px;
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
 
     cursor: pointer;
-
-    z-index: 9998;
-
-    box-shadow:
-            0 8px 24px
-            rgba(0, 91, 255, 0.30);
-
     transition:
-            transform 0.25s ease,
-            box-shadow 0.25s ease;
+            transform 0.2s ease,
+            box-shadow 0.2s ease,
+            background 0.2s ease;
 }
 
-
-.customer-chat-button:hover {
-    transform:
-            translateY(-3px)
-            scale(1.04);
-
-    box-shadow:
-            0 12px 30px
-            rgba(0, 91, 255, 0.38);
+.customer-chat-widget-wrapper .customer-chat-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 26px rgba(37, 99, 235, 0.4);
 }
 
-
-.customer-chat-button:active {
-    transform:
-            translateY(0)
-            scale(0.96);
+.customer-chat-widget-wrapper .customer-chat-button:active {
+    transform: scale(0.96);
 }
 
+.customer-chat-widget-wrapper .customer-chat-button:focus-visible {
+    outline: 3px solid rgba(59, 130, 246, 0.4);
+    outline-offset: 4px;
+}
 
-/* =========================================================
-   CHAT WINDOW
-   ========================================================= */
+/* =========================================
+   2. CỬA SỔ CHAT
+   ========================================= */
 
-.customer-chat-window {
-    position: fixed;
-
-    right: 28px;
-    bottom: 100px;
-
-    width: 380px;
-    height: 540px;
+.customer-chat-widget-wrapper .customer-chat-window {
+    position: absolute;
+    right: 0;
+    bottom: 76px;
 
     display: flex;
     flex-direction: column;
 
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    height: 540px;
+    max-height: calc(100dvh - 120px);
+
     overflow: hidden;
 
-    background: #FFFFFF;
-
-    border: 1px solid #E1EAF5;
-
+    background: var(--chat-bg);
+    border: 1px solid rgba(226, 232, 240, 0.9);
     border-radius: 18px;
 
-    z-index: 9999;
+    box-shadow: var(--chat-shadow);
 
-    box-shadow:
-            0 18px 50px
-            rgba(1, 23, 52, 0.18);
-
-    animation:
-            chatWindowOpen 0.22s ease-out;
+    animation: customer-chat-appear 0.22s ease-out;
 }
 
-
-@keyframes chatWindowOpen {
-
+@keyframes customer-chat-appear {
     from {
         opacity: 0;
-
-        transform:
-                translateY(15px)
-                scale(0.96);
+        transform: translateY(12px) scale(0.98);
     }
 
     to {
         opacity: 1;
-
-        transform:
-                translateY(0)
-                scale(1);
+        transform: translateY(0) scale(1);
     }
 }
 
+/* =========================================
+   3. HEADER
+   ========================================= */
 
-/* =========================================================
-   CHAT HEADER
-   ========================================================= */
-
-.customer-chat-header {
-    min-height: 76px;
-
+.customer-chat-widget-wrapper .customer-chat-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-    padding: 0 18px;
-
-    box-sizing: border-box;
-
-    background:
-            linear-gradient(
-                    135deg,
-                    #011734,
-                    #06377A
-            );
-
-    color: #FFFFFF;
+    gap: 12px;
 
     flex-shrink: 0;
+
+    min-height: 76px;
+    padding: 14px 16px;
+
+    color: #ffffff;
+    background: linear-gradient(120deg, #2563eb, #1e40af);
 }
 
-
-/* HEADER LEFT */
-
-.customer-chat-header-info {
+.customer-chat-widget-wrapper .customer-chat-header-info {
     display: flex;
     align-items: center;
-
     gap: 11px;
 
     min-width: 0;
 }
 
+.customer-chat-widget-wrapper .customer-chat-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-/* AVATAR */
+    flex-shrink: 0;
 
-.customer-chat-avatar {
     width: 42px;
     height: 42px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.18);
 
-    flex-shrink: 0;
-
+    border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 50%;
-
-    background:
-            rgba(255, 255, 255, 0.14);
-
-    border:
-            1px solid
-            rgba(255, 255, 255, 0.20);
-
-    font-size: 19px;
 }
 
-
-/* TITLE */
-
-.customer-chat-title {
+.customer-chat-widget-wrapper .customer-chat-title {
     min-width: 0;
 }
 
-
-.customer-chat-title strong {
+.customer-chat-widget-wrapper .customer-chat-title strong {
     display: block;
 
-    color: #FFFFFF;
+    overflow: hidden;
 
     font-size: 15px;
     font-weight: 700;
-
-    line-height: 1.3;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-
-.customer-chat-status {
+.customer-chat-widget-wrapper .customer-chat-status {
     display: flex;
     align-items: center;
-
     gap: 6px;
 
-    margin-top: 3px;
+    margin-top: 5px;
 
-    color: #C8DBF5;
+    color: rgba(255, 255, 255, 0.88);
 
     font-size: 12px;
+    line-height: 1.4;
 }
 
+.customer-chat-widget-wrapper .customer-chat-status-dot {
+    display: inline-block;
 
-/* ONLINE DOT */
+    flex-shrink: 0;
 
-.customer-chat-status-dot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
 
+    background: #4ade80;
     border-radius: 50%;
 
-    background: #34D399;
-
-    box-shadow:
-            0 0 0 3px
-            rgba(52, 211, 153, 0.12);
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
 }
 
-
-/* CLOSE BUTTON */
-
-.customer-chat-close {
-    width: 34px;
-    height: 34px;
-
+.customer-chat-widget-wrapper .customer-chat-close {
     display: flex;
     align-items: center;
     justify-content: center;
 
     flex-shrink: 0;
 
+    width: 34px;
+    height: 34px;
+    padding: 0;
+
+    color: #ffffff;
+    background: transparent;
+
     border: none;
-
-    border-radius: 9px;
-
-    background:
-            rgba(255, 255, 255, 0.08);
-
-    color: #FFFFFF;
-
-    font-size: 23px;
-
-    line-height: 1;
+    border-radius: 8px;
 
     cursor: pointer;
-
-    transition:
-            background 0.2s ease,
-            transform 0.2s ease;
+    transition: background 0.2s ease;
 }
 
-
-.customer-chat-close:hover {
-    background:
-            rgba(255, 255, 255, 0.17);
-
-    transform:
-            rotate(90deg);
+.customer-chat-widget-wrapper .customer-chat-close:hover {
+    background: rgba(255, 255, 255, 0.16);
 }
 
+/* =========================================
+   4. KHUNG TIN NHẮN
+   ========================================= */
 
-/* =========================================================
-   CHAT BODY
-   ========================================================= */
-
-.customer-chat-body {
+.customer-chat-widget-wrapper .customer-chat-body {
+    display: flex;
     flex: 1;
+    flex-direction: column;
+    gap: 14px;
 
+    min-height: 0;
+    padding: 18px 14px;
+
+    overflow-x: hidden;
     overflow-y: auto;
 
-    padding: 18px;
+    background: var(--chat-page-bg);
 
-    background:
-            #F5F9FF;
-
-    box-sizing: border-box;
-
-    scrollbar-width: thin;
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
 }
 
-
-/* WEBKIT SCROLLBAR */
-
-.customer-chat-body::-webkit-scrollbar {
-    width: 6px;
+.customer-chat-widget-wrapper .customer-chat-body::-webkit-scrollbar {
+    width: 5px;
 }
 
-
-.customer-chat-body::-webkit-scrollbar-track {
+.customer-chat-widget-wrapper .customer-chat-body::-webkit-scrollbar-track {
     background: transparent;
 }
 
-
-.customer-chat-body::-webkit-scrollbar-thumb {
-    background: #C8D6E8;
-
-    border-radius: 999px;
+.customer-chat-widget-wrapper .customer-chat-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
 }
 
-
-.customer-chat-body::-webkit-scrollbar-thumb:hover {
-    background: #AFC3DC;
+.customer-chat-widget-wrapper .customer-chat-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
+/* =========================================
+   5. LỜI CHÀO BAN ĐẦU
+   ========================================= */
 
-/* =========================================================
-   WELCOME MESSAGE
-   ========================================================= */
-
-.customer-chat-welcome {
+.customer-chat-widget-wrapper .customer-chat-welcome {
     display: flex;
-
     align-items: flex-start;
+    gap: 10px;
 
-    gap: 9px;
-
-    margin-bottom: 18px;
+    width: 100%;
 }
 
-
-.customer-chat-welcome-icon {
-    width: 32px;
-    height: 32px;
-
+.customer-chat-widget-wrapper .customer-chat-welcome-icon {
     display: flex;
     align-items: center;
     justify-content: center;
 
     flex-shrink: 0;
 
+    width: 32px;
+    height: 32px;
+
+    color: var(--chat-primary);
+    background: #dbeafe;
+
     border-radius: 50%;
-
-    background: #E6F0FF;
-
-    color: #005BFF;
-
-    font-size: 15px;
 }
 
+.customer-chat-widget-wrapper .customer-chat-welcome-content {
+    flex: 1;
+    min-width: 0;
 
-.customer-chat-welcome-content {
-    max-width: 82%;
+    padding: 13px 14px;
 
-    padding: 11px 13px;
+    background: #ffffff;
 
-    background: #FFFFFF;
+    border: 1px solid var(--chat-border);
+    border-radius: 4px 14px 14px 14px;
 
-    border: 1px solid #E2EAF4;
-
-    border-radius:
-            4px
-            14px
-            14px
-            14px;
-
-    color: #34465F;
-
-    font-size: 13px;
-
-    line-height: 1.55;
-
-    box-shadow:
-            0 2px 8px
-            rgba(1, 23, 52, 0.04);
+    box-shadow: 0 2px 5px rgba(15, 23, 42, 0.03);
 }
 
-
-.customer-chat-welcome-content strong {
+.customer-chat-widget-wrapper .customer-chat-welcome-content strong {
     display: block;
 
-    margin-bottom: 4px;
+    margin-bottom: 7px;
 
-    color: #011734;
+    color: var(--chat-text);
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.customer-chat-widget-wrapper .customer-chat-welcome-content p {
+    margin: 0 0 9px;
+
+    color: #475569;
 
     font-size: 13px;
+    line-height: 1.65;
+
+    overflow-wrap: anywhere;
 }
 
+.customer-chat-widget-wrapper .customer-chat-welcome-content p:last-child {
+    margin-bottom: 0;
+}
 
-/* =========================================================
-   MESSAGE
-   ========================================================= */
+/* =========================================
+   6. TIN NHẮN KHÁCH HÀNG VÀ AI/NHÂN VIÊN
+   ========================================= */
 
-.customer-chat-message {
+.customer-chat-widget-wrapper .customer-chat-message {
     display: flex;
+    align-items: flex-start;
 
-    margin-bottom: 10px;
+    width: 100%;
 }
 
+.customer-chat-widget-wrapper .customer-chat-message > div {
+    display: flex;
+    flex-direction: column;
 
-.customer-chat-message.customer {
+    max-width: 85%;
+    min-width: 0;
+}
+
+.customer-chat-widget-wrapper .customer-chat-message.customer {
     justify-content: flex-end;
 }
 
-
-.customer-chat-message.staff {
+.customer-chat-widget-wrapper .customer-chat-message.staff {
     justify-content: flex-start;
 }
 
-
-.customer-chat-message-bubble {
-    max-width: 78%;
-
+.customer-chat-widget-wrapper .customer-chat-message-bubble {
     padding: 10px 13px;
 
-    border-radius: 14px;
-
     font-size: 13px;
+    line-height: 1.65;
 
-    line-height: 1.5;
-
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
     word-break: break-word;
 }
 
+/* Tin nhắn khách hàng */
 
-.customer-chat-message.staff
+.customer-chat-widget-wrapper .customer-chat-message.customer
 .customer-chat-message-bubble {
+    color: #ffffff;
 
-    background: #FFFFFF;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
 
-    border:
-            1px solid
-            #E2EAF4;
+    border-radius: 14px 4px 14px 14px;
 
-    border-bottom-left-radius: 4px;
-
-    color: #34465F;
-
-    box-shadow:
-            0 2px 8px
-            rgba(1, 23, 52, 0.04);
+    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.12);
 }
 
+/* Tin nhắn AI hoặc nhân viên */
 
-.customer-chat-message.customer
+.customer-chat-widget-wrapper .customer-chat-message.staff
 .customer-chat-message-bubble {
+    color: #334155;
 
-    background:
-            linear-gradient(
-                    135deg,
-                    #005BFF,
-                    #008AF5
-            );
+    background: #ffffff;
 
-    border-bottom-right-radius: 4px;
+    border: 1px solid var(--chat-border);
+    border-radius: 4px 14px 14px 14px;
 
-    color: #FFFFFF;
-
-    box-shadow:
-            0 4px 10px
-            rgba(0, 91, 255, 0.16);
+    box-shadow: 0 2px 5px rgba(15, 23, 42, 0.03);
 }
 
+/* Tên AI */
 
-/* =========================================================
-   TIME
-   ========================================================= */
+.customer-chat-widget-wrapper .customer-chat-sender-label {
+    margin: 0 0 5px 3px;
 
-.customer-chat-message-time {
-    margin-top: 4px;
+    color: var(--chat-primary);
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Thời gian tin nhắn */
+
+.customer-chat-widget-wrapper .customer-chat-message-time {
+    margin-top: 5px;
+    padding: 0 3px;
+
+    color: #94a3b8;
 
     font-size: 10px;
-
-    color: #94A3B8;
+    line-height: 1.4;
 }
 
-
-.customer-chat-message.customer
+.customer-chat-widget-wrapper .customer-chat-message.customer
 .customer-chat-message-time {
-
     text-align: right;
-
-    color: rgba(255, 255, 255, 0.72);
 }
 
+/* =========================================
+   7. TRẠNG THÁI TẢI VÀ LỖI
+   ========================================= */
 
-/* =========================================================
-   INPUT AREA
-   ========================================================= */
+.customer-chat-widget-wrapper .customer-chat-loading {
+    padding: 8px 0;
 
-.customer-chat-footer {
-    display: flex;
-    align-items: center;
+    color: var(--chat-text-secondary);
 
-    gap: 8px;
+    font-size: 12px;
+    text-align: center;
+}
 
+.customer-chat-widget-wrapper .customer-chat-error {
+    padding: 10px 12px;
+
+    color: #b91c1c;
+    background: #fef2f2;
+
+    border: 1px solid #fecaca;
+    border-radius: 9px;
+
+    font-size: 12px;
+    line-height: 1.6;
+
+    overflow-wrap: anywhere;
+}
+
+.customer-chat-widget-wrapper .customer-chat-closed-message {
+    width: 100%;
     padding: 12px;
 
-    background: #FFFFFF;
+    color: #64748b;
+    background: #f1f5f9;
 
-    border-top:
-            1px solid
-            #E4EBF4;
+    border: 1px solid var(--chat-border);
+    border-radius: 10px;
 
-    flex-shrink: 0;
+    font-size: 13px;
+    text-align: center;
 }
 
+/* =========================================
+   8. Ô NHẬP VÀ NÚT GỬI
+   ========================================= */
 
-.customer-chat-input {
+.customer-chat-widget-wrapper .customer-chat-footer {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    flex-shrink: 0;
+
+    padding: 12px 14px;
+
+    background: #ffffff;
+
+    border-top: 1px solid var(--chat-border);
+}
+
+.customer-chat-widget-wrapper .customer-chat-input {
     flex: 1;
 
+    width: 0;
     min-width: 0;
-
     height: 42px;
 
     padding: 0 13px;
 
-    box-sizing: border-box;
+    color: var(--chat-text);
+    background: #f8fafc;
 
-    border:
-            1px solid
-            #DCE7F4;
-
-    border-radius: 11px;
+    border: 1px solid #dbe3ee;
+    border-radius: 10px;
 
     outline: none;
 
-    background: #F7FAFE;
-
-    color: #071A36;
-
     font-family: inherit;
-
     font-size: 13px;
 
     transition:
             border-color 0.2s ease,
-            background 0.2s ease,
-            box-shadow 0.2s ease;
+            box-shadow 0.2s ease,
+            background 0.2s ease;
 }
 
-
-.customer-chat-input::placeholder {
-    color: #9AA9BC;
+.customer-chat-widget-wrapper .customer-chat-input::placeholder {
+    color: #94a3b8;
 }
 
+.customer-chat-widget-wrapper .customer-chat-input:focus {
+    background: #ffffff;
 
-.customer-chat-input:focus {
-    background: #FFFFFF;
+    border-color: var(--chat-primary);
 
-    border-color: #005BFF;
-
-    box-shadow:
-            0 0 0 3px
-            rgba(0, 91, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+.customer-chat-widget-wrapper .customer-chat-input:disabled {
+    color: #94a3b8;
+    background: #f1f5f9;
 
-/* =========================================================
-   SEND BUTTON
-   ========================================================= */
+    cursor: not-allowed;
+}
 
-.customer-chat-send {
-    width: 42px;
-    height: 42px;
-
+.customer-chat-widget-wrapper .customer-chat-send {
     display: flex;
     align-items: center;
     justify-content: center;
 
     flex-shrink: 0;
 
+    width: 42px;
+    height: 42px;
+    padding: 0;
+
+    color: #ffffff;
+    background: var(--chat-primary);
+
     border: none;
-
-    border-radius: 11px;
-
-    background:
-            linear-gradient(
-                    135deg,
-                    #005BFF,
-                    #008AF5
-            );
-
-    color: #FFFFFF;
+    border-radius: 10px;
 
     cursor: pointer;
 
-    box-shadow:
-            0 5px 13px
-            rgba(0, 91, 255, 0.20);
-
     transition:
+            background 0.2s ease,
             transform 0.2s ease,
             box-shadow 0.2s ease;
 }
 
+.customer-chat-widget-wrapper .customer-chat-send:hover:not(:disabled) {
+    background: var(--chat-primary-hover);
 
-.customer-chat-send:hover {
-    transform:
-            translateY(-1px);
-
-    box-shadow:
-            0 7px 17px
-            rgba(0, 91, 255, 0.28);
+    box-shadow: 0 3px 9px rgba(37, 99, 235, 0.22);
 }
 
-
-.customer-chat-send:active {
-    transform:
-            translateY(0)
-            scale(0.96);
+.customer-chat-widget-wrapper .customer-chat-send:active:not(:disabled) {
+    transform: scale(0.95);
 }
 
+.customer-chat-widget-wrapper .customer-chat-send:disabled {
+    color: #cbd5e1;
+    background: #e2e8f0;
 
-/* =========================================================
-   DISABLED
-   ========================================================= */
-
-.customer-chat-input:disabled {
     cursor: not-allowed;
-
-    opacity: 0.7;
 }
 
+/* =========================================
+   9. NÚT KẾT THÚC HỘI THOẠI NHÂN VIÊN
+   ========================================= */
 
-.customer-chat-send:disabled {
-    cursor: not-allowed;
+.customer-chat-widget-wrapper .customer-chat-end {
+    display: block;
 
-    opacity: 0.55;
+    flex-shrink: 0;
 
-    box-shadow: none;
-}
+    width: 100%;
+    padding: 10px 14px;
 
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 650px) {
-
-    .customer-chat-button {
-        right: 18px;
-        bottom: 18px;
-
-        width: 54px;
-        height: 54px;
-    }
-
-
-    .customer-chat-window {
-        right: 12px;
-        left: 12px;
-
-        bottom: 84px;
-
-        width: auto;
-
-        height:
-                min(
-                        540px,
-                        calc(100vh - 105px)
-                );
-
-        border-radius: 16px;
-    }
-
-}
-
-
-/* =========================================================
-   SMALL MOBILE
-   ========================================================= */
-
-@media (max-width: 430px) {
-
-    .customer-chat-window {
-        right: 8px;
-        left: 8px;
-
-        bottom: 76px;
-
-        height:
-                calc(100vh - 90px);
-
-        border-radius: 14px;
-    }
-
-
-    .customer-chat-header {
-        min-height: 68px;
-
-        padding: 0 14px;
-    }
-
-
-    .customer-chat-body {
-        padding: 14px;
-    }
-
-
-    .customer-chat-footer {
-        padding: 10px;
-    }
-
-}
-
-
-.customer-chat-end {
-    width: calc(100% - 24px);
-    height: 38px;
-
-    margin: 0 12px 10px;
-
-    border: 1px solid #fecaca;
-    border-radius: 8px;
-
-    background: #ffffff;
     color: #dc2626;
+    background: #ffffff;
 
-    font-size: 13px;
+    border: none;
+    border-top: 1px solid var(--chat-border);
+
+    font-family: inherit;
+    font-size: 12px;
     font-weight: 600;
 
     cursor: pointer;
 
     transition:
-            background-color 0.2s ease,
-            border-color 0.2s ease,
+            background 0.2s ease,
             color 0.2s ease;
 }
 
-.customer-chat-end:hover {
-    background: #fef2f2;
-    border-color: #fca5a5;
+.customer-chat-widget-wrapper .customer-chat-end:hover {
     color: #b91c1c;
+    background: #fef2f2;
 }
 
-.customer-chat-end:active {
-    background: #fee2e2;
+/* =========================================
+   10. RESPONSIVE - MÁY TÍNH BẢNG
+   ========================================= */
+
+@media (max-width: 768px) {
+    .customer-chat-widget-wrapper {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .customer-chat-widget-wrapper .customer-chat-window {
+        width: 360px;
+        height: min(520px, calc(100dvh - 110px));
+        max-width: calc(100vw - 32px);
+    }
+
+    .customer-chat-widget-wrapper .customer-chat-button {
+        width: 56px;
+        height: 56px;
+    }
 }
 
-.customer-chat-end:focus {
-    outline: none;
+/* =========================================
+   11. RESPONSIVE - ĐIỆN THOẠI
+   ========================================= */
+
+@media (max-width: 480px) {
+    .customer-chat-widget-wrapper {
+        right: 12px;
+        bottom: 12px;
+    }
+
+    .customer-chat-widget-wrapper .customer-chat-window {
+        position: fixed;
+
+        right: 8px;
+        bottom: 78px;
+
+        width: auto;
+        max-width: none;
+
+        left: 8px;
+
+        height: min(580px, calc(100dvh - 100px));
+        max-height: calc(100dvh - 100px);
+
+        border-radius: 16px;
+    }
+
+    .customer-chat-widget-wrapper .customer-chat-button {
+        width: 54px;
+        height: 54px;
+    }
+
+    .customer-chat-widget-wrapper .customer-chat-header {
+        min-height: 70px;
+        padding: 12px 14px;
+    }
+
+    .customer-chat-widget-wrapper .customer-chat-body {
+        padding: 14px 11px;
+        gap: 12px;
+    }
+
+    .customer-chat-widget-wrapper .customer-chat-message > div {
+        max-width: 90%;
+    }
+
+    .customer-chat-widget-wrapper .customer-chat-footer {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .customer-chat-widget-wrapper .customer-chat-input {
+        height: 40px;
+        padding: 0 10px;
+
+        font-size: 12px;
+    }
+
+    .customer-chat-widget-wrapper .customer-chat-send {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* =========================================
+   12. MÀN HÌNH THẤP
+   ========================================= */
+
+@media (max-height: 560px) {
+    .customer-chat-widget-wrapper .customer-chat-window {
+        height: calc(100dvh - 100px);
+        max-height: calc(100dvh - 100px);
+    }
+}
+
+/* =========================================
+   13. GIẢM CHUYỂN ĐỘNG NẾU NGƯỜI DÙNG YÊU CẦU
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .customer-chat-widget-wrapper *,
+    .customer-chat-widget-wrapper *::before,
+    .customer-chat-widget-wrapper *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
 }

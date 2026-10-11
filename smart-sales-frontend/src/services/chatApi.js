@@ -205,3 +205,17 @@ export const updateStaffPresence = async () => {
     return response.data;
 };
 
+
+/**
+ * Gửi tin nhắn đến AI SmartSales.
+ * Token JWT được tự động thêm bởi interceptor trong api.js.
+ */
+export const askSmartSalesAI = async (message) => {
+    const response = await api.post("/ai/chat", {
+        message
+    });
+
+    return response.data;
+};
+
+
