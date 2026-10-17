@@ -319,6 +319,62 @@
 }
 
 
+/* SPECIFICATIONS */
+
+.product-specs-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 15px;
+}
+
+.product-specs-table tr:nth-child(odd) {
+    background: #f8fafc;
+}
+
+.product-specs-table th,
+.product-specs-table td {
+    padding: 12px 16px;
+
+    border-bottom: 1px solid var(--border);
+
+    text-align: left;
+
+    vertical-align: top;
+
+    line-height: 1.6;
+}
+
+.product-specs-table th {
+    width: 35%;
+
+    color: var(--navy);
+
+    font-weight: 600;
+}
+
+.product-specs-table td {
+    color: var(--text-secondary);
+
+    word-break: break-word;
+}
+
+@media (max-width: 600px) {
+
+    .product-specs-table th,
+    .product-specs-table td {
+        padding: 10px 12px;
+
+        font-size: 14px;
+    }
+
+    .product-specs-table th {
+        width: 40%;
+    }
+}
+
+
 /* NOT FOUND */
 
 .product-not-found {

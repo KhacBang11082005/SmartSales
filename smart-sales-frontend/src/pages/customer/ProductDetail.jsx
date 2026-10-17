@@ -52,6 +52,45 @@ function formatPrice(price) {
 
 
 // =========================================================
+// TÁCH THÔNG SỐ KỸ THUẬT
+//
+// Mỗi dòng dạng "Tên: Giá trị".
+// Dòng không có dấu ":" được hiển thị như một ghi chú.
+// =========================================================
+
+function parseSpecifications(specifications) {
+
+    if (!specifications) {
+        return [];
+    }
+
+    return specifications
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => {
+
+            const separatorIndex =
+                line.indexOf(":");
+
+            if (separatorIndex === -1) {
+                return {
+                    label: "",
+                    value: line
+                };
+            }
+
+            return {
+                label:
+                    line.slice(0, separatorIndex).trim(),
+                value:
+                    line.slice(separatorIndex + 1).trim()
+            };
+        });
+}
+
+
+// =========================================================
 // XỬ LÝ URL ẢNH / VIDEO
 // =========================================================
 
@@ -722,6 +761,12 @@ function ProductDetail() {
             </div>
         );
     }
+
+
+    const specifications =
+        parseSpecifications(
+            product.specifications
+        );
 
 
     // =========================================================
@@ -1425,25 +1470,63 @@ function ProductDetail() {
 
 
             {/* =================================================
-                MÔ TẢ
+                THÔNG SỐ KỸ THUẬT
             ================================================= */}
 
             <section className="product-description">
 
                 <h2>
-                    Mô tả sản phẩm
+                    Thông số kỹ thuật
                 </h2>
 
-                <p>
-                    {product.description}
-                </p>
+                {specifications.length > 0 ? (
 
-                <p>
-                    Sản phẩm được cung cấp bởi
-                    Smart Sales.
-                    Thông tin chi tiết và giá bán
-                    được lấy từ hệ thống.
-                </p>
+                    <table className="product-specs-table">
+
+                        <tbody>
+
+                            {specifications.map(
+                                (spec, index) => (
+
+                                    <tr key={index}>
+
+                                        {spec.label ? (
+
+                                            <>
+                                                <th>
+                                                    {spec.label}
+                                                </th>
+
+                                                <td>
+                                                    {spec.value}
+                                                </td>
+                                            </>
+
+                                        ) : (
+
+                                            <td colSpan="2">
+                                                {spec.value}
+                                            </td>
+
+                                        )}
+
+                                    </tr>
+
+                                )
+                            )}
+
+                        </tbody>
+
+                    </table>
+
+                ) : (
+
+                    <p>
+                        Chưa có thông số kỹ thuật
+                        cho sản phẩm này.
+                    </p>
+
+                )}
 
             </section>
 

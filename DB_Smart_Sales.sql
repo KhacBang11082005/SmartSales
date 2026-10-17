@@ -43,6 +43,7 @@ CREATE TABLE products (
     category_id BIGINT NOT NULL,
     name VARCHAR(150) NOT NULL,
     description TEXT,
+    specifications TEXT,
     price DECIMAL(15,2) NOT NULL,
     image_url VARCHAR(500),
     status ENUM('ACTIVE', 'INACTIVE')

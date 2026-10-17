@@ -160,6 +160,10 @@ public class ProductService {
                 product.getDescription()
         );
 
+        existingProduct.setSpecifications(
+                product.getSpecifications()
+        );
+
         existingProduct.setPrice(
                 product.getPrice()
         );

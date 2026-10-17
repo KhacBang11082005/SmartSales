@@ -43,6 +43,16 @@ public class Product {
 
 
     // =========================================================
+    // THÔNG SỐ KỸ THUẬT
+    //
+    // Mỗi dòng một thông số, dạng "Tên: Giá trị"
+    // =========================================================
+
+    @Column(columnDefinition = "TEXT")
+    private String specifications;
+
+
+    // =========================================================
     // GIÁ
     // =========================================================
 
@@ -152,6 +162,15 @@ public class Product {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+
+    public String getSpecifications() {
+        return specifications;
+    }
+
+    public void setSpecifications(String specifications) {
+        this.specifications = specifications;
     }
 
 

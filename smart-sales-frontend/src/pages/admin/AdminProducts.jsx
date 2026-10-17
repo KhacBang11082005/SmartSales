@@ -99,6 +99,8 @@ const emptyForm = {
 
     description: "",
 
+    specifications: "",
+
     price: "",
 
     quantity: 0,
@@ -373,6 +375,9 @@ function AdminProducts({ employeeMode = false }) {
 
             description:
                 product.description || "",
+
+            specifications:
+                product.specifications || "",
 
             price:
                 product.price ?? "",
@@ -1766,6 +1771,9 @@ function AdminProducts({ employeeMode = false }) {
 
                 description:
                     form.description.trim(),
+
+                specifications:
+                    form.specifications.trim(),
 
                 price:
                     Number(form.price),
@@ -3768,7 +3776,7 @@ function AdminProducts({ employeeMode = false }) {
                             <div className="admin-form-group">
 
                                 <label>
-                                    Mô tả
+                                    Mô tả ngắn
                                 </label>
 
                                 <textarea
@@ -3779,8 +3787,35 @@ function AdminProducts({ employeeMode = false }) {
                                     onChange={
                                         handleChange
                                     }
-                                    rows="4"
-                                    placeholder="Nhập mô tả sản phẩm..."
+                                    rows="3"
+                                    placeholder="Nhập mô tả ngắn về sản phẩm..."
+                                />
+
+                            </div>
+
+
+                            {/* =================================================
+                                SPECIFICATIONS
+                            ================================================= */}
+
+                            <div className="admin-form-group">
+
+                                <label>
+                                    Thông số kỹ thuật
+                                </label>
+
+                                <textarea
+                                    name="specifications"
+                                    value={
+                                        form.specifications
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    rows="6"
+                                    placeholder={
+                                        "Mỗi dòng một thông số, dạng Tên: Giá trị\nCPU: Intel Core i5-1235U\nRAM: 8GB DDR4\nỔ cứng: 512GB SSD"
+                                    }
                                 />
 
                             </div>
