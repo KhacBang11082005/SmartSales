@@ -354,7 +354,10 @@ function AdminLayout() {
                     CONTENT
                 ================================================= */}
 
-                <main className="admin-content">
+                <main
+                    key={location.pathname}
+                    className="admin-content"
+                >
 
                     <Outlet />
 

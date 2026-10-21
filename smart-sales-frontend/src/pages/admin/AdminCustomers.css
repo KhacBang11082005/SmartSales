@@ -312,7 +312,7 @@
 }
 
 .customer-action-view {
-    color: #2563eb;
+    color: var(--primary);
 }
 
 .customer-action-view:hover {

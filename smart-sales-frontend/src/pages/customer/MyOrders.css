@@ -37,7 +37,7 @@
 .orders-brand {
     display: inline-block;
     margin-bottom: 8px;
-    color: #005bff;
+    color: var(--primary);
     font-size: 12px;
     font-weight: 800;
     letter-spacing: 2px;
@@ -69,7 +69,7 @@
     border-radius: 12px;
 
     background: #ffffff;
-    color: #005bff;
+    color: var(--primary);
 
     font-size: 14px;
     font-weight: 700;
@@ -142,7 +142,7 @@
     border-radius: 13px;
 
     background: #eef6ff;
-    color: #005bff;
+    color: var(--primary);
 }
 
 .pending-icon {
@@ -152,7 +152,7 @@
 
 .processing-icon {
     background: #edf7ff;
-    color: #008af5;
+    color: var(--primary-accent);
 }
 
 .completed-icon {
@@ -180,8 +180,8 @@
     background:
             linear-gradient(
                     135deg,
-                    #005bff,
-                    #008af5
+                    var(--primary),
+                    var(--primary-accent)
             );
 }
 
@@ -267,13 +267,13 @@
 
 .order-filters button:hover {
     border-color: #a9c8ff;
-    color: #005bff;
+    color: var(--primary);
     background: #f7fbff;
 }
 
 .order-filters button.active {
-    border-color: #005bff;
-    background: #005bff;
+    border-color: var(--primary);
+    background: var(--primary);
     color: #ffffff;
 }
 
@@ -369,7 +369,7 @@
     border-radius: 11px;
 
     background: #eef6ff;
-    color: #005bff;
+    color: var(--primary);
 }
 
 .order-number span {
@@ -405,7 +405,7 @@
 
 .status-confirmed {
     background: #eef6ff;
-    color: #0068d9;
+    color: var(--primary-dark);
 }
 
 .status-processing {
@@ -482,7 +482,7 @@
     border-radius: 10px;
 
     background: #ffffff;
-    color: #005bff;
+    color: var(--primary);
 }
 
 .order-status-message strong {
@@ -566,22 +566,22 @@
 
 .progress-step.done,
 .progress-step.active {
-    color: #005bff;
+    color: var(--primary);
 }
 
 .progress-step.done .progress-circle {
-    border-color: #005bff;
-    background: #005bff;
+    border-color: var(--primary);
+    background: var(--primary);
     color: #ffffff;
 }
 
 .progress-step.active .progress-circle {
-    border-color: #005bff;
+    border-color: var(--primary);
     background: #eef6ff;
-    color: #005bff;
+    color: var(--primary);
     box-shadow:
             0 0 0 5px
-            rgba(0, 91, 255, 0.08);
+            rgba(var(--primary-rgb), 0.08);
 }
 
 .progress-line {
@@ -595,7 +595,7 @@
 }
 
 .progress-line.done {
-    background: #005bff;
+    background: var(--primary);
 }
 
 /* ======================================================
@@ -724,7 +724,7 @@
 
 .order-product-price {
     flex-shrink: 0;
-    color: #005bff;
+    color: var(--primary);
     font-size: 13px;
 }
 
@@ -733,7 +733,7 @@
     border: none;
 
     background: transparent;
-    color: #005bff;
+    color: var(--primary);
 
     font-size: 12px;
     font-weight: 700;
@@ -784,7 +784,7 @@
 }
 
 .order-total strong {
-    color: #005bff;
+    color: var(--primary);
     font-size: 20px;
 }
 
@@ -824,13 +824,13 @@
 }
 
 .view-order-button {
-    border: 1px solid #005bff;
-    background: #005bff;
+    border: 1px solid var(--primary);
+    background: var(--primary);
     color: #ffffff;
 }
 
 .view-order-button:hover {
-    background: #004edb;
+    background: var(--primary-dark);
     transform: translateY(-1px);
 }
 
@@ -862,7 +862,7 @@
     border-radius: 18px;
 
     background: #eef6ff;
-    color: #005bff;
+    color: var(--primary);
 
     animation: pulse-loading 1.4s infinite;
 }
@@ -919,7 +919,7 @@
     border-radius: 22px;
 
     background: #eef6ff;
-    color: #005bff;
+    color: var(--primary);
 }
 
 .orders-error h2,
@@ -952,7 +952,7 @@
     border: none;
     border-radius: 10px;
 
-    background: #005bff;
+    background: var(--primary);
     color: #ffffff;
 
     font-size: 13px;
@@ -964,7 +964,7 @@
 .orders-error button:hover,
 .orders-empty button:hover,
 .filter-empty button:hover {
-    background: #004edb;
+    background: var(--primary-dark);
 }
 
 /* ======================================================
@@ -995,7 +995,7 @@
     border-radius: 18px;
 
     background: #eef6ff;
-    color: #005bff;
+    color: var(--primary);
 }
 
 .filter-empty h3 {

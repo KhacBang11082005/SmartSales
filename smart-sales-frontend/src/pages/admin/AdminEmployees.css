@@ -69,7 +69,7 @@
     border: none;
     border-radius: 8px;
 
-    background: #2563eb;
+    background: var(--primary);
     color: #ffffff;
 
     font-size: 14px;
@@ -83,7 +83,7 @@
 }
 
 .employee-add-button:hover {
-    background: #1d4ed8;
+    background: var(--primary-dark);
 }
 
 .employee-add-button:active {
@@ -276,7 +276,7 @@
 
 .employee-filter:focus,
 .employee-search:focus-within {
-    border-color: #2563eb;
+    border-color: var(--primary);
 }
 
 /* =========================================================
@@ -367,7 +367,7 @@
     border-radius: 50%;
 
     background: #eff6ff;
-    color: #2563eb;
+    color: var(--primary);
 
     font-size: 15px;
     font-weight: 700;
@@ -418,7 +418,7 @@
 
 .role-employee {
     background: #eff6ff;
-    color: #2563eb;
+    color: var(--primary);
 }
 
 /* =========================================================
@@ -482,7 +482,7 @@
 .employee-edit-button {
     border: 1px solid #dbeafe;
     background: #eff6ff;
-    color: #2563eb;
+    color: var(--primary);
 }
 
 .employee-edit-button:hover {
@@ -714,7 +714,7 @@
 
 .employee-form-group input:focus,
 .employee-form-group select:focus {
-    border-color: #2563eb;
+    border-color: var(--primary);
 }
 
 .employee-form-group input::placeholder {
@@ -759,7 +759,7 @@
 
     background: #eff6ff;
 
-    color: #1d4ed8;
+    color: var(--primary-dark);
 
     font-size: 13px;
     line-height: 1.5;
@@ -816,14 +816,14 @@
 }
 
 .employee-save-button {
-    border: 1px solid #2563eb;
+    border: 1px solid var(--primary);
 
-    background: #2563eb;
+    background: var(--primary);
     color: #ffffff;
 }
 
 .employee-save-button:hover {
-    background: #1d4ed8;
+    background: var(--primary-dark);
 }
 
 .employee-cancel-button:disabled,

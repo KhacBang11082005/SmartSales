@@ -416,7 +416,7 @@ function Products() {
                             display: "block",
                             fontSize: "13px",
                             fontWeight: "600",
-                            color: "#1769ff",
+                            color: "var(--primary)",
                             marginBottom: "8px",
                             textTransform: "uppercase"
                         }}
@@ -520,7 +520,7 @@ function Products() {
                             marginTop: "20px",
                             padding: "12px 24px",
                             borderRadius: "8px",
-                            background: "#1769ff",
+                            background: "var(--primary)",
                             color: "#fff",
                             textDecoration: "none"
                         }}

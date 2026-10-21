@@ -21,7 +21,7 @@
 
 .admin-page-label {
     display: block;
-    color: #005bff;
+    color: var(--primary);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 1.4px;
@@ -86,7 +86,7 @@
 
 .admin-stat-icon.orders {
     background: #eaf2ff;
-    color: #005bff;
+    color: var(--primary);
 }
 
 .admin-stat-icon.products {
@@ -139,7 +139,7 @@
 
 .admin-section-title span {
     display: block;
-    color: #005bff;
+    color: var(--primary);
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 1.3px;
@@ -188,7 +188,7 @@
 
 .status-icon.confirmed {
     background: #eaf2ff;
-    color: #005bff;
+    color: var(--primary);
 }
 
 .status-icon.processing {
@@ -246,7 +246,7 @@
     height: 34px;
     border-radius: 10px;
     background: #eaf2ff;
-    color: #005bff;
+    color: var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -276,7 +276,7 @@
 .top-product-revenue {
     font-size: 13px;
     font-weight: 700;
-    color: #005bff;
+    color: var(--primary);
 }
 
 
@@ -296,7 +296,7 @@
 
 .admin-loading-icon {
     animation: admin-spin 1s linear infinite;
-    color: #005bff;
+    color: var(--primary);
 }
 
 @keyframes admin-spin {

@@ -1,10 +1,11 @@
 import {
     Outlet,
     Link,
-    useNavigate
+    useNavigate,
+    useLocation
 } from "react-router-dom";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCategories } from "../services/categoryApi";
 
 import {
@@ -22,6 +23,7 @@ import {
 
 import "./CustomerLayout.css";
 import CustomerChatWidget from "../components/chat/CustomerChatWidget";
+import useScrollReveal from "../hooks/useScrollReveal";
 import logo from "../assets/logo.png";
 
 import { useAuth } from "../context/AuthContext";
@@ -43,6 +45,12 @@ function CustomerLayout() {
 
 
     const navigate = useNavigate();
+
+    const location = useLocation();
+
+    const mainRef = useRef(null);
+
+    useScrollReveal(mainRef, location.pathname);
 
     const [categories, setCategories] = useState([]);
 
@@ -439,7 +447,11 @@ function CustomerLayout() {
                 MAIN
             ================================== */}
 
-            <main className="customer-main">
+            <main
+                key={location.pathname}
+                ref={mainRef}
+                className="customer-main"
+            >
 
                 <Outlet />
 
@@ -452,17 +464,76 @@ function CustomerLayout() {
 
             <footer className="customer-footer">
 
-                <h3>
-                    Smart Sales
-                </h3>
+                <div className="footer-inner">
 
-                <p>
-                    Hệ thống quản lý bán hàng thông minh
-                </p>
+                    <div className="footer-brand">
 
-                <p>
-                    © 2026 Smart Sales
-                </p>
+                        <h3>
+                            Smart <span>Sales</span>
+                        </h3>
+
+                        <p>
+                            Hệ thống bán hàng thông minh.
+                            Sản phẩm chính hãng, giá tốt,
+                            giao hàng nhanh.
+                        </p>
+
+                    </div>
+
+
+                    <div className="footer-column">
+
+                        <h4>Mua sắm</h4>
+
+                        <Link to="/products">
+                            Tất cả sản phẩm
+                        </Link>
+
+                        <Link to="/cart">
+                            Giỏ hàng
+                        </Link>
+
+                    </div>
+
+
+                    <div className="footer-column">
+
+                        <h4>Tài khoản</h4>
+
+                        <Link to="/account">
+                            Thông tin cá nhân
+                        </Link>
+
+                        <Link to="/orders">
+                            Đơn hàng của tôi
+                        </Link>
+
+                        <Link to="/reviews">
+                            Đánh giá của tôi
+                        </Link>
+
+                    </div>
+
+
+                    <div className="footer-column">
+
+                        <h4>Hỗ trợ</h4>
+
+                        <p>
+                            Chat trực tuyến với nhân viên
+                            ở góc phải màn hình.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div className="footer-bottom">
+
+                    © 2026 Smart Sales. All rights reserved.
+
+                </div>
 
             </footer>
 

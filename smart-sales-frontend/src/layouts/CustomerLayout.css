@@ -122,7 +122,7 @@
 
 
 .category-btn svg:first-child {
-    color: #005BFF;
+    color: var(--primary);
 }
 
 
@@ -139,7 +139,7 @@
 
     background: #EDF5FF;
 
-    color: #005BFF;
+    color: var(--primary);
 }
 
 
@@ -178,21 +178,41 @@
             translateY(-8px);
 
     transition:
-            opacity 0.2s ease,
-            visibility 0.2s ease,
-            transform 0.2s ease;
+            opacity 0.2s ease 0.15s,
+            visibility 0s linear 0.35s,
+            transform 0.2s ease 0.15s;
 
     z-index: 9999;
 }
 
 
-.category-menu:hover .category-dropdown {
+/* Cầu nối vô hình lấp khoảng hở giữa nút và menu */
+.category-dropdown::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 100%;
+
+    height: 14px;
+}
+
+
+.category-menu:hover .category-dropdown,
+.category-menu:focus-within .category-dropdown {
     opacity: 1;
 
     visibility: visible;
 
     transform:
             translateY(0);
+
+    transition:
+            opacity 0.2s ease,
+            visibility 0s,
+            transform 0.2s ease;
 }
 
 
@@ -229,7 +249,7 @@
 .category-dropdown a:hover {
     background: #EDF5FF;
 
-    color: #005BFF;
+    color: var(--primary);
 
     transform:
             translateX(3px);
@@ -277,18 +297,18 @@
 .header-search:focus-within {
     background: #FFFFFF;
 
-    border-color: #005BFF;
+    border-color: var(--primary);
 
     box-shadow:
             0 0 0 4px
-            rgba(0, 91, 255, 0.08);
+            rgba(var(--primary-rgb), 0.08);
 }
 
 
 .header-search svg {
     flex-shrink: 0;
 
-    color: #005BFF;
+    color: var(--primary);
 }
 
 
@@ -353,7 +373,7 @@
 
     background: #F5F9FF;
 
-    color: #005BFF;
+    color: var(--primary);
 
     text-decoration: none;
 
@@ -392,8 +412,8 @@
     background:
             linear-gradient(
                     135deg,
-                    #005BFF,
-                    #008AF5
+                    var(--primary),
+                    var(--primary-accent)
             );
 
     border-color: transparent;
@@ -402,7 +422,7 @@
 
     box-shadow:
             0 7px 18px
-            rgba(0, 91, 255, 0.22);
+            rgba(var(--primary-rgb), 0.22);
 
     transform:
             translateY(-1px);
@@ -492,14 +512,14 @@
 
 
 .login-btn svg {
-    color: #005BFF;
+    color: var(--primary);
 }
 
 
 .login-btn:hover {
     background: #EDF5FF;
 
-    color: #005BFF;
+    color: var(--primary);
 }
 
 
@@ -540,7 +560,7 @@
 .user-info:hover {
     background: #F1F6FF;
 
-    color: #005BFF;
+    color: var(--primary);
 }
 
 
@@ -556,7 +576,7 @@
 
 
 .user-info svg {
-    color: #005BFF;
+    color: var(--primary);
 }
 
 
@@ -604,22 +624,49 @@
     transform:
             translateY(-5px);
 
+    /*
+     * Đóng chậm một chút để chuột lỡ trượt ra
+     * ngoài trong tích tắc thì menu vẫn còn
+     */
     transition:
-            opacity 0.18s ease,
-            visibility 0.18s ease,
-            transform 0.18s ease;
+            opacity 0.18s ease 0.15s,
+            visibility 0s linear 0.33s,
+            transform 0.18s ease 0.15s;
 
     z-index: 9999;
 }
 
 
-.user-area:hover .user-dropdown {
+/*
+ * Cầu nối vô hình lấp khoảng hở giữa tên và menu,
+ * để khi di chuột xuống menu không bị mất hover
+ */
+.user-dropdown::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 100%;
+
+    height: 12px;
+}
+
+
+.user-area:hover .user-dropdown,
+.user-area:focus-within .user-dropdown {
     opacity: 1;
 
     visibility: visible;
 
     transform:
             translateY(0);
+
+    transition:
+            opacity 0.18s ease,
+            visibility 0s,
+            transform 0.18s ease;
 }
 
 
@@ -675,12 +722,12 @@
 .user-dropdown-item:hover {
     background: #EEF5FF;
 
-    color: #005BFF;
+    color: var(--primary);
 }
 
 
 .user-dropdown-item:hover svg {
-    color: #005BFF;
+    color: var(--primary);
 }
 
 
@@ -741,11 +788,20 @@
    ========================================================= */
 
 .customer-footer {
-    margin-top: 50px;
+    position: relative;
 
-    padding: 50px 60px;
+    margin-top: 60px;
+
+    padding: 56px 60px 0;
+
+    overflow: hidden;
 
     background:
+            radial-gradient(
+                    600px 260px at 85% 0%,
+                    rgba(var(--primary-rgb), 0.28),
+                    transparent 70%
+            ),
             linear-gradient(
                     135deg,
                     #011734,
@@ -753,24 +809,126 @@
             );
 
     color: #FFFFFF;
+}
+
+
+.footer-inner {
+    max-width: 1460px;
+
+    margin: 0 auto;
+
+    display: grid;
+    grid-template-columns: 1.6fr repeat(3, 1fr);
+    gap: 40px;
+
+    padding-bottom: 40px;
+}
+
+
+.footer-brand h3 {
+    margin: 0 0 14px;
+
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+}
+
+.footer-brand h3 span {
+    background: linear-gradient(90deg, #6aa6ff, #5fd3ff);
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
+}
+
+
+.customer-footer p {
+    margin: 0;
+
+    max-width: 340px;
+
+    color: #AFC4DF;
+
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-column h4 {
+    margin: 0 0 6px;
+
+    color: #FFFFFF;
+
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.footer-column a {
+    width: fit-content;
+
+    color: #AFC4DF;
+
+    font-size: 14px;
+
+    transition:
+            color var(--duration-fast) ease,
+            transform var(--duration-fast) var(--ease-out);
+}
+
+.footer-column a:hover {
+    color: #FFFFFF;
+
+    transform: translateX(3px);
+}
+
+
+.footer-bottom {
+    max-width: 1460px;
+
+    margin: 0 auto;
+
+    padding: 18px 0 22px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+    color: #7f97b8;
+
+    font-size: 13px;
 
     text-align: center;
 }
 
 
-.customer-footer h3 {
-    margin: 0 0 10px;
+@media (max-width: 900px) {
 
-    font-size: 23px;
+    .footer-inner {
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .footer-brand {
+        grid-column: 1 / -1;
+    }
 }
 
 
-.customer-footer p {
-    margin: 5px 0;
+@media (max-width: 520px) {
 
-    color: #AFC4DF;
+    .customer-footer {
+        padding-top: 40px;
+    }
 
-    font-size: 14px;
+    .footer-inner {
+        grid-template-columns: 1fr;
+    }
 }
 
 

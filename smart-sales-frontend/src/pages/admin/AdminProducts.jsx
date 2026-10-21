@@ -10,7 +10,8 @@ import {
     Star,
     Trash,
     ChevronUp,
-    ChevronDown
+    ChevronDown,
+    FileSpreadsheet
 } from "lucide-react";
 
 import {
@@ -40,6 +41,8 @@ import {
 import {
     getCategories
 } from "../../services/categoryApi";
+
+import ProductExcelImport from "../../components/admin/ProductExcelImport";
 
 import "./AdminProducts.css";
 
@@ -139,6 +142,9 @@ function AdminProducts({ employeeMode = false }) {
     const [editingId, setEditingId] =
         useState(null);
 
+    const [showExcelImport, setShowExcelImport] =
+        useState(false);
+
     const [form, setForm] =
         useState(emptyForm);
 
@@ -186,11 +192,14 @@ function AdminProducts({ employeeMode = false }) {
        LOAD PRODUCTS + CATEGORIES
     ===================================================== */
 
-    const loadData = async () => {
+    // silent = true: tải lại ngầm, không thay trang bằng màn hình loading
+    const loadData = async ({ silent = false } = {}) => {
 
         try {
 
-            setLoading(true);
+            if (!silent) {
+                setLoading(true);
+            }
 
             setError("");
 
@@ -2621,16 +2630,42 @@ function AdminProducts({ employeeMode = false }) {
                             </div>
 
 
-                            <button
-                                className="admin-modal-close"
-                                onClick={
-                                    handleCloseModal
-                                }
-                            >
+                            <div className="admin-modal-header-actions">
 
-                                <X size={20} />
+                                {!editingId && (
 
-                            </button>
+                                    <button
+                                        type="button"
+                                        className="admin-excel-import-button"
+                                        disabled={saving}
+                                        onClick={() => {
+
+                                            handleCloseModal();
+
+                                            setShowExcelImport(true);
+                                        }}
+                                    >
+
+                                        <FileSpreadsheet size={17} />
+
+                                        <span>Import Excel</span>
+
+                                    </button>
+
+                                )}
+
+                                <button
+                                    className="admin-modal-close"
+                                    onClick={
+                                        handleCloseModal
+                                    }
+                                >
+
+                                    <X size={20} />
+
+                                </button>
+
+                            </div>
 
                         </div>
 
@@ -2879,7 +2914,7 @@ function AdminProducts({ employeeMode = false }) {
                                             borderRadius:
                                                 "8px",
                                             background:
-                                                "#2563eb",
+                                                "var(--primary)",
                                             color:
                                                 "#fff",
                                             cursor:
@@ -3001,7 +3036,7 @@ function AdminProducts({ employeeMode = false }) {
                                                                             "relative",
                                                                         border:
                                                                             isPrimary
-                                                                                ? "2px solid #2563eb"
+                                                                                ? "2px solid var(--primary)"
                                                                                 : "1px solid #e2e8f0",
                                                                         borderRadius:
                                                                             "8px",
@@ -3053,7 +3088,7 @@ function AdminProducts({ employeeMode = false }) {
                                                                                 left:
                                                                                     "8px",
                                                                                 background:
-                                                                                    "#2563eb",
+                                                                                    "var(--primary)",
                                                                                 color:
                                                                                     "#fff",
                                                                                 padding:
@@ -3403,7 +3438,7 @@ function AdminProducts({ employeeMode = false }) {
                                                                             "relative",
                                                                         border:
                                                                             isPrimary
-                                                                                ? "2px solid #2563eb"
+                                                                                ? "2px solid var(--primary)"
                                                                                 : "1px solid #e2e8f0",
                                                                         borderRadius:
                                                                             "8px",
@@ -3456,7 +3491,7 @@ function AdminProducts({ employeeMode = false }) {
                                                                                 left:
                                                                                     "8px",
                                                                                 background:
-                                                                                    "#2563eb",
+                                                                                    "var(--primary)",
                                                                                 color:
                                                                                     "#fff",
                                                                                 padding:
@@ -3886,6 +3921,27 @@ function AdminProducts({ employeeMode = false }) {
                     </div>
 
                 </div>
+
+            )}
+
+
+            {/* =================================================
+                IMPORT EXCEL
+            ================================================= */}
+
+            {showExcelImport && (
+
+                <ProductExcelImport
+                    categories={categories}
+                    existingProducts={products}
+                    onClose={() =>
+                        setShowExcelImport(false)
+                    }
+                    onImported={() =>
+                        loadData({ silent: true })
+                    }
+                    canCreateCategories={!employeeMode}
+                />
 
             )}
 

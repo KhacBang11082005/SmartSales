@@ -33,7 +33,7 @@
 
     box-shadow:
             0 15px 45px
-            rgba(0, 91, 255, 0.10);
+            rgba(var(--primary-rgb), 0.10);
 
     box-sizing: border-box;
 }
@@ -123,11 +123,11 @@
 
 
 .register-input:focus-within {
-    border-color: #005BFF;
+    border-color: var(--primary);
 
     box-shadow:
             0 0 0 3px
-            rgba(0, 91, 255, 0.10);
+            rgba(var(--primary-rgb), 0.10);
 }
 
 
@@ -184,8 +184,8 @@
     background:
             linear-gradient(
                     135deg,
-                    #005BFF,
-                    #008AF5,
+                    var(--primary),
+                    var(--primary-accent),
                     #2DB5F9
             );
 
@@ -199,7 +199,7 @@
 
     box-shadow:
             0 8px 20px
-            rgba(0, 91, 255, 0.20);
+            rgba(var(--primary-rgb), 0.20);
 
     transition: 0.25s;
 }
@@ -210,7 +210,7 @@
 
     box-shadow:
             0 12px 28px
-            rgba(0, 91, 255, 0.30);
+            rgba(var(--primary-rgb), 0.30);
 }
 
 

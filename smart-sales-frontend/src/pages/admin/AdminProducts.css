@@ -42,8 +42,8 @@
     gap: 8px;
     background: linear-gradient(
             135deg,
-            #005bff,
-            #087ef5
+            var(--primary),
+            var(--primary-accent)
     );
     color: white;
     font-size: 13px;
@@ -99,7 +99,7 @@
 }
 
 .admin-search-box:focus-within {
-    border-color: #005bff;
+    border-color: var(--primary);
     box-shadow:
             0 0 0 3px rgba(
                     0,
@@ -130,7 +130,7 @@
 }
 
 .admin-filter-select:focus {
-    border-color: #005bff;
+    border-color: var(--primary);
 }
 
 
@@ -240,7 +240,7 @@
     padding: 5px 9px;
     border-radius: 7px;
     background: #edf4ff;
-    color: #005bff;
+    color: var(--primary);
     font-size: 11px;
     font-weight: 700;
 }
@@ -312,7 +312,7 @@
 }
 
 .admin-action-edit {
-    color: #005bff;
+    color: var(--primary);
 }
 
 .admin-action-edit:hover {
@@ -449,7 +449,7 @@
 
 .admin-modal-header span {
     display: block;
-    color: #005bff;
+    color: var(--primary);
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 1px;
@@ -522,7 +522,7 @@
 .admin-form-group input:focus,
 .admin-form-group select:focus,
 .admin-form-group textarea:focus {
-    border-color: #005bff;
+    border-color: var(--primary);
     box-shadow:
             0 0 0 3px rgba(
                     0,
@@ -623,4 +623,70 @@
         width: 100%;
     }
 
+}
+
+/* =========================================================
+   MODAL VỪA MÀN HÌNH
+
+   - Header (có nút Import Excel) luôn hiển thị ở trên
+   - Form cuộn bên trong modal
+   - Nút Lưu / Hủy luôn dính ở dưới
+   (Specificity cao hơn để thắng max-height/overflow trong responsive.css)
+========================================================= */
+
+.admin-modal-overlay > .admin-product-modal {
+    display: flex;
+    flex-direction: column;
+
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+
+    overflow: hidden;
+}
+
+.admin-product-modal > .admin-modal-header {
+    flex-shrink: 0;
+}
+
+.admin-product-modal > .admin-product-form {
+    flex: 1;
+
+    min-height: 0;
+
+    padding-bottom: 0;
+
+    overflow-y: auto;
+
+    overscroll-behavior: contain;
+}
+
+.admin-product-form .admin-modal-footer {
+    position: sticky;
+    bottom: 0;
+
+    z-index: 2;
+
+    margin: 0 -24px;
+    padding: 14px 24px 18px;
+
+    background: #ffffff;
+
+    border-top: 1px solid #e7edf5;
+}
+
+@media (max-width: 500px) {
+
+    .admin-modal-overlay > .admin-product-modal {
+        max-height: calc(100vh - 20px);
+        max-height: calc(100dvh - 20px);
+    }
+
+    .admin-product-form .admin-modal-footer {
+        margin: 0 -19px;
+        padding: 12px 19px 16px;
+    }
+
+    .admin-modal-header-actions {
+        gap: 6px;
+    }
 }

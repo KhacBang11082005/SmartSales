@@ -460,9 +460,9 @@ function Home() {
         scrollLeft.current =
             categoryGridRef.current.scrollLeft;
 
-        categoryGridRef.current.classList.add(
-            "dragging"
-        );
+        // Chưa thêm class "dragging" ở đây: class này tắt
+        // pointer-events của thẻ danh mục, nếu thêm ngay khi
+        // nhấn chuột thì click thường sẽ không tới được link.
 
     };
 
@@ -494,6 +494,11 @@ function Home() {
         if (Math.abs(walk) > 5) {
 
             hasDragged.current = true;
+
+            // Chỉ khi kéo thật mới chuyển sang trạng thái kéo
+            categoryGridRef.current.classList.add(
+                "dragging"
+            );
 
         }
 
@@ -585,7 +590,9 @@ function Home() {
                         Mua sắm thông minh.
                         <br />
 
-                        Lựa chọn dễ dàng.
+                        <span className="hero-highlight">
+                            Lựa chọn dễ dàng.
+                        </span>
 
                     </h1>
 
@@ -927,7 +934,7 @@ function Home() {
                                                         borderRadius:
                                                             "10px",
                                                         background:
-                                                            "linear-gradient(135deg, #005BFF, #008AF5)",
+                                                            "var(--gradient-primary)",
                                                         color:
                                                             "white"
                                                     }}
@@ -1205,7 +1212,7 @@ function Home() {
                                                     borderRadius:
                                                         "10px",
                                                     background:
-                                                        "linear-gradient(135deg, #005BFF, #008AF5)",
+                                                        "var(--gradient-primary)",
                                                     color:
                                                         "white"
                                                 }}

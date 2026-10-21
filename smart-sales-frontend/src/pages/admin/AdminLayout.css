@@ -142,7 +142,7 @@
 }
 
 .admin-logo-text strong span {
-    color: #1464ff;
+    color: var(--primary);
 }
 
 .admin-logo-text small {
@@ -279,7 +279,7 @@
 
     background: #f1f6ff;
 
-    color: #1464ff;
+    color: var(--primary);
 
 }
 
@@ -297,7 +297,7 @@
                     #f3f7ff 100%
             );
 
-    color: #125be6;
+    color: var(--primary-dark);
 
     font-weight: 700;
 }
@@ -320,7 +320,7 @@
 
     border-radius: 0 4px 4px 0;
 
-    background: #1464ff;
+    background: var(--primary);
 
 }
 
@@ -357,7 +357,7 @@
 
 .admin-menu-item:hover .admin-menu-arrow {
 
-    color: #1464ff;
+    color: var(--primary);
 
     transform: translateX(2px);
 
@@ -366,7 +366,7 @@
 
 .admin-menu-item.active .admin-menu-arrow {
 
-    color: #1464ff;
+    color: var(--primary);
 
 }
 
@@ -602,8 +602,8 @@
     background:
             linear-gradient(
                     135deg,
-                    #1464ff,
-                    #2788ff
+                    var(--primary),
+                    var(--primary)
             );
 
     color: #ffffff;
@@ -613,7 +613,7 @@
     font-weight: 750;
 
     box-shadow:
-            0 4px 10px rgba(20, 100, 255, 0.18);
+            0 4px 10px rgba(var(--primary-rgb), 0.18);
 }
 
 
@@ -660,7 +660,7 @@
 
     letter-spacing: 0.7px;
 
-    color: #1464ff;
+    color: var(--primary);
 
 }
 

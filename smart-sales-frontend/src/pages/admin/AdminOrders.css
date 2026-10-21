@@ -91,7 +91,7 @@
 
 .summary-icon.processing {
     background: #E8F5FF;
-    color: #008AF5;
+    color: var(--primary-accent);
 }
 
 

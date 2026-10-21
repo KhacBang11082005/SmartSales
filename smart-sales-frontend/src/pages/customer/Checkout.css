@@ -42,7 +42,7 @@
 
     margin-bottom: 20px;
 
-    color: #005bff;
+    color: var(--primary);
 
     font-size: 14px;
 
@@ -62,7 +62,7 @@
 
     margin-bottom: 7px;
 
-    color: #008af5;
+    color: var(--primary-accent);
 
     font-size: 12px;
 
@@ -148,7 +148,7 @@
 
     border:
             1px solid
-            rgba(0, 91, 255, 0.09);
+            rgba(var(--primary-rgb), 0.09);
 
     border-radius: 20px;
 
@@ -197,7 +197,7 @@
 
     border-radius: 12px;
 
-    color: #005bff;
+    color: var(--primary);
 
     background: #eaf3ff;
 }
@@ -328,7 +328,7 @@
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    border-color: #008af5;
+    border-color: var(--primary-accent);
 
     background: #ffffff;
 
@@ -427,7 +427,7 @@
 
 
 .payment-option.payment-selected {
-    border-color: #008af5;
+    border-color: var(--primary-accent);
 
     background: #f3f9ff;
 
@@ -446,7 +446,7 @@
 
     flex-shrink: 0;
 
-    accent-color: #005bff;
+    accent-color: var(--primary);
 }
 
 
@@ -582,7 +582,7 @@
 
 
 .checkout-product > strong {
-    color: #005bff;
+    color: var(--primary);
 
     font-size: 13px;
 
@@ -672,7 +672,7 @@
 .checkout-total strong {
     flex-shrink: 0;
 
-    color: #005bff;
+    color: var(--primary);
 
     font-size: 22px;
 
@@ -741,13 +741,13 @@
     background:
             linear-gradient(
                     135deg,
-                    #005bff,
-                    #008af5
+                    var(--primary),
+                    var(--primary-accent)
             );
 
     box-shadow:
             0 9px 20px
-            rgba(0, 91, 255, 0.2);
+            rgba(var(--primary-rgb), 0.2);
 
     font: inherit;
 
@@ -764,7 +764,7 @@
 
     box-shadow:
             0 12px 24px
-            rgba(0, 91, 255, 0.26);
+            rgba(var(--primary-rgb), 0.26);
 }
 
 
@@ -878,7 +878,7 @@
 
     border:
             1px solid
-            rgba(0, 91, 255, 0.09);
+            rgba(var(--primary-rgb), 0.09);
 
     border-radius: 20px;
 
@@ -908,7 +908,7 @@
 
     border-radius: 18px;
 
-    color: #005bff;
+    color: var(--primary);
 
     background: #eaf3ff;
 }
@@ -954,7 +954,7 @@
 
     color: #ffffff;
 
-    background: #005bff;
+    background: var(--primary);
 
     font-size: 13px;
 
@@ -1149,10 +1149,10 @@
 }
 
 .promotion-input-row input:focus {
-    border-color: #2563eb;
+    border-color: var(--primary);
 
     box-shadow:
-            0 0 0 3px rgba(37, 99, 235, 0.1);
+            0 0 0 3px rgba(var(--primary-rgb), 0.1);
 }
 
 /* Khi input bị disabled */
@@ -1175,7 +1175,7 @@
     border: none;
     border-radius: 8px;
 
-    background: #2563eb;
+    background: var(--primary);
     color: #ffffff;
 
     font-size: 14px;
@@ -1190,7 +1190,7 @@
 }
 
 .promotion-apply-button:hover:not(:disabled) {
-    background: #1d4ed8;
+    background: var(--primary-dark);
 }
 
 .promotion-apply-button:active:not(:disabled) {

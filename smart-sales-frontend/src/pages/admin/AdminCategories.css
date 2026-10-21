@@ -87,7 +87,7 @@
     border: 0;
     border-radius: 8px;
 
-    background: #1671e8;
+    background: var(--primary);
 
     color: #ffffff;
 
@@ -107,7 +107,7 @@
 
 
 .category-add-btn:hover {
-    background: #075fcf;
+    background: var(--primary-dark);
 
     transform: translateY(-1px);
 
@@ -646,7 +646,7 @@
 
 
 .category-edit-btn {
-    color: #2563eb;
+    color: var(--primary);
 
     background: #eff6ff;
 
@@ -786,7 +786,7 @@
     border: 0;
     border-radius: 8px;
 
-    background: #1671e8;
+    background: var(--primary);
 
     color: #ffffff;
 
@@ -1193,9 +1193,9 @@
 
 .category-save-btn {
     border:
-            1px solid #1671e8;
+            1px solid var(--primary);
 
-    background: #1671e8;
+    background: var(--primary);
 
     color: #ffffff;
 
@@ -1205,7 +1205,7 @@
 
 
 .category-save-btn:hover:not(:disabled) {
-    background: #075fcf;
+    background: var(--primary-dark);
 }
 
 

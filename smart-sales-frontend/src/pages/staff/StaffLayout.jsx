@@ -371,7 +371,10 @@ function StaffLayout() {
                     CONTENT
                 ================================================= */}
 
-                <main className="staff-content">
+                <main
+                    key={location.pathname}
+                    className="staff-content"
+                >
 
                     <Outlet />
 

@@ -185,7 +185,7 @@
 .staff-menu-item:hover {
     background: #f4f7fb;
 
-    color: #1769ff;
+    color: var(--primary);
 }
 
 
@@ -194,7 +194,7 @@
 .staff-menu-item.active {
     background: #edf4ff;
 
-    color: #075ee8;
+    color: var(--primary);
 
     font-weight: 650;
 }
@@ -215,7 +215,7 @@
 
     border-radius: 0 4px 4px 0;
 
-    background: #1769ff;
+    background: var(--primary);
 }
 
 
@@ -244,14 +244,14 @@
 
 
 .staff-menu-item:hover .staff-menu-arrow {
-    color: #1769ff;
+    color: var(--primary);
 
     transform: translateX(2px);
 }
 
 
 .staff-menu-item.active .staff-menu-arrow {
-    color: #1769ff;
+    color: var(--primary);
 
     transform: translateX(2px);
 }
@@ -450,7 +450,7 @@
 
     background: #eaf2ff;
 
-    color: #1264e8;
+    color: var(--primary);
 
     border: 1px solid #d7e6ff;
 
@@ -528,7 +528,7 @@
 .staff-mobile-menu:hover {
     background: #f5f8fc;
 
-    color: #1769ff;
+    color: var(--primary);
 }
 
 

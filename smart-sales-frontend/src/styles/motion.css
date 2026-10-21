@@ -1,0 +1,404 @@
+/* =========================================================
+   SMARTSALES MOTION & UI POLISH
+
+   Lớp hiệu ứng dùng chung cho cả Customer / Admin / Staff.
+
+   Quy ước:
+   - Selector bọc trong :where() để specificity = 0,
+     CSS riêng của từng trang luôn được ưu tiên.
+   - animation dùng fill-mode "backwards" để sau khi chạy xong
+     không giữ lại transform, tránh đè hiệu ứng hover của trang.
+========================================================= */
+
+
+/* =========================================================
+   KEYFRAMES
+========================================================= */
+
+@keyframes ss-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ss-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes ss-scale-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes ss-slide-in-right {
+    from {
+        opacity: 0;
+        transform: translateX(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes ss-pop {
+    0% {
+        transform: scale(0.4);
+    }
+
+    70% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes ss-grow-y {
+    from {
+        transform: scaleY(0);
+    }
+
+    to {
+        transform: scaleY(1);
+    }
+}
+
+@keyframes ss-shimmer {
+    0% {
+        background-position: -400px 0;
+    }
+
+    100% {
+        background-position: 400px 0;
+    }
+}
+
+
+/* =========================================================
+   CHUYỂN TRANG
+
+   <main> được gắn key theo pathname trong layout,
+   nên mỗi lần đổi trang animation sẽ chạy lại.
+========================================================= */
+
+:where(
+    .customer-main,
+    .admin-content,
+    .staff-content
+) {
+    animation: ss-fade-up var(--duration-slow) var(--ease-out) backwards;
+}
+
+:where(
+    .login-card,
+    .register-card
+) {
+    animation: ss-scale-in 0.55s var(--ease-out) backwards;
+}
+
+
+/* =========================================================
+   DANH SÁCH / LƯỚI: XUẤT HIỆN LẦN LƯỢT
+========================================================= */
+
+:where(
+    .product-grid,
+    .products-grid,
+    .category-grid,
+    .admin-stat-grid,
+    .staff-stat-grid,
+    .admin-order-status-grid,
+    .staff-order-status-list,
+    .order-summary-grid,
+    .orders-list,
+    .reviews-product-list,
+    .product-reviews-list,
+    .staff-secondary-grid,
+    .account-grid
+) > * {
+    animation: ss-fade-up 0.5s var(--ease-out) backwards;
+}
+
+:where(.product-grid, .products-grid, .category-grid, .admin-stat-grid, .staff-stat-grid, .admin-order-status-grid, .staff-order-status-list, .order-summary-grid, .orders-list, .reviews-product-list, .product-reviews-list, .staff-secondary-grid, .account-grid) > :nth-child(2) { animation-delay: 0.04s; }
+:where(.product-grid, .products-grid, .category-grid, .admin-stat-grid, .staff-stat-grid, .admin-order-status-grid, .staff-order-status-list, .order-summary-grid, .orders-list, .reviews-product-list, .product-reviews-list, .staff-secondary-grid, .account-grid) > :nth-child(3) { animation-delay: 0.08s; }
+:where(.product-grid, .products-grid, .category-grid, .admin-stat-grid, .staff-stat-grid, .admin-order-status-grid, .staff-order-status-list, .order-summary-grid, .orders-list, .reviews-product-list, .product-reviews-list, .staff-secondary-grid, .account-grid) > :nth-child(4) { animation-delay: 0.12s; }
+:where(.product-grid, .products-grid, .category-grid, .admin-stat-grid, .staff-stat-grid, .admin-order-status-grid, .staff-order-status-list, .order-summary-grid, .orders-list, .reviews-product-list, .product-reviews-list, .staff-secondary-grid, .account-grid) > :nth-child(5) { animation-delay: 0.16s; }
+:where(.product-grid, .products-grid, .category-grid, .admin-stat-grid, .staff-stat-grid, .admin-order-status-grid, .staff-order-status-list, .order-summary-grid, .orders-list, .reviews-product-list, .product-reviews-list, .staff-secondary-grid, .account-grid) > :nth-child(6) { animation-delay: 0.2s; }
+:where(.product-grid, .products-grid, .category-grid, .admin-stat-grid, .staff-stat-grid, .admin-order-status-grid, .staff-order-status-list, .order-summary-grid, .orders-list, .reviews-product-list, .product-reviews-list, .staff-secondary-grid, .account-grid) > :nth-child(7) { animation-delay: 0.24s; }
+:where(.product-grid, .products-grid, .category-grid, .admin-stat-grid, .staff-stat-grid, .admin-order-status-grid, .staff-order-status-list, .order-summary-grid, .orders-list, .reviews-product-list, .product-reviews-list, .staff-secondary-grid, .account-grid) > :nth-child(n + 8) { animation-delay: 0.28s; }
+
+
+/* Dòng bảng hiện dần (chỉ opacity để không ảnh hưởng layout bảng) */
+
+:where(tbody) > tr {
+    animation: ss-fade-in 0.4s ease backwards;
+}
+
+:where(tbody) > tr:nth-child(2) { animation-delay: 0.03s; }
+:where(tbody) > tr:nth-child(3) { animation-delay: 0.06s; }
+:where(tbody) > tr:nth-child(4) { animation-delay: 0.09s; }
+:where(tbody) > tr:nth-child(5) { animation-delay: 0.12s; }
+:where(tbody) > tr:nth-child(6) { animation-delay: 0.15s; }
+:where(tbody) > tr:nth-child(7) { animation-delay: 0.18s; }
+:where(tbody) > tr:nth-child(n + 8) { animation-delay: 0.21s; }
+
+:where(tbody) > tr {
+    transition: background-color var(--duration-fast) ease;
+}
+
+
+/* =========================================================
+   THẺ (CARD): NHẤC NHẸ KHI HOVER
+========================================================= */
+
+:where(
+    .admin-stat-card,
+    .staff-stat-card,
+    .employee-summary-card,
+    .order-summary-card,
+    .overview-card,
+    .category-card,
+    .order-card,
+    .review-product-card,
+    .staff-secondary-card
+) {
+    transition:
+            transform var(--duration) var(--ease-out),
+            box-shadow var(--duration) var(--ease-out),
+            border-color var(--duration) ease;
+}
+
+:where(
+    .admin-stat-card,
+    .staff-stat-card,
+    .employee-summary-card,
+    .order-summary-card,
+    .overview-card,
+    .category-card,
+    .order-card,
+    .review-product-card,
+    .staff-secondary-card
+):hover {
+    transform: translateY(-3px);
+
+    box-shadow: var(--shadow-md);
+}
+
+
+/* Ảnh sản phẩm phóng nhẹ khi hover */
+
+:where(.product-card) {
+    transition:
+            transform var(--duration) var(--ease-out),
+            box-shadow var(--duration) var(--ease-out),
+            border-color var(--duration) ease;
+}
+
+:where(.product-card) :where(img) {
+    transition: transform 0.6s var(--ease-out);
+}
+
+:where(.product-card:hover) :where(img) {
+    transform: scale(1.05);
+}
+
+
+/* =========================================================
+   NÚT BẤM, LIÊN KẾT, Ô NHẬP
+========================================================= */
+
+:where(button, a, select, input, textarea) {
+    transition:
+            background-color var(--duration-fast) ease,
+            border-color var(--duration-fast) ease,
+            color var(--duration-fast) ease,
+            box-shadow var(--duration-fast) ease,
+            transform var(--duration-fast) var(--ease-out);
+}
+
+:where(button:not(:disabled)):active {
+    transform: scale(0.97);
+}
+
+:where(button svg, a svg) {
+    transition: transform var(--duration) var(--ease-out);
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+:where(
+    .admin-modal-overlay,
+    .category-modal-overlay,
+    .customer-modal-overlay,
+    .employee-modal-overlay,
+    .order-modal-overlay,
+    .promotion-modal-overlay,
+    .review-video-overlay,
+    .admin-sidebar-overlay,
+    .staff-sidebar-overlay
+) {
+    animation: ss-fade-in 0.22s ease backwards;
+
+    backdrop-filter: blur(4px);
+}
+
+:where(
+    .admin-product-modal,
+    .category-modal,
+    .customer-modal,
+    .customer-detail-modal,
+    .customer-edit-modal,
+    .employee-modal,
+    .order-modal,
+    .order-detail-modal,
+    .promotion-modal,
+    .review-media-modal-content
+) {
+    animation: ss-scale-in 0.32s var(--ease-out) backwards;
+}
+
+:where(
+    .admin-modal-close,
+    .customer-modal-close,
+    .employee-modal-close,
+    .promotion-modal-close,
+    .review-media-modal-close,
+    .modal-close-button
+):hover svg {
+    transform: rotate(90deg);
+}
+
+
+/* =========================================================
+   THÔNG BÁO / BADGE
+========================================================= */
+
+:where(.cart-success-toast) {
+    animation: ss-slide-in-right 0.35s var(--ease-out) backwards;
+}
+
+:where(.cart-badge) {
+    animation: ss-pop 0.4s var(--ease-spring) backwards;
+}
+
+
+/* =========================================================
+   SIDEBAR ADMIN / STAFF
+========================================================= */
+
+:where(.admin-menu-item, .staff-menu-item):hover {
+    transform: translateX(3px);
+}
+
+:where(.admin-menu-item.active, .staff-menu-item.active)::before {
+    transform-origin: center;
+
+    animation: ss-grow-y 0.3s var(--ease-out) backwards;
+}
+
+
+/* =========================================================
+   TRẠNG THÁI ĐANG TẢI
+========================================================= */
+
+:where(
+    .product-loading,
+    .admin-loading,
+    .staff-loading
+) {
+    animation: ss-fade-in 0.3s ease backwards;
+}
+
+
+/* Skeleton dùng chung: thêm class "ss-skeleton" */
+
+.ss-skeleton {
+    background:
+            linear-gradient(
+                    90deg,
+                    #eef2f7 0px,
+                    #f7f9fc 120px,
+                    #eef2f7 240px
+            );
+
+    background-size: 800px 100%;
+
+    border-radius: var(--radius-sm);
+
+    animation: ss-shimmer 1.3s linear infinite;
+}
+
+
+/* =========================================================
+   HIỆN DẦN KHI CUỘN (useScrollReveal)
+========================================================= */
+
+.ss-reveal-pending {
+    opacity: 0;
+
+    transform: translateY(22px);
+
+    animation: none !important;
+}
+
+.ss-reveal-in {
+    opacity: 1;
+
+    transform: translateY(0);
+
+    transition:
+            opacity 0.6s var(--ease-out),
+            transform 0.6s var(--ease-out);
+}
+
+
+/* =========================================================
+   GIẢM CHUYỂN ĐỘNG
+   (theo cài đặt hệ điều hành của người dùng)
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
+        animation-iteration-count: 1 !important;
+
+        transition-duration: 0.01ms !important;
+
+        scroll-behavior: auto !important;
+    }
+
+    .ss-reveal-pending {
+        opacity: 1;
+
+        transform: none;
+    }
+}

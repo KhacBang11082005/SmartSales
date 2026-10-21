@@ -1473,7 +1473,7 @@ function ProductDetail() {
                 THÔNG SỐ KỸ THUẬT
             ================================================= */}
 
-            <section className="product-description">
+            <section className="product-specs-section">
 
                 <h2>
                     Thông số kỹ thuật

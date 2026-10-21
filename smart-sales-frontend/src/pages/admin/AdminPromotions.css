@@ -69,7 +69,7 @@
     border: none;
     border-radius: 8px;
 
-    background: #2563eb;
+    background: var(--primary);
     color: #ffffff;
 
     font-size: 14px;
@@ -84,10 +84,10 @@
 }
 
 .promotion-add-btn:hover {
-    background: #1d4ed8;
+    background: var(--primary-dark);
 
     box-shadow:
-            0 5px 14px rgba(37, 99, 235, 0.20);
+            0 5px 14px rgba(var(--primary-rgb), 0.20);
 
     transform: translateY(-1px);
 }
@@ -175,10 +175,10 @@
 }
 
 .promotion-search:focus-within {
-    border-color: #2563eb;
+    border-color: var(--primary);
 
     box-shadow:
-            0 0 0 3px rgba(37, 99, 235, 0.08);
+            0 0 0 3px rgba(var(--primary-rgb), 0.08);
 }
 
 .promotion-search svg {
@@ -404,7 +404,7 @@
     border-radius: 6px;
 
     background: #eff6ff;
-    color: #2563eb;
+    color: var(--primary);
 
     font-size: 13px;
     font-weight: 700;
@@ -524,7 +524,7 @@
 
     background: #eff6ff;
 
-    color: #2563eb;
+    color: var(--primary);
 }
 
 .promotion-edit-btn:hover {
@@ -853,10 +853,10 @@
 
 .promotion-form-group input:focus,
 .promotion-form-group select:focus {
-    border-color: #2563eb;
+    border-color: var(--primary);
 
     box-shadow:
-            0 0 0 3px rgba(37, 99, 235, 0.08);
+            0 0 0 3px rgba(var(--primary-rgb), 0.08);
 }
 
 .promotion-form-group input::placeholder {
@@ -992,7 +992,7 @@
     background: #eff6ff;
 
     box-shadow:
-            0 0 0 1px rgba(37, 99, 235, 0.05);
+            0 0 0 1px rgba(var(--primary-rgb), 0.05);
 }
 
 
@@ -1008,7 +1008,7 @@
 
     margin: 0;
 
-    accent-color: #2563eb;
+    accent-color: var(--primary);
 
     cursor: pointer;
 }
@@ -1189,7 +1189,7 @@
 
     border-radius: 8px;
 
-    background: #2563eb;
+    background: var(--primary);
 
     color: #ffffff;
 
@@ -1204,10 +1204,10 @@
 }
 
 .promotion-form-submit:hover:not(:disabled) {
-    background: #1d4ed8;
+    background: var(--primary-dark);
 
     box-shadow:
-            0 4px 12px rgba(37, 99, 235, 0.18);
+            0 4px 12px rgba(var(--primary-rgb), 0.18);
 }
 
 .promotion-form-submit:disabled,
